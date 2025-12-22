@@ -160,6 +160,9 @@ class Mage_Core_Controller_Varien_Front extends Varien_Object
         // If pre-configured, check equality of base URL and requested URL
         $this->_checkBaseUrl($request);
 
+        // Canonicalize URLs with consecutive slashes (e.g., //foo → /foo)
+        $this->normalizeConsecutiveSlashes($request);
+
         $this->checkTrailingSlash($request);
 
         $request->setPathInfo()->setDispatched(false);
@@ -301,6 +304,39 @@ class Mage_Core_Controller_Varien_Front extends Varien_Object
                 ->sendResponse();
             exit;
         }
+    }
+
+    /**
+     * Redirect to canonical URL if path contains consecutive slashes
+     */
+    protected function normalizeConsecutiveSlashes(Mage_Core_Controller_Request_Http $request): void
+    {
+        if (!Mage::isInstalled() || $request->getPost() || strtolower($request->getMethod()) === 'post') {
+            return;
+        }
+
+        $requestUri = $request->getRequestUri();
+        if ($requestUri === null) {
+            return;
+        }
+
+        // Split URI into path and query string
+        $parts = explode('?', $requestUri, 2);
+        $path = $parts[0];
+
+        // Check if path contains consecutive slashes
+        if (!str_contains($path, '//')) {
+            return;
+        }
+
+        // Normalize consecutive slashes to single slash
+        $normalizedPath = preg_replace('#/+#', '/', $path);
+        $canonicalUri = $normalizedPath . (isset($parts[1]) ? '?' . $parts[1] : '');
+
+        Mage::app()->getFrontController()->getResponse()
+            ->setRedirect($canonicalUri, 301)
+            ->sendResponse();
+        exit;
     }
 
     /**
