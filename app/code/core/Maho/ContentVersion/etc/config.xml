@@ -42,11 +42,46 @@
                 </setup>
             </contentversion_setup>
         </resources>
+        <events>
+            <model_save_before>
+                <observers>
+                    <contentversion_snapshot>
+                        <class>contentversion/observer</class>
+                        <method>beforeSave</method>
+                    </contentversion_snapshot>
+                </observers>
+            </model_save_before>
+        </events>
+        <blocks>
+            <contentversion>
+                <class>Maho_ContentVersion_Block</class>
+            </contentversion>
+        </blocks>
     </global>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <modules>
+                        <Maho_ContentVersion before="Mage_Adminhtml">Maho_ContentVersion_Adminhtml</Maho_ContentVersion>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+    <adminhtml>
+        <layout>
+            <updates>
+                <contentversion>
+                    <file>contentversion.xml</file>
+                </contentversion>
+            </updates>
+        </layout>
+    </adminhtml>
     <default>
         <general>
             <contentversion>
-                <max_versions>3</max_versions>
+                <max_versions>20</max_versions>
                 <max_age_days>90</max_age_days>
             </contentversion>
         </general>

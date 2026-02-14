@@ -42,7 +42,10 @@ class Maho_ContentVersion_Model_Service
     ];
 
     /**
-     * Create a version snapshot of the entity's current state (before modification).
+     * Create a version snapshot of the entity's original state (before modification).
+     *
+     * Uses getOrigData() to capture the DB state before in-memory changes.
+     * Falls back to getData() when origData is not available (e.g. restoreVersion).
      */
     public function createVersion(Mage_Core_Model_Abstract $model, string $entityType, string $editor): void
     {
@@ -55,9 +58,27 @@ class Maho_ContentVersion_Model_Service
             return;
         }
 
+        // Use original data (DB state) when available, fall back to current data
+        $hasOrigData = $model->getOrigData() !== null;
         $snapshot = [];
         foreach ($fields as $field) {
-            $snapshot[$field] = $model->getData($field);
+            $snapshot[$field] = $hasOrigData
+                ? $model->getOrigData($field)
+                : $model->getData($field);
+        }
+
+        // Skip if nothing meaningful has changed
+        if ($hasOrigData) {
+            $changed = false;
+            foreach ($fields as $field) {
+                if ((string) $model->getData($field) !== (string) $snapshot[$field]) {
+                    $changed = true;
+                    break;
+                }
+            }
+            if (!$changed) {
+                return;
+            }
         }
 
         /** @var Maho_ContentVersion_Model_Resource_Version $resource */
@@ -83,12 +104,12 @@ class Maho_ContentVersion_Model_Service
      * Restore entity from a version snapshot.
      * Creates a new version of the current state first (so restore is reversible).
      */
-    public function restoreVersion(int $versionId, string $editor = 'restore'): Mage_Core_Model_Abstract
+    public function restoreVersion(int $versionId): Mage_Core_Model_Abstract
     {
         /** @var Maho_ContentVersion_Model_Version $version */
         $version = Mage::getModel('contentversion/version')->load($versionId);
         if (!$version->getId()) {
-            Mage::throwException('Version not found.');
+            Mage::throwException(Mage::helper('contentversion')->__('Version not found.'));
         }
 
         $entityType = $version->getData('entity_type');
@@ -96,13 +117,11 @@ class Maho_ContentVersion_Model_Service
         $model = $this->loadEntity($entityType, $entityId);
 
         if (!$model->getId()) {
-            Mage::throwException('Source entity not found.');
+            Mage::throwException(Mage::helper('contentversion')->__('Source entity not found.'));
         }
 
-        // Snapshot current state before restoring (so restore is reversible)
-        $this->createVersion($model, $entityType, $editor);
-
-        // Apply snapshot data
+        // Apply snapshot data and save — the observer will automatically
+        // version the current state before the save completes
         $snapshot = $version->getContentDataDecoded();
         $model->addData($snapshot);
         $model->save();

@@ -147,13 +147,7 @@ final class BlogPostProcessor implements ProcessorInterface
 
         $oldData = $post->getData();
 
-        // Snapshot current state before modification
-        try {
-            Mage::getSingleton('contentversion/service')
-                ->createVersion($post, 'blog_post', 'API: ' . $user->getConsumerName());
-        } catch (\Exception $e) {
-            Mage::logException($e);
-        }
+        Mage::register('contentversion_editor', 'API: ' . $user->getConsumerName(), true);
 
         $updateData = [
             'url_key' => $data->identifier,

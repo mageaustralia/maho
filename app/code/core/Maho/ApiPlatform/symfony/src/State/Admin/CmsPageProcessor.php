@@ -104,13 +104,7 @@ final class CmsPageProcessor implements ProcessorInterface
 
         $oldData = $page->getData();
 
-        // Snapshot current state before modification
-        try {
-            Mage::getSingleton('contentversion/service')
-                ->createVersion($page, 'cms_page', 'API: ' . $user->getConsumerName());
-        } catch (\Exception $e) {
-            Mage::logException($e);
-        }
+        Mage::register('contentversion_editor', 'API: ' . $user->getConsumerName(), true);
 
         $page->addData([
             'identifier' => $data->identifier,

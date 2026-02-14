@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Maho
  *
@@ -10,10 +12,17 @@
  */
 
 /** @var Mage_Core_Model_Resource_Setup $this */
+/** @var Mage_Core_Model_Resource_Setup $installer */
 $installer = $this;
 $installer->startSetup();
 
-$table = $installer->getConnection()
+$connection = $installer->getConnection();
+
+/**
+ * Create table 'content_version'
+ * Stores JSON snapshots of CMS pages, CMS blocks, and blog posts before each edit
+ */
+$table = $connection
     ->newTable($installer->getTable('contentversion/version'))
     ->addColumn('version_id', Maho\Db\Ddl\Table::TYPE_INTEGER, null, [
         'identity' => true,
@@ -28,7 +37,7 @@ $table = $installer->getConnection()
         'unsigned' => true,
         'nullable' => false,
     ], 'Entity ID')
-    ->addColumn('version_number', Maho\Db\Ddl\Table::TYPE_SMALLINT, null, [
+    ->addColumn('version_number', Maho\Db\Ddl\Table::TYPE_INTEGER, null, [
         'unsigned' => true,
         'nullable' => false,
     ], 'Version Number')
@@ -61,6 +70,6 @@ $table = $installer->getConnection()
     )
     ->setComment('Content Version History');
 
-$installer->getConnection()->createTable($table);
+$connection->createTable($table);
 
 $installer->endSetup();

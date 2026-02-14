@@ -101,13 +101,7 @@ final class CmsBlockProcessor implements ProcessorInterface
 
         $oldData = $block->getData();
 
-        // Snapshot current state before modification
-        try {
-            Mage::getSingleton('contentversion/service')
-                ->createVersion($block, 'cms_block', 'API: ' . $user->getConsumerName());
-        } catch (\Exception $e) {
-            Mage::logException($e);
-        }
+        Mage::register('contentversion_editor', 'API: ' . $user->getConsumerName(), true);
 
         $block->addData([
             'identifier' => $data->identifier,
