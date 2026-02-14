@@ -1,0 +1,10 @@
+<?php
+/**
+ * @var Maho_ContentVersion_Block_Adminhtml_Version_Tab $this
+ */
+?>
+<?php if ($this->hasVersions()): ?>
+    <?= $this->getGridHtml() ?>
+<?php else: ?>
+    <p><?= $this->__('No versions available. Versions are created when content is saved.') ?></p>
+<?php endif ?>
