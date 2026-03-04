@@ -58,7 +58,10 @@ Default layout, loads most of the pages
 
                 <action method="addItem"><type>skin_css</type><name>base.css</name></action>
                 <action method="addItem"><type>skin_css</type><name>form.css</name></action>
+                <action method="addItem"><type>skin_css</type><name>order-fresh.css</name></action>
                 <action method="addItem"><type>skin_css</type><name>menu.css</name><params>media="screen, projection"</params></action>
+                <action method="addItem"><type>skin_css</type><name>maho-admin.css</name></action>
+                <action method="addItem"><type>skin_js</type><name>js/maho-admin.js</name><params>type="module"</params></action>
                 <action method="addCss"><name>print.css</name><params>media="print"</params></action>
 
                 <action method="addItem"><type>js</type><name>mage/adminhtml/rules.js</name><params/><if/><condition>can_load_rules_js</condition></action>
