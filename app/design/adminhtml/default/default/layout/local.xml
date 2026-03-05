@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<layout>
+    <default>
+        <reference name="head">
+        </reference>
+    </default>
+</layout>
