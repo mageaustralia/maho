@@ -4,6 +4,32 @@
  * Palette: dark slate sidebar, light content, blue accent
  */
 
+:root {
+    /* Elevate theme tokens (supplements maho-admin.css variables) */
+    --elevate-border-light: #f1f5f9;
+    --elevate-border-mid: #cbd5e1;
+    --elevate-text-dark: #1e293b;
+    --elevate-text-subtle: #64748b;
+    --elevate-text-muted: #94a3b8;
+    --elevate-text-icon: #475569;
+    --elevate-text-inverse: #fff;
+    --elevate-surface-hover: #f1f5f9;
+    --elevate-surface-dark: #1e293b;
+    --elevate-surface-dark-hover: #334155;
+    --elevate-danger: #dc2626;
+    --elevate-danger-border: #fca5a5;
+    --elevate-danger-bg: #fef2f2;
+    --elevate-warning: #d97706;
+    --elevate-focus-ring: 0 0 0 3px rgba(59,130,246,0.1);
+    --elevate-shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --elevate-shadow-md: 0 1px 4px rgba(0,0,0,0.06);
+    --elevate-row-zebra: rgba(0,0,0,0.015);
+    --elevate-row-hover: rgba(59,130,246,0.04);
+    --elevate-row-hover-subtle: rgba(0,0,0,0.012);
+    --elevate-btn-radius: 6px;
+    --elevate-btn-font: 13px;
+}
+
 /* =========================
    1. SCOPE DROPDOWN — text cutoff fix
    ========================= */
@@ -20,7 +46,7 @@
    2. LEFT NAV — tab delineation
    ========================= */
 .admin-page-left ul.tabs a {
-    border-bottom: 1px solid #f1f5f9 !important;
+    border-bottom: 1px solid var(--elevate-border-light) !important;
 }
 .admin-page-left ul.tabs li:last-child a {
     border-bottom: none !important;
@@ -28,7 +54,7 @@
 .admin-page-left ul.tabs dt {
     margin-top: 4px !important;
     padding-top: 12px !important;
-    border-top: 1px solid #e2e8f0 !important;
+    border-top: 1px solid var(--card-border) !important;
 }
 .admin-page-left ul.tabs li:first-child dt {
     border-top: none !important;
@@ -62,7 +88,7 @@ div.collapseable a {
 /* Chevron color — keep base.css border-triangle, just fix color + position */
 dl.accordion dt a:after,
 div.collapseable a:after {
-    border-color: #94a3b8 transparent transparent transparent !important;
+    border-color: var(--elevate-text-muted) transparent transparent transparent !important;
     right: 8px !important;
     bottom: auto !important;
     top: 50% !important;
@@ -70,7 +96,7 @@ div.collapseable a:after {
 }
 dl.accordion dt.open a:after,
 div.collapseable a.open:after {
-    border-color: transparent transparent #94a3b8 transparent !important;
+    border-color: transparent transparent var(--elevate-text-muted) transparent !important;
     right: 8px !important;
     bottom: auto !important;
     top: 50% !important;
@@ -84,9 +110,9 @@ div.collapseable a.open:after {
     margin-bottom: 0 !important;
 }
 .section-config > .entry-edit-head {
-    background: #fff !important;
+    background: var(--card-bg) !important;
     border: none !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--card-border) !important;
     padding: 0 !important;
     cursor: pointer !important;
 }
@@ -94,7 +120,7 @@ div.collapseable a.open:after {
     display: block !important;
     position: relative !important;
     padding: 14px 28px 14px 16px !important;
-    color: #3b82f6 !important;
+    color: var(--primary) !important;
     font-size: 15px !important;
     font-weight: 500 !important;
     text-decoration: none !important;
@@ -115,86 +141,64 @@ div.collapseable a.open:after {
     margin-bottom: 0 !important;
 }
 .section-config .entry-edit .entry-edit-head {
-    border-bottom: 1px solid #f1f5f9 !important;
+    border-bottom: 1px solid var(--elevate-border-light) !important;
     border-top: none !important;
 }
 
 /* dl.accordion: clean borders — padding is on the <a> inside, not the dt */
 dl.accordion dt {
     border: none !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--card-border) !important;
     border-radius: 0 !important;
-    background: #fff !important;
+    background: var(--card-bg) !important;
     cursor: pointer !important;
     padding: 0 !important;
 }
 dl.accordion dd {
     border: none !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--card-border) !important;
     border-radius: 0 !important;
 }
 
 /* =========================
-   5. CONFIGURE BUTTONS — solid fill (not ghost)
+   5+7. ALL BUTTONS — consistent base style (merged config + grid action buttons)
    ========================= */
 table.form-list td.value button[type="button"],
 table.form-list td button[type="button"],
 .section-config button.button,
-.section-config .pp-buttons-container button {
-    background: #fff !important;
-    color: #1e293b !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
-    padding: 6px 14px !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    background-image: none !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-    cursor: pointer !important;
-}
-table.form-list td.value button[type="button"]:hover,
-table.form-list td button[type="button"]:hover,
-.section-config button.button:hover {
-    background: #f1f5f9 !important;
-    border-color: #94a3b8 !important;
-}
-
-/* =========================
-   6. (removed — overflow handled in section 20)
-   ========================= */
-
-/* =========================
-   7. ALL BUTTONS — consistent base style
-   ========================= */
+.section-config .pp-buttons-container button,
 button.scalable,
 .filter-actions button,
 table.actions button,
 table.massaction button {
-    background: #fff !important;
-    color: #1e293b !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
+    background: var(--card-bg) !important;
+    color: var(--elevate-text-dark) !important;
+    border: 1px solid var(--elevate-border-mid) !important;
+    border-radius: var(--elevate-btn-radius) !important;
     padding: 6px 14px !important;
-    font-size: 13px !important;
+    font-size: var(--elevate-btn-font) !important;
     font-weight: 500 !important;
     line-height: 1.4 !important;
     background-image: none !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    box-shadow: var(--elevate-shadow-sm) !important;
     cursor: pointer !important;
     vertical-align: middle !important;
 }
+table.form-list td.value button[type="button"]:hover,
+table.form-list td button[type="button"]:hover,
+.section-config button.button:hover,
 button.scalable:hover,
 .filter-actions button:hover,
 table.actions button:hover,
 table.massaction button:hover {
-    background: #f1f5f9 !important;
-    border-color: #94a3b8 !important;
+    background: var(--elevate-surface-hover) !important;
+    border-color: var(--elevate-text-muted) !important;
 }
 /* Back button — same size as all others, hide « character */
 button.scalable.back {
-    color: #64748b !important;
+    color: var(--elevate-text-subtle) !important;
     padding: 6px 14px !important;
-    font-size: 13px !important;
+    font-size: var(--elevate-btn-font) !important;
     line-height: 1.4 !important;
 }
 button.scalable.back > span > span {
@@ -202,9 +206,9 @@ button.scalable.back > span > span {
 }
 /* Delete button — danger hint on hover */
 button.scalable.delete:hover {
-    border-color: #fca5a5 !important;
-    color: #dc2626 !important;
-    background: #fef2f2 !important;
+    border-color: var(--elevate-danger-border) !important;
+    color: var(--elevate-danger) !important;
+    background: var(--elevate-danger-bg) !important;
 }
 
 /* =========================
@@ -212,8 +216,8 @@ button.scalable.delete:hover {
    ========================= */
 .grid tr.filter input:focus,
 .grid tr.filter select:focus {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    border-color: var(--primary) !important;
+    box-shadow: var(--elevate-focus-ring) !important;
     outline: none !important;
 }
 
@@ -221,19 +225,19 @@ button.scalable.delete:hover {
    9. GRID ROW HOVER + ZEBRA STRIPING
    ========================= */
 .grid tbody tr:nth-child(even) td {
-    background: rgba(0,0,0,0.015) !important;
+    background: var(--elevate-row-zebra) !important;
 }
 .grid tbody tr:hover td {
-    background: rgba(59,130,246,0.04) !important;
+    background: var(--elevate-row-hover) !important;
 }
 
 /* =========================
    10. TYPOGRAPHY — antialiased system font
    ========================= */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* =========================
@@ -241,11 +245,11 @@ body {
    ========================= */
 .content-header button.scalable.save,
 .content-header button.scalable.add {
-    background: #1e293b !important;
+    background: var(--elevate-surface-dark) !important;
     background-image: none !important;
-    border: 1px solid #1e293b !important;
-    color: #fff !important;
-    border-radius: 6px !important;
+    border: 1px solid var(--elevate-surface-dark) !important;
+    color: var(--elevate-text-inverse) !important;
+    border-radius: var(--elevate-btn-radius) !important;
     text-shadow: none !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
     font-weight: 550 !important;
@@ -253,8 +257,8 @@ body {
 }
 .content-header button.scalable.save:hover,
 .content-header button.scalable.add:hover {
-    background: #334155 !important;
-    border-color: #334155 !important;
+    background: var(--elevate-surface-dark-hover) !important;
+    border-color: var(--elevate-surface-dark-hover) !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
 }
 
@@ -267,9 +271,9 @@ input[type="password"]:focus,
 input[type="number"]:focus,
 textarea:focus,
 select:focus {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
-    outline: none !important;
+    border-color: var(--primary);
+    box-shadow: var(--elevate-focus-ring);
+    outline: none;
 }
 
 /* =========================
@@ -277,35 +281,35 @@ select:focus {
    ========================= */
 .form-list p.note,
 .form-list .note {
-    font-size: 12px !important;
-    color: #94a3b8 !important;
-    line-height: 1.5 !important;
+    font-size: 12px;
+    color: var(--elevate-text-muted);
+    line-height: 1.5;
 }
 
 /* =========================
    14. SCOPE LABELS
    ========================= */
 .form-list td.scope-label {
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.04em !important;
-    color: #94a3b8 !important;
-    white-space: nowrap !important;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--elevate-text-muted);
+    white-space: nowrap;
 }
 
 /* =========================
    15. WARNING TEXT
    ========================= */
 .form-list .note strong {
-    color: #d97706 !important;
+    color: var(--elevate-warning) !important;
 }
 
 /* =========================
    16. CONFIG TABLE ROW HOVER
    ========================= */
 .form-list tbody tr:hover td {
-    background: rgba(0,0,0,0.012) !important;
+    background: var(--elevate-row-hover-subtle) !important;
 }
 
 /* =========================
@@ -320,22 +324,22 @@ select:focus {
     position: sticky !important;
     top: 0 !important;
     z-index: 100 !important;
-    background: #fff !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+    background: var(--card-bg) !important;
+    border-bottom: 1px solid var(--card-border) !important;
+    box-shadow: var(--elevate-shadow-md) !important;
 }
 .content-header h3 {
     margin: 0 !important;
     font-size: 24px !important;
     font-weight: 600 !important;
     letter-spacing: -0.02em !important;
-    color: #1e293b !important;
+    color: var(--elevate-text-dark) !important;
 }
 /* Store view chooser — clear positioning below header */
 p.switcher {
     margin: 0 0 12px 0 !important;
     font-size: 12px !important;
-    color: #64748b !important;
+    color: var(--elevate-text-subtle) !important;
     padding: 0 15px !important;
 }
 p.switcher select {
@@ -377,38 +381,38 @@ p.switcher select {
 }
 /* Instant tooltip for truncated cells */
 #grid-tooltip {
-    position: fixed !important;
-    z-index: 10000 !important;
-    background: #1e293b !important;
-    color: #f1f5f9 !important;
-    font-size: 13px !important;
-    line-height: 1.5 !important;
-    padding: 6px 10px !important;
-    border-radius: 6px !important;
-    pointer-events: none !important;
-    opacity: 0 !important;
-    transition: opacity 0.08s !important;
-    white-space: normal !important;
-    word-break: break-all !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    position: fixed;
+    z-index: 10000;
+    background: var(--elevate-surface-dark);
+    color: var(--elevate-border-light);
+    font-size: var(--elevate-btn-font);
+    line-height: 1.5;
+    padding: 6px 10px;
+    border-radius: var(--elevate-btn-radius);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.08s;
+    white-space: normal;
+    word-break: break-all;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 #grid-tooltip.visible {
-    opacity: 1 !important;
+    opacity: 1;
 }
 /* Column resize handles */
 .col-resize-handle {
-    position: absolute !important;
-    top: 0 !important;
-    right: -2px !important;
-    width: 5px !important;
-    height: 100% !important;
-    cursor: col-resize !important;
-    z-index: 10 !important;
+    position: absolute;
+    top: 0;
+    right: -2px;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
 }
 .col-resize-handle:hover,
 .col-resize-handle.dragging {
-    background: #3b82f6 !important;
-    opacity: 0.4 !important;
+    background: var(--primary);
+    opacity: 0.4;
 }
 .grid .hor-scroll {
     overflow-x: auto !important;
@@ -530,8 +534,8 @@ button[onclick*="massaction"]::before {
     justify-content: center !important;
     width: 28px !important;
     height: 28px !important;
-    background: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
+    background: var(--elevate-border-light) !important;
+    border: 1px solid var(--card-border) !important;
     border-radius: 5px !important;
     vertical-align: middle !important;
 }
@@ -540,19 +544,19 @@ button[onclick*="massaction"]::before {
     display: block !important;
     width: 14px !important;
     height: 14px !important;
-    background: #475569 !important;
+    background: var(--elevate-text-icon) !important;
     -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z'/%3E%3C/svg%3E") no-repeat center !important;
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z'/%3E%3C/svg%3E") no-repeat center !important;
     -webkit-mask-size: contain !important;
     mask-size: contain !important;
 }
 .grid table.data td:last-child a[href*="edit"]:hover {
-    background: #e2e8f0 !important;
-    border-color: #cbd5e1 !important;
+    background: var(--card-border) !important;
+    border-color: var(--elevate-border-mid) !important;
 }
 
 /* =========================
-   19. MASS ACTION BAR — tighter
+   19. MASS ACTION BAR — tighter + dropdown fix
    ========================= */
 table.massaction td {
     padding: 0px 10px !important;
@@ -562,15 +566,19 @@ table.massaction select {
     font-size: 12px !important;
     padding: 4px 6px !important;
 }
+table.massaction select,
+table.massaction option {
+    font-size: 13px !important;
+}
 .paypal-payment-notice {
     font-weight: 700 !important;
     padding: 15px !important;
 }
 table.massaction fieldset {
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--card-border) !important;
     border-radius: 8px !important;
     padding: 9px 10px 0 10px !important;
-    background: #fff !important;
+    background: var(--card-bg) !important;
 }
 
 /* =========================
