@@ -10,17 +10,7 @@ const app = Application.start();
  * Handles sidebar collapse/expand and localStorage persistence
  */
 class AdminSidebarController extends Controller {
-    connect() {
-        if (localStorage.getItem('maho-sidebar-collapsed') === '1') {
-            this.element.classList.add('sidebar-collapsed');
-        }
-    }
-
-    toggleCollapse() {
-        const shell = this.element;
-        const collapsed = shell.classList.toggle('sidebar-collapsed');
-        localStorage.setItem('maho-sidebar-collapsed', collapsed ? '1' : '0');
-    }
+    // Sidebar expand/collapse is now CSS hover-based (Instagram style)
 }
 
 /**
@@ -53,42 +43,29 @@ class AdminNavController extends Controller {
         this.element.querySelectorAll('li.parent > a').forEach(link => {
             link.addEventListener('click', e => {
                 const li = link.closest('li.parent');
-                const href = link.getAttribute('href');
-                const isHash = !href || href === '#';
+                const href = link.getAttribute('href') || '';
+                const isNavOnly = !href || href === '#' || href.startsWith('javascript:');
                 const isLevel0 = li.classList.contains('level0');
+                const isOpen = li.classList.contains('open');
 
-                const shell = document.querySelector('.admin-shell');
-                const isCollapsed = shell && shell.classList.contains('sidebar-collapsed');
-
-                // Collapsed + level0: expand sidebar and open this menu
-                if (isCollapsed && isLevel0) {
-                    e.preventDefault();
-                    shell.classList.remove('sidebar-collapsed');
-                    localStorage.setItem('maho-sidebar-collapsed', '0');
-                    li.parentElement.querySelectorAll(':scope > li.level0.open').forEach(el => {
+                // Accordion: close other open siblings at the same level when opening
+                if (!isOpen) {
+                    li.parentElement.querySelectorAll(':scope > li.open').forEach(el => {
                         if (el !== li) el.classList.remove('open');
                     });
-                    li.classList.add('open');
-                    this.saveOpenState();
-                    return;
                 }
 
-                if (isHash) {
+                if (isNavOnly) {
                     e.preventDefault();
                     li.classList.toggle('open');
                     this.saveOpenState();
                 } else {
-                    if (!li.classList.contains('open')) {
+                    if (!isOpen) {
                         e.preventDefault();
-                        if (isLevel0) {
-                            li.parentElement.querySelectorAll(':scope > li.level0.open').forEach(el => {
-                                if (el !== li) el.classList.remove('open');
-                            });
-                        }
                         li.classList.add('open');
                         this.saveOpenState();
                     }
-                    // Already open: navigate normally
+                    // Already open: navigate normally (follow the link)
                 }
             });
         });
@@ -174,7 +151,8 @@ let cmdMenuItems = [];
 
 function buildCmdIndex() {
     cmdMenuItems = [];
-    const walk = (ul, crumbs) => {
+    const walk = (ul, crumbs, depth) => {
+        let childIndex = 0;
         ul.querySelectorAll(':scope > li').forEach(li => {
             const a = li.querySelector(':scope > a');
             if (!a) return;
@@ -182,14 +160,38 @@ function buildCmdIndex() {
             const href = a.getAttribute('href');
             const newCrumbs = [...crumbs, label];
             if (href && href !== '#' && !href.startsWith('javascript')) {
-                cmdMenuItems.push({ label, breadcrumb: crumbs.join(' › '), href });
+                cmdMenuItems.push({ label, breadcrumb: crumbs.join(' › '), href, depth, childIndex: childIndex++ });
             }
             const childUl = li.querySelector(':scope > ul');
-            if (childUl) walk(childUl, newCrumbs);
+            if (childUl) walk(childUl, newCrumbs, depth + 1);
         });
     };
     const nav = document.getElementById('nav');
-    if (nav) walk(nav, []);
+    if (nav) walk(nav, [], 0);
+    fetchConfigSections();
+}
+
+/** Fetch config page and add section deep-links to the palette index */
+function fetchConfigSections() {
+    const configLink = document.querySelector('a[id*="system_config"], a[href*="system_config"]');
+    if (!configLink) return;
+    const configUrl = configLink.href || configLink.getAttribute('href');
+    if (!configUrl || configUrl === '#') return;
+    fetch(configUrl, { credentials: 'same-origin' })
+        .then(r => r.text())
+        .then(html => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            let group = '';
+            doc.querySelectorAll('.admin-page-left dt, .admin-page-left dd a').forEach(el => {
+                if (el.tagName === 'DT') { group = el.textContent.trim(); return; }
+                const label = el.textContent.trim();
+                const href = el.getAttribute('href');
+                if (href && href !== '#') {
+                    cmdMenuItems.push({ label, breadcrumb: `Config › ${group}`, href, depth: 2, childIndex: 0, isConfig: true });
+                }
+            });
+        })
+        .catch(() => {});
 }
 
 function initCommandPalette() {
@@ -284,9 +286,24 @@ function initCommandPalette() {
                 const lbl  = item.label.toLowerCase();
                 const full = (item.breadcrumb + ' ' + item.label).toLowerCase();
                 let score = 0;
-                if (lbl.startsWith(query))   score = 3;
-                else if (lbl.includes(query)) score = 2;
-                else if (full.includes(query)) score = 1;
+                // Base text matching
+                if (lbl === query)              score = 10;
+                else if (lbl.startsWith(query)) score = 5;
+                else if (lbl.includes(query))   score = 3;
+                else if (full.includes(query))  score = 1;
+                if (score === 0) return { ...item, score };
+                // Depth bonus: shallower items are more important
+                score += Math.max(0, 2 - (item.depth || 0)) * 0.5;
+                // First-child bonus: primary page under a parent
+                if (item.childIndex === 0) score += 0.3;
+                // Parent-match: query matches the immediate parent label
+                const parts = item.breadcrumb ? item.breadcrumb.split(' › ') : [];
+                const parent = (parts[parts.length - 1] || '').toLowerCase();
+                if (parent === query) score += 2;
+                else if (parent.startsWith(query)) score += 1;
+                // Top-parent + first-child: "Customer" → Manage Customers (first child of Customers)
+                const topParent = (parts[0] || '').toLowerCase();
+                if (topParent.startsWith(query) && item.childIndex === 0 && item.depth <= 1) score += 4;
                 return { ...item, score };
               }).filter(i => i.score > 0).sort((a,b) => b.score - a.score).slice(0, 14)
             : cmdMenuItems.slice(0, 14);
@@ -444,3 +461,128 @@ function initContentHeaderBadge() {
 
 document.addEventListener('DOMContentLoaded', initContentHeaderBadge);
 document.addEventListener('turbo:load', initContentHeaderBadge);
+
+/**
+ * Grid enhancements:
+ * 1. Title tooltips on truncated cells (full text on hover)
+ * 2. Draggable column resize handles on headers
+ * 3. Column widths persisted to localStorage per grid
+ */
+function enhanceGrid(table) {
+    if (table.dataset.enhanced) return;
+    table.dataset.enhanced = '1';
+    const gridKey = 'maho-grid-cols-' + (table.id || 'default');
+
+    // --- 1. Instant tooltips for truncated cells ---
+    // Shared tooltip element (one per page)
+    if (!document.getElementById('grid-tooltip')) {
+        const tip = document.createElement('div');
+        tip.id = 'grid-tooltip';
+        document.body.appendChild(tip);
+    }
+    const tooltip = document.getElementById('grid-tooltip');
+
+    const showTip = (td, e) => {
+        if (td.scrollWidth <= td.clientWidth) return;
+        tooltip.textContent = td.textContent.trim();
+        tooltip.classList.add('visible');
+        // Position below the cell
+        const rect = td.getBoundingClientRect();
+        tooltip.style.left = rect.left + 'px';
+        tooltip.style.top = (rect.bottom + 4) + 'px';
+        tooltip.style.maxWidth = Math.max(300, rect.width * 2) + 'px';
+    };
+    const hideTip = () => tooltip.classList.remove('visible');
+
+    table.addEventListener('mouseover', e => {
+        const td = e.target.closest('td');
+        if (td && table.contains(td)) showTip(td, e);
+    });
+    table.addEventListener('mouseout', e => {
+        const td = e.target.closest('td');
+        if (td) hideTip();
+    });
+
+    const addTooltips = () => {}; // kept as no-op for resize callback
+
+    // --- 2. Resizable column headers + 3. localStorage ---
+    // Target only the headings row, not the filter row (both use <th>)
+    const headingsRow = table.querySelector('thead tr.headings') || table.querySelector('thead tr:first-child');
+    if (!headingsRow) return;
+    const ths = Array.from(headingsRow.querySelectorAll('th'));
+    const saved = JSON.parse(localStorage.getItem(gridKey) || '{}');
+
+    // Lock all columns to their current pixel widths so table-layout: fixed
+    // doesn't redistribute space when one column is resized
+    ths.forEach((th, i) => {
+        th.style.width = (saved[i] || th.offsetWidth) + 'px';
+    });
+
+    ths.forEach((th, i) => {
+        if (th.querySelector('.col-resize-handle')) return;
+
+        const handle = document.createElement('div');
+        handle.className = 'col-resize-handle';
+        th.style.position = 'relative';
+        th.appendChild(handle);
+
+        let startX, startW, neighborTh, neighborW;
+        handle.addEventListener('mousedown', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            startX = e.clientX;
+            startW = th.offsetWidth;
+            // Transfer pixels to/from the right neighbor (splitter behavior)
+            neighborTh = ths[i + 1] || null;
+            neighborW = neighborTh ? neighborTh.offsetWidth : 0;
+            handle.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+
+            const onMove = ev => {
+                const delta = ev.clientX - startX;
+                const w = Math.max(40, startW + delta);
+                th.style.width = w + 'px';
+                // Compensate: shrink/grow neighbor by the same amount
+                if (neighborTh) {
+                    const nw = Math.max(40, neighborW - delta);
+                    neighborTh.style.width = nw + 'px';
+                }
+            };
+            const onUp = () => {
+                handle.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+                const widths = {};
+                ths.forEach((h, j) => { widths[j] = h.offsetWidth; });
+                localStorage.setItem(gridKey, JSON.stringify(widths));
+                addTooltips();
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+    });
+}
+
+// Grid tables render dynamically after DOMContentLoaded — poll briefly then observe
+function initGridEnhancements() {
+    if (window._gridEnhancementsInit) return;
+    window._gridEnhancementsInit = true;
+
+    const tryEnhance = () => document.querySelectorAll('.grid table.data').forEach(enhanceGrid);
+    tryEnhance();
+    setTimeout(tryEnhance, 500);
+    setTimeout(tryEnhance, 1500);
+    if ('MutationObserver' in window) {
+        let timer;
+        new MutationObserver(() => {
+            clearTimeout(timer);
+            timer = setTimeout(tryEnhance, 100);
+        }).observe(document.body, { childList: true, subtree: true });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initGridEnhancements);
+document.addEventListener('turbo:load', initGridEnhancements);

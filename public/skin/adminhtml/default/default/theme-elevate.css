@@ -1,0 +1,671 @@
+/**
+ * Maho Admin — Elevate Theme
+ * Clean overrides on top of maho-admin.css + base.css
+ * Palette: dark slate sidebar, light content, blue accent
+ */
+
+/* =========================
+   1. SCOPE DROPDOWN — text cutoff fix
+   ========================= */
+.admin-page-left {
+    width: 220px !important;
+}
+.admin-page-left .switcher select {
+    width: 100% !important;
+    font-size: 12px !important;
+    text-overflow: ellipsis !important;
+}
+
+/* =========================
+   2. LEFT NAV — tab delineation
+   ========================= */
+.admin-page-left ul.tabs a {
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+.admin-page-left ul.tabs li:last-child a {
+    border-bottom: none !important;
+}
+.admin-page-left ul.tabs dt {
+    margin-top: 4px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+.admin-page-left ul.tabs li:first-child dt {
+    border-top: none !important;
+    margin-top: 0 !important;
+    padding-top: 8px !important;
+}
+
+/* =========================
+   3. DOUBLE BORDER — remove left-nav right border
+   ========================= */
+.admin-page-left {
+    border-right: none !important;
+}
+
+/* =========================
+   4. ACCORDION HEADERS — full-width clickable, chevron fix, border cleanup
+   ========================= */
+
+/* Make accordion links full-width block — padding on link so entire bar is clickable */
+dl.accordion dt a,
+div.collapseable a {
+    display: block !important;
+    position: relative !important;
+    padding: 10px 28px 10px 12px !important;
+    margin: 0 !important;
+    background-image: none !important;
+    background: none !important;
+    text-decoration: none !important;
+}
+
+/* Chevron color — keep base.css border-triangle, just fix color + position */
+dl.accordion dt a:after,
+div.collapseable a:after {
+    border-color: #94a3b8 transparent transparent transparent !important;
+    right: 8px !important;
+    bottom: auto !important;
+    top: 50% !important;
+    margin-top: -4px !important;
+}
+dl.accordion dt.open a:after,
+div.collapseable a.open:after {
+    border-color: transparent transparent #94a3b8 transparent !important;
+    right: 8px !important;
+    bottom: auto !important;
+    top: 50% !important;
+    margin-top: -4px !important;
+}
+
+/* Section-config accordion: clean borders, no double stacking */
+.section-config {
+    border: none !important;
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
+}
+.section-config > .entry-edit-head {
+    background: #fff !important;
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+}
+.section-config > .entry-edit-head a {
+    display: block !important;
+    position: relative !important;
+    padding: 14px 28px 14px 16px !important;
+    color: #3b82f6 !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    background: none !important;
+    background-image: none !important;
+    width: 100% !important;
+}
+
+/* Remove double borders between entry-edit and section-config */
+.section-config > .config {
+    border: none !important;
+    box-shadow: none !important;
+}
+.section-config .entry-edit {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin-bottom: 0 !important;
+}
+.section-config .entry-edit .entry-edit-head {
+    border-bottom: 1px solid #f1f5f9 !important;
+    border-top: none !important;
+}
+
+/* dl.accordion: clean borders — padding is on the <a> inside, not the dt */
+dl.accordion dt {
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+}
+dl.accordion dd {
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+}
+
+/* =========================
+   5. CONFIGURE BUTTONS — solid fill (not ghost)
+   ========================= */
+table.form-list td.value button[type="button"],
+table.form-list td button[type="button"],
+.section-config button.button,
+.section-config .pp-buttons-container button {
+    background: #fff !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    background-image: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    cursor: pointer !important;
+}
+table.form-list td.value button[type="button"]:hover,
+table.form-list td button[type="button"]:hover,
+.section-config button.button:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+
+/* =========================
+   6. (removed — overflow handled in section 20)
+   ========================= */
+
+/* =========================
+   7. ALL BUTTONS — consistent base style
+   ========================= */
+button.scalable,
+.filter-actions button,
+table.actions button,
+table.massaction button {
+    background: #fff !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    background-image: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    cursor: pointer !important;
+    vertical-align: middle !important;
+}
+button.scalable:hover,
+.filter-actions button:hover,
+table.actions button:hover,
+table.massaction button:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+/* Back button — same size as all others, hide « character */
+button.scalable.back {
+    color: #64748b !important;
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+button.scalable.back > span > span {
+    display: none !important;
+}
+/* Delete button — danger hint on hover */
+button.scalable.delete:hover {
+    border-color: #fca5a5 !important;
+    color: #dc2626 !important;
+    background: #fef2f2 !important;
+}
+
+/* =========================
+   8. GRID FILTER INPUT FOCUS
+   ========================= */
+.grid tr.filter input:focus,
+.grid tr.filter select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    outline: none !important;
+}
+
+/* =========================
+   9. GRID ROW HOVER + ZEBRA STRIPING
+   ========================= */
+.grid tbody tr:nth-child(even) td {
+    background: rgba(0,0,0,0.015) !important;
+}
+.grid tbody tr:hover td {
+    background: rgba(59,130,246,0.04) !important;
+}
+
+/* =========================
+   10. TYPOGRAPHY — antialiased system font
+   ========================= */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* =========================
+   11. PRIMARY BUTTONS — dark filled (Save, Add, Create)
+   ========================= */
+.content-header button.scalable.save,
+.content-header button.scalable.add {
+    background: #1e293b !important;
+    background-image: none !important;
+    border: 1px solid #1e293b !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    text-shadow: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
+    font-weight: 550 !important;
+    padding: 6px 14px !important;
+}
+.content-header button.scalable.save:hover,
+.content-header button.scalable.add:hover {
+    background: #334155 !important;
+    border-color: #334155 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+
+/* =========================
+   12. FORM FOCUS RINGS
+   ========================= */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    outline: none !important;
+}
+
+/* =========================
+   13. HELP TEXT
+   ========================= */
+.form-list p.note,
+.form-list .note {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+    line-height: 1.5 !important;
+}
+
+/* =========================
+   14. SCOPE LABELS
+   ========================= */
+.form-list td.scope-label {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    color: #94a3b8 !important;
+    white-space: nowrap !important;
+}
+
+/* =========================
+   15. WARNING TEXT
+   ========================= */
+.form-list .note strong {
+    color: #d97706 !important;
+}
+
+/* =========================
+   16. CONFIG TABLE ROW HOVER
+   ========================= */
+.form-list tbody tr:hover td {
+    background: rgba(0,0,0,0.012) !important;
+}
+
+/* =========================
+   16b. CONTENT HEADER — prevent overlap
+   ========================= */
+.content-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: #fff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+}
+.content-header h3 {
+    margin: 0 !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+    color: #1e293b !important;
+}
+/* Store view chooser — clear positioning below header */
+p.switcher {
+    margin: 0 0 12px 0 !important;
+    font-size: 12px !important;
+    color: #64748b !important;
+    padding: 0 15px !important;
+}
+p.switcher select {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+}
+
+/* =========================
+   17. GRID DENSITY — auto layout with truncation
+   ========================= */
+.grid table.data {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+/* Override hardcoded col widths from Maho grid renderer */
+.grid table.data col {
+    width: auto !important;
+}
+.grid table.data td {
+    padding: 8px !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+.grid table.data th {
+    padding: 8px !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    position: relative !important;
+}
+/* Checkbox column — default narrow but resizable */
+.grid table.data th:first-child,
+.grid table.data td:first-child {
+    text-align: center !important;
+}
+/* Instant tooltip for truncated cells */
+#grid-tooltip {
+    position: fixed !important;
+    z-index: 10000 !important;
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+    transition: opacity 0.08s !important;
+    white-space: normal !important;
+    word-break: break-all !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+#grid-tooltip.visible {
+    opacity: 1 !important;
+}
+/* Column resize handles */
+.col-resize-handle {
+    position: absolute !important;
+    top: 0 !important;
+    right: -2px !important;
+    width: 5px !important;
+    height: 100% !important;
+    cursor: col-resize !important;
+    z-index: 10 !important;
+}
+.col-resize-handle:hover,
+.col-resize-handle.dragging {
+    background: #3b82f6 !important;
+    opacity: 0.4 !important;
+}
+.grid .hor-scroll {
+    overflow-x: auto !important;
+}
+.grid tr.filter input,
+.grid tr.filter select {
+    font-size: 12px !important;
+    padding: 4px 6px !important;
+}
+.grid table.data th a {
+    font-size: 12px !important;
+}
+/* Pager row — tighter */
+.grid table.actions td {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+}
+
+/* =========================
+   18. SVG ICON BUTTONS — shared base for all ::before icons
+   ========================= */
+button.scalable.back::before,
+button.scalable.delete::before,
+button.scalable.reset::before,
+button.scalable.save::before,
+button.scalable.add::before,
+button.scalable.duplicate::before,
+button[onclick*="email"]::before,
+button[onclick*="hold"]::before,
+button[onclick*="void"]::before,
+button[onclick*="reorder"]::before,
+button[onclick*="massaction"]::before,
+.filter-actions button[onclick*="doFilter"]::before,
+.filter-actions button[onclick*="resetFilter"]::before,
+table.actions button[onclick*="export"]::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 14px !important;
+    height: 14px !important;
+    margin-right: 5px !important;
+    vertical-align: -2px !important;
+    background: currentColor !important;
+    -webkit-mask-size: contain !important;
+    mask-size: contain !important;
+}
+
+/* Back — arrow left */
+button.scalable.back::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Delete — trash */
+button.scalable.delete::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 01.7.797l-.5 6a.75.75 0 01-1.497-.124l.5-6a.75.75 0 01.797-.672zm3.54.797a.75.75 0 00-1.497-.124l-.5 6a.75.75 0 001.497.124l.5-6z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 01.7.797l-.5 6a.75.75 0 01-1.497-.124l.5-6a.75.75 0 01.797-.672zm3.54.797a.75.75 0 00-1.497-.124l-.5 6a.75.75 0 001.497.124l.5-6z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Reset — arrow uturn left */
+button.scalable.reset::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M7.793 2.232a.75.75 0 01-.025 1.06L3.622 7.25h10.003a5.375 5.375 0 010 10.75H10.75a.75.75 0 010-1.5h2.875a3.875 3.875 0 000-7.75H3.622l4.146 3.957a.75.75 0 01-1.036 1.085l-5.5-5.25a.75.75 0 010-1.085l5.5-5.25a.75.75 0 011.06.025z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M7.793 2.232a.75.75 0 01-.025 1.06L3.622 7.25h10.003a5.375 5.375 0 010 10.75H10.75a.75.75 0 010-1.5h2.875a3.875 3.875 0 000-7.75H3.622l4.146 3.957a.75.75 0 01-1.036 1.085l-5.5-5.25a.75.75 0 010-1.085l5.5-5.25a.75.75 0 011.06.025z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Save — checkmark */
+button.scalable.save::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Add / Duplicate — plus */
+button.scalable.add::before,
+button.scalable.duplicate::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Send Email — envelope */
+button[onclick*="email"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z'/%3E%3Cpath d='M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z'/%3E%3Cpath d='M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Hold — pause circle */
+button[onclick*="hold"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M2 10a8 8 0 1116 0 8 8 0 01-16 0zm5-2.25A.75.75 0 017.75 7h.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-.5a.75.75 0 01-.75-.75v-4.5zm4 0a.75.75 0 01.75-.75h.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-.5a.75.75 0 01-.75-.75v-4.5z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M2 10a8 8 0 1116 0 8 8 0 01-16 0zm5-2.25A.75.75 0 017.75 7h.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-.5a.75.75 0 01-.75-.75v-4.5zm4 0a.75.75 0 01.75-.75h.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-.5a.75.75 0 01-.75-.75v-4.5z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Void — x circle */
+button[onclick*="void"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Reorder — arrow path */
+button[onclick*="reorder"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H4.598a.75.75 0 00-.75.75v3.634a.75.75 0 001.5 0v-2.033l.312.311a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-10.624-2.85a5.5 5.5 0 019.201-2.465l.312.31H11.77a.75.75 0 000 1.5h3.634a.75.75 0 00.75-.75V3.535a.75.75 0 00-1.5 0v2.033l-.312-.31A7 7 0 002.63 8.384a.75.75 0 001.449.39z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H4.598a.75.75 0 00-.75.75v3.634a.75.75 0 001.5 0v-2.033l.312.311a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-10.624-2.85a5.5 5.5 0 019.201-2.465l.312.31H11.77a.75.75 0 000 1.5h3.634a.75.75 0 00.75-.75V3.535a.75.75 0 00-1.5 0v2.033l-.312-.31A7 7 0 002.63 8.384a.75.75 0 001.449.39z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Search (filter only) — magnifying glass */
+.filter-actions button[onclick*="doFilter"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Reset Filter — refresh arrows */
+.filter-actions button[onclick*="resetFilter"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H4.598a.75.75 0 00-.75.75v3.634a.75.75 0 001.5 0v-2.033l.312.311a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-10.624-2.85a5.5 5.5 0 019.201-2.465l.312.31H11.77a.75.75 0 000 1.5h3.634a.75.75 0 00.75-.75V3.535a.75.75 0 00-1.5 0v2.033l-.312-.31A7 7 0 002.63 8.384a.75.75 0 001.449.39z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H4.598a.75.75 0 00-.75.75v3.634a.75.75 0 001.5 0v-2.033l.312.311a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-10.624-2.85a5.5 5.5 0 019.201-2.465l.312.31H11.77a.75.75 0 000 1.5h3.634a.75.75 0 00.75-.75V3.535a.75.75 0 00-1.5 0v2.033l-.312-.31A7 7 0 002.63 8.384a.75.75 0 001.449.39z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Export — arrow down tray */
+table.actions button[onclick*="export"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z'/%3E%3Cpath d='M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z'/%3E%3Cpath d='M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z'/%3E%3C/svg%3E") no-repeat center !important;
+}
+/* Submit (mass action) — check circle */
+button[onclick*="massaction"]::before {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat center !important;
+}
+
+/* Edit link in grid action column — pencil icon button */
+.grid table.data td:last-child a[href*="edit"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 5px !important;
+    vertical-align: middle !important;
+}
+.grid table.data td:last-child a[href*="edit"]::before {
+    content: '' !important;
+    display: block !important;
+    width: 14px !important;
+    height: 14px !important;
+    background: #475569 !important;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z'/%3E%3C/svg%3E") no-repeat center !important;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath d='M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z'/%3E%3C/svg%3E") no-repeat center !important;
+    -webkit-mask-size: contain !important;
+    mask-size: contain !important;
+}
+.grid table.data td:last-child a[href*="edit"]:hover {
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* =========================
+   19. MASS ACTION BAR — tighter
+   ========================= */
+table.massaction td {
+    padding: 0px 10px !important;
+    font-size: 12px !important;
+}
+table.massaction select {
+    font-size: 12px !important;
+    padding: 4px 6px !important;
+}
+.paypal-payment-notice {
+    font-weight: 700 !important;
+    padding: 15px !important;
+}
+table.massaction fieldset {
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 9px 10px 0 10px !important;
+    background: #fff !important;
+}
+
+/* =========================
+   20. DEMO NOTICE — sticky, no gap below
+   ========================= */
+.demo-notice {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 900 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+/* Fix scroll model — body must be overflow:visible for position:sticky to work.
+   Horizontal overflow clipped on .admin-shell instead of html/body to avoid
+   browser propagation of non-visible overflow from html→body breaking sticky. */
+html, body {
+    overflow: visible !important;
+}
+.admin-shell {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    height: auto !important;
+    min-height: 100vh !important;
+}
+.admin-main {
+    overflow: visible !important;
+    height: auto !important;
+}
+.admin-content-wrap {
+    overflow: visible !important;
+    padding-top: 0 !important;
+}
+.admin-page-cols {
+    overflow: visible !important;
+}
+.admin-page-content {
+    overflow: visible !important;
+}
+/* Content header sticks below demo notice */
+.content-header {
+    margin-bottom: 12px !important;
+}
+
+/* =========================
+   21. FORM TABLES — nested tables flush within their cells
+   ========================= */
+/* Nested data tables (Group Price, Tier Price) inside form value cells */
+table.form-list td.value > table,
+table.form-list td.value > div > table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+}
+table.form-list td.value > table th,
+table.form-list td.value > table td,
+table.form-list td.value > div > table th,
+table.form-list td.value > div > table td {
+    padding: 6px 10px !important;
+}
+
+/* =========================
+   22. SLIM SIDEBAR — center nav icons + user/logout
+   ========================= */
+/* Center icons in 56px strip: remove border-left offset, use symmetric padding */
+.admin-sidebar #nav > li.level0 > a {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+    border-left: none !important;
+}
+/* Active indicator: inset box-shadow instead of border-left */
+.admin-sidebar #nav > li.level0.active > a {
+    box-shadow: inset 3px 0 0 var(--sidebar-active-accent) !important;
+}
+/* User area: stack vertically and center both icons */
+.admin-sidebar .sidebar-user {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 10px 4px !important;
+}
+.admin-sidebar .sidebar-user-link {
+    justify-content: center !important;
+    padding: 7px !important;
+    gap: 0 !important;
+}
+.admin-sidebar .sidebar-logout-btn {
+    padding: 7px !important;
+}
+/* On hover (expanded): restore normal layout */
+.admin-sidebar:hover .sidebar-user {
+    flex-direction: row !important;
+    gap: 8px !important;
+    padding: 12px 16px !important;
+}
+.admin-sidebar:hover .sidebar-user-link {
+    justify-content: flex-start !important;
+    padding: 7px 8px !important;
+    gap: 8px !important;
+}
