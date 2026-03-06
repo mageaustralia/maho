@@ -292,6 +292,7 @@ class CartService
         }
 
         $quote->setCouponCode($couponCode);
+        $quote->setTotalsCollectedFlag(false);
         $quote->collectTotals();
         $quote->save();
 
@@ -311,6 +312,7 @@ class CartService
     public function removeCoupon(\Mage_Sales_Model_Quote $quote): \Mage_Sales_Model_Quote
     {
         $quote->setCouponCode('');
+        $quote->setTotalsCollectedFlag(false);
         $quote->collectTotals();
         $quote->save();
 
@@ -331,6 +333,7 @@ class CartService
         // Flag to trigger shipping rate collection
         $address->setCollectShippingRates(1);
 
+        $quote->setTotalsCollectedFlag(false);
         $quote->collectTotals();
         $quote->save();
 
@@ -355,6 +358,7 @@ class CartService
 
         $address = $quote->getBillingAddress();
         $address->addData($addressData);
+        $quote->setTotalsCollectedFlag(false);
         $quote->collectTotals();
         $quote->save();
 
@@ -390,6 +394,7 @@ class CartService
         }
 
         $address->setShippingMethod($shippingMethod);
+        $quote->setTotalsCollectedFlag(false);
         $quote->collectTotals();
         $quote->save();
 
@@ -430,6 +435,7 @@ class CartService
             $payment->setAdditionalData(json_encode($additionalData));
         }
 
+        $quote->setTotalsCollectedFlag(false);
         $quote->collectTotals();
         $quote->save();
 
@@ -572,29 +578,14 @@ class CartService
             $quote->getPayment()->setMethod($paymentMethod);
             \Mage::log("PlaceOrder - Payment method set: {$paymentMethod}");
 
-            // Set billing/shipping addresses if not set (for guest checkout)
+            // Set billing/shipping addresses if not set (for guest/walk-in checkout)
+            // Derive defaults from store config — nothing hardcoded
             if (!$quote->getBillingAddress()->getFirstname()) {
-                $quote->getBillingAddress()->setData([
-                    'firstname' => 'Walk-in',
-                    'lastname' => 'Customer',
-                    'street' => 'Store Pickup',
-                    'city' => 'Store',
-                    'postcode' => '0000',
-                    'telephone' => '0000000000',
-                    'country_id' => 'AU',
-                ]);
+                $quote->getBillingAddress()->setData($this->getStoreDefaultAddress($quote->getStoreId()));
             }
 
             if (!$quote->getShippingAddress()->getFirstname()) {
-                $quote->getShippingAddress()->setData([
-                    'firstname' => 'Walk-in',
-                    'lastname' => 'Customer',
-                    'street' => 'Store Pickup',
-                    'city' => 'Store',
-                    'postcode' => '0000',
-                    'telephone' => '0000000000',
-                    'country_id' => 'AU',
-                ]);
+                $quote->getShippingAddress()->setData($this->getStoreDefaultAddress($quote->getStoreId()));
             }
 
             // Set shipping method if not already set
@@ -1028,4 +1019,22 @@ class CartService
         $quote->setTotalsCollectedFlag(false);
         $quote->collectTotals();
     }
+
+    /**
+     * Get default POS/walk-in address from store config
+     */
+    private function getStoreDefaultAddress(?int $storeId = null): array
+    {
+        return [
+            'firstname' => 'Walk-in',
+            'lastname' => 'Customer',
+            'street' => \Mage::getStoreConfig('general/store_information/address', $storeId) ?: 'Store Pickup',
+            'city' => \Mage::getStoreConfig('general/store_information/city', $storeId) ?: 'Store',
+            'region' => \Mage::getStoreConfig('general/store_information/region', $storeId) ?: '',
+            'postcode' => \Mage::getStoreConfig('general/store_information/postcode', $storeId) ?: '0000',
+            'country_id' => \Mage::getStoreConfig('general/country/default', $storeId) ?: 'US',
+            'telephone' => \Mage::getStoreConfig('general/store_information/phone', $storeId) ?: '0000000000',
+        ];
+    }
+
 }

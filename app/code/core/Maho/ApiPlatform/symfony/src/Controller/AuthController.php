@@ -341,6 +341,20 @@ class AuthController extends AbstractController
         try {
             $payload = $this->jwtService->decodeToken($token);
 
+            // Enforce jti claim and check blacklist
+            if (!isset($payload->jti)) {
+                return new JsonResponse([
+                    'error' => 'invalid_token',
+                    'message' => 'Token missing required jti claim',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+            if ($this->tokenBlacklist->isRevoked($payload->jti)) {
+                return new JsonResponse([
+                    'error' => 'token_revoked',
+                    'message' => 'Token has been revoked',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
             if (!isset($payload->customer_id)) {
                 return new JsonResponse([
                     'error' => 'invalid_token',
@@ -357,6 +371,8 @@ class AuthController extends AbstractController
                 ], Response::HTTP_UNAUTHORIZED);
             }
 
+            // Blacklist the old token to prevent replay
+            $this->tokenBlacklist->revoke($payload->jti, (int) ($payload->exp ?? time() + 86400));
             $newToken = $this->jwtService->generateCustomerToken($customer);
 
             return new JsonResponse([
@@ -744,7 +760,7 @@ class AuthController extends AbstractController
             // Check token expiry (24 hours)
             if ($tokenExpiry) {
                 $tokenCreatedAt = strtotime($tokenExpiry);
-                $expiryHours = (int) \Mage::getStoreConfig('customer/password/reset_link_expiration_period') ?: 24;
+                $expiryHours = (int) \Mage::getStoreConfig('customer/password/reset_link_expiration_period') ?: 2;
                 if (time() - $tokenCreatedAt > ($expiryHours * 3600)) {
                     return new JsonResponse([
                         'error' => 'token_expired',
@@ -827,6 +843,20 @@ class AuthController extends AbstractController
 
         try {
             $payload = $this->jwtService->decodeToken($token);
+
+            // Enforce jti claim and check blacklist
+            if (!isset($payload->jti)) {
+                return new JsonResponse([
+                    'error' => 'invalid_token',
+                    'message' => 'Token missing required jti claim',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+            if ($this->tokenBlacklist->isRevoked($payload->jti)) {
+                return new JsonResponse([
+                    'error' => 'token_revoked',
+                    'message' => 'Token has been revoked',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
 
             if (!isset($payload->customer_id)) {
                 return new JsonResponse([

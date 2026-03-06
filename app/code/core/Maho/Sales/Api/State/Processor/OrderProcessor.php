@@ -96,6 +96,9 @@ final class OrderProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Cart not found');
         }
 
+        // Verify cart ownership
+        $this->verifyCartOwnership($quote, $maskedId !== null);
+
         // Set payment method on quote if provided
         if ($paymentMethod) {
             $quote->getPayment()->setMethod($paymentMethod);
@@ -148,14 +151,13 @@ final class OrderProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Order not found');
         }
 
-        // Verify customer access: customers can only cancel their own orders
-        $customerId = $context['customer_id'] ?? null;
-        $isAdmin = !empty($context['is_admin']);
-        if (!$isAdmin) {
+        // Verify access: customers can only cancel their own orders
+        if (!$this->isAdmin() && !$this->isApiUser()) {
+            $customerId = $this->getAuthenticatedCustomerId();
             if (!$customerId) {
                 throw new BadRequestHttpException('Authentication required to cancel orders');
             }
-            if ($order->getCustomerId() != $customerId) {
+            if ((int) $order->getCustomerId() !== $customerId) {
                 throw new NotFoundHttpException('Order not found');
             }
         }
@@ -347,17 +349,17 @@ final class OrderProcessor implements ProcessorInterface
             $quote->setStore(\Mage::app()->getStore($quote->getStoreId()));
         }
 
-        // POS default address
+        // POS default address — all values from store config, nothing hardcoded
+        $sid = $quote->getStoreId();
         $posAddress = [
             'firstname' => 'POS',
             'lastname' => 'Customer',
-            'street' => 'In-Store Pickup',
-            'city' => 'Melbourne',
-            'region' => 'Victoria',
-            'region_id' => 574,
-            'postcode' => '3000',
-            'country_id' => 'AU',
-            'telephone' => '0000000000',
+            'street' => \Mage::getStoreConfig('general/store_information/address', $sid) ?: 'In-Store Pickup',
+            'city' => \Mage::getStoreConfig('general/store_information/city', $sid) ?: 'Store',
+            'region' => \Mage::getStoreConfig('general/store_information/region', $sid) ?: '',
+            'postcode' => \Mage::getStoreConfig('general/store_information/postcode', $sid) ?: '0000',
+            'country_id' => \Mage::getStoreConfig('general/country/default', $sid) ?: 'US',
+            'telephone' => \Mage::getStoreConfig('general/store_information/phone', $sid) ?: '0000000000',
         ];
 
         // Set shipping address and method
@@ -613,5 +615,26 @@ final class OrderProcessor implements ProcessorInterface
         $dto->createdAt = $payment->getCreatedAt();
 
         return $dto;
+    }
+
+    /**
+     * Verify the current user has access to place an order for this cart
+     */
+    private function verifyCartOwnership(\Mage_Sales_Model_Quote $quote, bool $accessedByMaskedId): void
+    {
+        if ($this->isAdmin() || $this->isPosUser() || $this->isApiUser()) {
+            return;
+        }
+
+        $cartCustomerId = $quote->getCustomerId();
+        $authenticatedCustomerId = $this->getAuthenticatedCustomerId();
+
+        if ($cartCustomerId) {
+            if ($authenticatedCustomerId === null || (int) $cartCustomerId !== $authenticatedCustomerId) {
+                throw new AccessDeniedHttpException('You can only place orders for your own cart');
+            }
+        } elseif (!$accessedByMaskedId) {
+            throw new AccessDeniedHttpException('Guest carts must be accessed via masked ID');
+        }
     }
 }

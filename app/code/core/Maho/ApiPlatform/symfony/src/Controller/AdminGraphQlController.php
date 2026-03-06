@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Maho\ApiPlatform\Controller;
 
-use Maho\ApiPlatform\Security\AdminSessionAuthenticator;
 use Maho\ApiPlatform\Service\CartService;
 use Maho\ApiPlatform\Service\CustomerService;
 use Maho\ApiPlatform\Service\GraphQL\CartMutationHandler;
@@ -62,39 +61,13 @@ class AdminGraphQlController
         }
 
         try {
-            // Get context from server vars (set by Maho controller) or request
+            // Authentication handled by Symfony firewall (AdminSessionAuthenticator)
+            // $_SERVER context vars are set by the authenticator
             $input = json_decode($content, true) ?? [];
             $storeId = (int) ($_SERVER['MAHO_STORE_ID'] ?? $input['variables']['storeId'] ?? 1);
-            $adminUserId = $_SERVER['MAHO_ADMIN_USER_ID'] ?? null;
-            // Verify bridge token if admin context was set via $_SERVER
-            if ($adminUserId !== null) {
-                if (!AdminSessionAuthenticator::verifyBridgeToken(
-                    (string) $adminUserId,
-                    $_SERVER['MAHO_API_BRIDGE_TOKEN'] ?? '',
-                )) {
-                    $adminUserId = null; // Reject unverified context
-                }
-            }
+            $adminUserId = (int) ($_SERVER['MAHO_ADMIN_USER_ID'] ?? 0);
             $customerId = $_SERVER['MAHO_POS_CUSTOMER_ID'] ?? null;
 
-            // For POS - validate form_key using Maho's standard method
-            // The form_key is tied to the admin session and must be validated properly
-            if ($adminUserId === null && !empty($input['form_key'])) {
-                $session = \Mage::getSingleton('core/session');
-                if ($session->validateFormKey($input['form_key'])) {
-                    // Valid form_key from admin session - get admin user from session
-                    $adminSession = \Mage::getSingleton('admin/session');
-                    if ($adminSession->isLoggedIn()) {
-                        $adminUserId = (int) $adminSession->getUser()->getId();
-                    }
-                }
-            }
-
-            if ($adminUserId === null) {
-                return new JsonResponse([
-                    'errors' => [['message' => 'Admin authentication required']],
-                ], Response::HTTP_UNAUTHORIZED);
-            }
 
             $context = [
                 'store_id' => $storeId,
@@ -123,6 +96,12 @@ class AdminGraphQlController
         }
     }
 
+    /** Maximum nesting depth allowed in queries */
+    private const MAX_QUERY_DEPTH = 10;
+
+    /** Maximum query length in bytes */
+    private const MAX_QUERY_LENGTH = 10000;
+
     private function executeQuery(string $query, ?array $variables, array $context): array
     {
         // Initialize handlers
@@ -131,18 +110,29 @@ class AdminGraphQlController
         // Parse and execute
         $query = trim($query);
 
+        // Query size limit
+        if (strlen($query) > self::MAX_QUERY_LENGTH) {
+            return ['errors' => [['message' => 'Query exceeds maximum allowed length']]];
+        }
+
+        // Depth limit — count max nesting of { }
+        $depth = $this->calculateQueryDepth($query);
+        if ($depth > self::MAX_QUERY_DEPTH) {
+            return ['errors' => [['message' => 'Query exceeds maximum depth of ' . self::MAX_QUERY_DEPTH]]];
+        }
+
         // Handle introspection
         if (str_contains($query, '__schema') || str_contains($query, '__type')) {
             return ['data' => $this->getIntrospectionSchema()];
         }
 
-        // Parse operation name
+        // Parse operation name from the query
         if (preg_match('/(?:query|mutation)\s+(\w+)/', $query, $matches)) {
             $operation = $matches[1];
-        } elseif (preg_match('/\{\s*(\w+)/', $query, $matches)) {
+        } elseif (preg_match('/^\{\s*(\w+)/', $query, $matches)) {
             $operation = $matches[1];
         } else {
-            return ['errors' => [['message' => 'Could not parse GraphQL query']]];
+            return ['errors' => [['message' => 'Could not parse GraphQL operation name']]];
         }
 
         try {
@@ -152,6 +142,49 @@ class AdminGraphQlController
             \Mage::logException($e);
             return ['errors' => [['message' => \Mage::getIsDeveloperMode() ? $e->getMessage() : 'An error occurred processing the request']]];
         }
+    }
+
+    /**
+     * Calculate the maximum nesting depth of a GraphQL query
+     */
+    private function calculateQueryDepth(string $query): int
+    {
+        $maxDepth = 0;
+        $currentDepth = 0;
+        $inString = false;
+        $escape = false;
+
+        for ($i = 0, $len = strlen($query); $i < $len; $i++) {
+            $char = $query[$i];
+
+            if ($escape) {
+                $escape = false;
+                continue;
+            }
+
+            if ($char === '\\') {
+                $escape = true;
+                continue;
+            }
+
+            if ($char === '"') {
+                $inString = !$inString;
+                continue;
+            }
+
+            if ($inString) {
+                continue;
+            }
+
+            if ($char === '{') {
+                $currentDepth++;
+                $maxDepth = max($maxDepth, $currentDepth);
+            } elseif ($char === '}') {
+                $currentDepth--;
+            }
+        }
+
+        return $maxDepth;
     }
 
     /**
