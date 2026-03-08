@@ -442,7 +442,7 @@ document.addEventListener('turbo:load', initTopbarHeightTracker);
  * Inject Cmd+K search badge into .content-header (right of buttons)
  */
 function initContentHeaderBadge() {
-    document.querySelectorAll('.content-header').forEach(header => {
+    const mainHeader = document.querySelector('.content-header'); if (mainHeader) [mainHeader].forEach(header => {
         if (header.querySelector('.cmd-launch-btn')) return; // already injected
         const btn = document.createElement('button');
         btn.className = 'cmd-launch-btn';
