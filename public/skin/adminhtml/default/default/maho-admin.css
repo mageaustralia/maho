@@ -31,13 +31,6 @@
 /* =====================
    BODY / SHELL
    ===================== */
-body {
-    background: var(--content-bg);
-    overflow: hidden;
-    height: 100vh;
-    min-width: unset;
-    margin: 0;
-}
 
 .admin-shell {
     display: grid;
@@ -53,10 +46,6 @@ body {
 }
 
 /* Neutralise old layout wrappers */
-.wrapper { min-width: unset; display: contents; }
-.header { background: none; text-align: unset; display: contents; }
-.middle { min-height: unset; background: none; padding: 0; display: contents; }
-.footer { background: none; padding: 0; font-size: inherit; clear: none; display: contents; }
 
 /* =====================
    SIDEBAR
@@ -194,41 +183,8 @@ body {
    ===================== */
 
 /* Reset menu.css horizontal layout */
-.nav-bar { background: none !important; padding: 0 !important; }
-
-#nav { padding: 0; margin: 0; list-style: none; }
-
-#nav li {
-    float: none !important;
-    height: auto !important;
-    position: relative;
-    margin: 0 !important;
-}
-
-#nav li.active {
-    margin-left: 0 !important;
-    font-weight: normal;
-}
-
-#nav li.active em { display: none !important; }
 
 /* Level 0 items */
-#nav li.level0 > a {
-    display: flex !important;
-    align-items: center;
-    height: auto !important;
-    line-height: 1.4 !important;
-    padding: 9px 12px 9px 16px !important;
-    color: var(--sidebar-text) !important;
-    text-decoration: none !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    border-left: 3px solid transparent;
-    transition: background 0.15s, color 0.15s;
-    float: none !important;
-    white-space: nowrap;
-    overflow: hidden;
-}
 
 #nav li.level0 > a span {
     flex: 1;
@@ -237,10 +193,6 @@ body {
 }
 
 #nav li.level0 > a:hover,
-#nav li.level0:hover > a {
-    background: var(--sidebar-hover-bg) !important;
-    color: var(--sidebar-text-hover) !important;
-}
 
 #nav li.level0.active > a {
     background: var(--sidebar-active-bg) !important;
@@ -265,57 +217,22 @@ body {
     margin-top: unset !important;
 }
 
-
 #nav li.level0.parent.open > a::after {
     transform: rotate(45deg);
 }
 
 /* Sub-menus: stacked below parent */
-#nav ul {
-    position: static !important;
-    width: auto !important;
-    top: auto !important;
-    left: auto !important;
-    box-shadow: none !important;
-    background: rgba(0,0,0,0.2) !important;
-    display: none !important;
-}
-
 
 #nav li.level0.parent.open > ul {
     display: block !important;
 }
 
 /* Sub items */
-#nav ul li { padding: 0 !important; float: none !important; }
-
-#nav ul li a {
-    float: none !important;
-    display: block !important;
-    padding: 7px 12px 7px 26px !important;
-    font-size: 12px !important;
-    line-height: 1.4 !important;
-    color: var(--sidebar-text) !important;
-    background: none !important;
-    text-decoration: none !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
 
 #nav ul li a:hover,
-#nav ul li:hover a {
-    background: var(--sidebar-hover-bg) !important;
-    color: var(--sidebar-text-hover) !important;
-}
 
 #nav ul li.active a,
-#nav ul li a.active {
-    color: var(--sidebar-text-active) !important;
-    text-decoration: none !important;
-}
 
-#nav ul ul { left: auto !important; top: auto !important; }
 #nav ul ul li a { padding-left: 38px !important; }
 #nav ul ul ul li a { padding-left: 50px !important; }
 
@@ -323,7 +240,6 @@ body {
 #nav li.level0.parent li.level1.parent > a::after { content: '' !important; }
 #nav li.level0.parent li.parent li.parent > a::after { content: none !important; }
 #nav li.level0 > a::after { content: "" !important; height: 3px !important; margin: 0 !important; display: none !important; }
-#nav .level0 > a:after { display: none !important; }
 #nav li.level0.parent > a::after { display: block !important; height: 6px !important; }
 
 /* Collapsed sidebar: icon-only mode */
@@ -464,35 +380,12 @@ body {
 }
 
 /* Content header bar */
-.content-header {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
 
 .content-header h3, .content-header h4 { margin: 0; }
 
 /* =====================
    CARDS / GRID TABLES
    ===================== */
-.entry-edit {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    margin-bottom: 20px;
-}
-
-.grid { 
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-}
 
 /* =====================
    FOOTER
@@ -515,21 +408,11 @@ body {
 #messages { margin-bottom: 16px; }
 
 /* Old .columns / .side-col / .main-col passthrough */
-.columns { background: none !important; display: contents; }
 div.side-col, div.main-col, div.main-col-inner { float: none; margin: 0; width: auto; padding: 0; min-height: unset; }
 
 /* Loading mask */
-#loading-mask .backdrop { background: rgba(15,23,42,0.5); }
-#loading-mask .loader {
-    background: var(--card-bg);
-    border-radius: var(--radius);
-    padding: 24px 32px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    color: #475569;
-}
 
 /* Global notices at top of topbar */
-.notification-global { margin: 0 !important; border-radius: 0 !important; }
 
 /* Buttons - subtle modernisation */
 button, .button, input[type="submit"], input[type="button"] {
@@ -543,10 +426,6 @@ button, .button, input[type="submit"], input[type="button"] {
    ===================== */
 
 /* Let the page scroll naturally instead of overflow on .admin-main */
-body {
-    overflow: auto !important;
-    height: auto !important;
-}
 
 .admin-shell {
     height: auto !important;
@@ -739,12 +618,6 @@ body {
    FIX: Store View switcher box in page-left sidebar
    ===================== */
 .admin-page-left .switcher,
-.side-col .switcher {
-    border: none !important;
-    background: none !important;
-    padding: 10px 12px !important;
-    margin: 0 !important;
-}
 .admin-page-left .switcher label,
 .admin-page-left .switcher select {
     font-size: 12px;
@@ -813,10 +686,6 @@ div.main-col-inner:empty,
 /* =====================
    FIX: old .header background still painting in some browsers
    ===================== */
-.header {
-    background: none !important;
-    display: contents !important;
-}
 
 /* =====================
    FIX: overflow-x clipping right-side buttons
@@ -826,32 +695,13 @@ div.main-col-inner:empty,
 }
 /* overflow-x removed from admin-content-wrap — it breaks position:sticky on content-header.
    Horizontal scroll is handled by .hor-scroll wrappers inside each grid. */
-.hor-scroll {
-    overflow-x: auto;
-}
 
 /* =====================
    FIX: button.back - no GIF, modern outline style
    ===================== */
-button.back {
-    background: transparent !important;
-    background-image: none !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 6px !important;
-    color: #4b5563 !important;
-    padding: 0 14px !important;
-    height: 32px !important;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-}
 button.back:hover {
     background: #f3f4f6 !important;
     border-color: #9ca3af !important;
-}
-button.back span {
-    background-image: none !important;
-    padding-left: 0 !important;
 }
 
 /* =====================
@@ -905,41 +755,11 @@ button.back span, button.add-image span, button.add-widget span {
 /* =====================
    FIX: notification bar GIF icon → SVG
    ===================== */
-.notification-global {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z'/%3E%3C/svg%3E") !important;
-    background-position: 14px center !important;
-    background-size: 18px 18px !important;
-    background-repeat: no-repeat !important;
-}
 
 /* =====================
    FIX: content-header vertical alignment
    ===================== */
-.content-header {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    flex-wrap: wrap !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    padding: 16px 0 14px !important;
-    margin-bottom: 20px !important;
-}
-.content-header h3 {
-    float: none !important;
-    margin: 0 !important;
-    color: #0f172a !important;
-    font-size: 0.7em !important;
-    line-height: 1 !important;
-    flex-shrink: 0;
-}
 .content-header .form-buttons,
-.content-header .content-buttons {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    white-space: nowrap !important;
-    margin: 0 !important;
-}
 .content-header button {
     margin: 0 !important;
 }
@@ -1055,18 +875,6 @@ input[type="tel"],
 input[type="url"],
 input[type="date"],
 textarea,
-select {
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important;
-    background: #fff !important;
-    color: #0f172a !important;
-    font-size: 13.5px !important;
-    padding: 4px 10px !important;
-    outline: none !important;
-    box-shadow: none !important;
-    transition: border-color 0.15s, box-shadow 0.15s !important;
-    background-image: none !important;
-}
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
@@ -1078,10 +886,6 @@ select:focus {
     border-color: #3b82f6 !important;
     box-shadow: 0 0 0 3px rgba(59,130,246,0.12) !important;
     outline: none !important;
-}
-select {
-    padding-right: 28px !important;
-    cursor: pointer !important;
 }
 
 /* Grid filter row inputs — slightly smaller */
@@ -1142,21 +946,6 @@ div.actions select + input[type="button"] {
 /* =====================
    Grid toolbar: pager/export/filter actions table
    ===================== */
-table.actions {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    border: none !important;
-    background: none !important;
-    margin-bottom: 10px !important;
-}
-table.actions td {
-    padding: 6px 8px !important;
-    padding-left: 16px !important;
-    vertical-align: middle !important;
-    border: none !important;
-    background: none !important;
-    white-space: nowrap !important;
-}
 table.actions td.pager {
     font-size: 13px !important;
     color: #475569 !important;
@@ -1591,8 +1380,6 @@ table.actions td.pager input.page {
     margin-right: 3px;
 }
 
-
-
 /* =====================
    Command palette search row fixes
    ===================== */
@@ -1702,18 +1489,6 @@ table.actions td.pager input.page {
 }
 
 /* Category buttons container — horizontal row */
-.categories-side-col .content-header {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    gap: 6px !important;
-    padding: 10px 12px !important;
-    border-bottom: none !important;
-    margin-bottom: 0 !important;
-}
-.categories-side-col .content-header h3 {
-    display: none !important;
-}
 
 /* =====================
    Fix: double border between content-header and admin-page-left card
@@ -1830,17 +1605,6 @@ dl.accordion dt,
 /* =====================
    Sticky content-header (page title + action buttons)
    ===================== */
-.content-header {
-    position: sticky !important;
-    top: var(--admin-topbar-h, 56px) !important;
-    z-index: 50 !important;
-    background: var(--bg, #f8fafc) !important;
-    margin-left: -20px !important;
-    margin-right: -20px !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    box-shadow: 0 1px 0 #e2e8f0 !important;
-}
 
 /* =====================
    Hide loading spinner in topbar search
@@ -1858,9 +1622,6 @@ dl.accordion dt,
 
 /* Push action buttons to the right of content-header */
 .content-header .form-buttons,
-.content-header .content-buttons {
-    margin-left: auto !important;
-}
 
 /* =====================
    Cmd+K badge in content-header
@@ -1927,21 +1688,6 @@ dl.accordion dt,
 }
 
 /* content-header is now the effective topbar */
-.content-header {
-    position: sticky !important;
-    top: var(--admin-notices-h, 0px) !important;
-    z-index: 100 !important;
-    background: #fff !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    border-top: none !important;
-    padding: 0 15px !important;
-    margin: 0 !important;
-    min-height: var(--topbar-h) !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
-}
 
 /* cmd-launch-btn — just a ⌘K kbd chip */
 .cmd-launch-btn {
@@ -1979,18 +1725,8 @@ dl.accordion dt,
 /* Page background — cooler, lighter grey */
 .admin-main,
 .admin-content-wrap,
-body {
-    background: #f1f5f9 !important;
-}
 
 /* ---- Cards: entry-edit blocks ---- */
-.entry-edit {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-    margin-bottom: 16px !important;
-}
 
 /* Card header */
 .entry-edit .entry-edit-head {
@@ -2116,36 +1852,11 @@ table.data tbody tr.odd:hover td {
 }
 
 /* ---- Grid wrapper: outer border becomes card ---- */
-.grid {
-    background: #fff !important;
-    border-radius: 10px !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-    margin-bottom: 16px !important;
-}
 .grid .hor-scroll {
     border-radius: 0 !important;
 }
 
 /* ---- Accordion sections ---- */
-dl.accordion dt {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-bottom: none !important;
-    color: #0f172a !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    padding: 12px 16px !important;
-    border-radius: 10px 10px 0 0 !important;
-}
-dl.accordion dd {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-top: none !important;
-    border-radius: 0 0 10px 10px !important;
-    margin-bottom: 16px !important;
-    padding: 12px 16px !important;
-}
 
 /* ======================================================
    CARD SYSTEM REWORK — fix double borders, gaps, wrong selectors
@@ -2164,13 +1875,6 @@ dl.accordion dd {
 }
 
 /* The real card unit is entry-edit */
-.entry-edit {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-    margin-bottom: 16px !important;
-}
 
 /* Card head: no background, just a bottom divider */
 .entry-edit .entry-edit-head {
@@ -2201,8 +1905,6 @@ dl.accordion dd {
 .clear { margin: 0 !important; padding: 0 !important; height: 0 !important; }
 
 /* Two-column card layout */
-.box-left { float: left; width: 49%; padding-right: 8px !important; }
-.box-right { float: right; width: 49%; }
 
 /* ---- form-list: clean label/value rows ---- */
 table.form-list {
@@ -2280,13 +1982,6 @@ table.order-tables tr:hover td,
 }
 
 /* ---- Order Totals ---- */
-.order-totals {
-    padding: 8px 0 !important;
-}
-.order-totals table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-}
 .order-totals td {
     padding: 6px 16px !important;
     font-size: 13px !important;
@@ -2344,14 +2039,6 @@ table.order-tables tr:hover td,
 }
 
 /* Visual card unit */
-.entry-edit {
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 10px !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-    margin-bottom: 16px !important;
-    overflow: hidden !important;
-}
 
 /* JS tab destination containers — transparent, not cards */
 .entry-edit[id] {
@@ -2503,17 +2190,6 @@ table.order-tables tr:hover td,
    ICON-COPY
    ================================================================ */
 
-.icon-copy {
-    display: inline-flex !important;
-    align-items: center !important;
-    color: var(--text-muted) !important;
-    cursor: pointer !important;
-    font-size: 11px !important;
-    margin-left: 4px !important;
-    padding: 2px !important;
-    border-radius: 3px !important;
-    transition: color 0.15s !important;
-}
 .icon-copy:hover { color: var(--accent) !important; }
 
 /* Duplicate copy icons — PHP template renders two, hide the second */
@@ -2756,38 +2432,8 @@ dl.item-options {
     flex-wrap: wrap !important;
     gap: 4px !important;
 }
-dl.item-options dt {
-    display: inline !important;
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    color: var(--text-muted) !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.04em !important;
-    margin: 0 !important;
-}
-dl.item-options dd {
-    display: inline !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    color: var(--text-primary) !important;
-    margin: 0 4px 0 2px !important;
-    background: #f1f5f9 !important;
-    padding: 1px 5px !important;
-    border-radius: 3px !important;
-}
 
 /* Prices */
-.price {
-    font-weight: 600 !important;
-    color: var(--text-primary) !important;
-    font-family: var(--font) !important;
-}
-.price-excl-tax {
-    display: block !important;
-    font-size: 11px !important;
-    color: var(--text-muted) !important;
-    font-weight: 400 !important;
-}
 
 /* Qty table inside cell */
 .qty-table {
@@ -2961,18 +2607,6 @@ td.pager .separator { margin: 0 4px !important; color: #cbd5e1 !important; }
     border-bottom: 1px solid #f1f5f9 !important;
 }
 
-.note-list {
-    list-style: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-.note-list li {
-    padding: 12px 16px !important;
-    border-top: 1px solid #f1f5f9 !important;
-    font-size: 13px !important;
-}
-.note-list li:first-child { border-top: none !important; }
-
 .note-header {
     display: flex !important;
     align-items: center !important;
@@ -2991,7 +2625,6 @@ td.pager .separator { margin: 0 4px !important; color: #cbd5e1 !important; }
 }
 
 /* Add comment form labels */
-.field-row { margin-bottom: 10px !important; }
 .field-row label.normal {
     display: block !important;
     font-size: 11px !important;
@@ -3008,16 +2641,10 @@ td.pager .separator { margin: 0 4px !important; color: #cbd5e1 !important; }
 
 .nobr { white-space: nowrap !important; }
 .f-right { float: right !important; }
-.hor-scroll {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-}
 
 input[type="checkbox"] { accent-color: var(--accent) !important; }
 
 /* Links */
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
 
 /* =====================
    INSTAGRAM-STYLE SLIM SIDEBAR

@@ -93,10 +93,22 @@ textarea {
 
 select {
   height: 26px;
-  border: 1px solid #c8c8c8;
+  border: 1px solid #cbd5e1 !important;
   box-sizing: border-box;
   text-transform: none;
-  margin: 0; }
+  margin: 0;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #0f172a !important;
+  font-size: 13.5px !important;
+  padding: 4px 10px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-color 0.15s, box-shadow 0.15s !important;
+  background-image: none !important;
+  padding-right: 28px !important;
+  cursor: pointer !important;
+}
   select.disabled {
     background: #f6f6f6; }
   select:disabled {
@@ -161,10 +173,23 @@ button {
     button.add.disabled span {
       background: none; }
   button.back {
-    background: none; }
+      background: transparent !important;
+      background-image: none !important;
+      border: 1px solid #d1d5db !important;
+      border-radius: 6px !important;
+      color: #4b5563 !important;
+      padding: 0 14px !important;
+      height: 32px !important;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+  }
     button.back span {
       background: none;
-      padding: 0; }
+      padding: 0;
+      background-image: none !important;
+      padding-left: 0 !important;
+    }
     button.back:before {
       content: "«";
       padding-right: 4px; }
