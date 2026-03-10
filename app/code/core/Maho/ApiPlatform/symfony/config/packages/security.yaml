@@ -63,6 +63,9 @@ security:
         - { path: ^/api/layered-filters, roles: PUBLIC_ACCESS, methods: [GET] }
         # Token/auth endpoints are public
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
+        # Stripe config (publishable key only - safe for public access)
+        # Payment endpoints (config, webhooks, intents - providers handle their own auth)
+        - { path: ^/api/payments, roles: PUBLIC_ACCESS }
         # Guest cart creation
         - { path: ^/api/guest-carts, roles: PUBLIC_ACCESS }
         # Customer registration (POST only - creating new account)
