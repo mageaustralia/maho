@@ -737,15 +737,42 @@ class GuestCartController extends AbstractController
             $paymentMethod = $data['paymentMethod'];
             $this->cartService->setPaymentMethod($quote, $paymentMethod);
 
+            // Store storefront origin for redirect-based payment returns
+            $storefrontOrigin = $data['storefrontOrigin'] ?? null;
+
             // Place order
             $result = $this->cartService->placeOrder($quote, $paymentMethod);
 
-            return new JsonResponse([
+            // Build response
+            $response = [
                 'orderId' => $result['order_id'],
                 'incrementId' => $result['increment_id'],
                 'status' => $result['status'],
                 'grandTotal' => $result['grand_total'],
-            ], Response::HTTP_CREATED);
+            ];
+
+            // Set storefront fields on order (for redirect-based payment return)
+            if ($storefrontOrigin) {
+                $order = \Mage::getModel('sales/order')->load($result['order_id']);
+                if ($order->getId()) {
+                    $orderToken = bin2hex(random_bytes(16));
+                    $order->setData('storefront_origin', $storefrontOrigin);
+                    $order->setData('storefront_order_token', $orderToken);
+                    $order->save();
+                    $response['orderToken'] = $orderToken;
+
+                    // Check if payment method requires redirect (Stripe hosted, PayTo, etc.)
+                    $payment = $order->getPayment();
+                    if ($payment && $payment->getMethodInstance()) {
+                        $redirectUrl = $payment->getMethodInstance()->getOrderPlaceRedirectUrl();
+                        if ($redirectUrl) {
+                            $response['redirectUrl'] = $redirectUrl;
+                        }
+                    }
+                }
+            }
+
+            return new JsonResponse($response, Response::HTTP_CREATED);
         } catch (\Exception $e) {
             \Mage::logException($e);
             return new JsonResponse([
