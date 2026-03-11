@@ -13,14 +13,15 @@ declare(strict_types=1);
 namespace Maho\Catalog\Api\Resource;
 
 /**
- * Visual swatch data for a filter option
+ * Visual swatch data for a filter option.
+ *
+ * Types:
+ *   "color" — value is a hex color code (e.g. "#FF0000")
+ *   "image" — value is a full image URL
+ *   "text"  — value is a short text label (e.g. "S", "M", "XL")
  */
 class FilterOptionSwatch
 {
-    /**
-     * @param string $type  Swatch type: "color" (hex value) or "image" (URL)
-     * @param string $value Hex color (e.g. "#FF0000") or full image URL
-     */
     public function __construct(
         public string $type = 'color',
         public string $value = '',

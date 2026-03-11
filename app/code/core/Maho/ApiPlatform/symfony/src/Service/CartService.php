@@ -50,12 +50,9 @@ class CartService
 
         $quote->setIsActive(1);
 
-        // Generate and set masked ID for guest carts (before save to include in same transaction)
-        $maskedId = null;
-        if (!$customerId) {
-            $maskedId = $this->generateSecureMaskedId();
-            $quote->setData('masked_quote_id', $maskedId);
-        }
+        // Generate and set masked ID (used by storefront to reference the cart)
+        $maskedId = $this->generateSecureMaskedId();
+        $quote->setData('masked_quote_id', $maskedId);
 
         $quote->save();
 
@@ -573,7 +570,7 @@ class CartService
      * @param string|null $shippingMethod Shipping method code (carrier_method format)
      * @return array Order, invoice, and shipment information
      */
-    public function placeOrder(\Mage_Sales_Model_Quote $quote, string $paymentMethod = 'purchaseorder', ?string $shippingMethod = null): array
+    public function placeAdminOrder(\Mage_Sales_Model_Quote $quote, string $paymentMethod = 'purchaseorder', ?string $shippingMethod = null, array $additionalPaymentData = [], ?string $storefrontOrigin = null): array
     {
         try {
             \Mage::log("PlaceOrder START - Quote ID: {$quote->getId()}, Customer ID: {$quote->getCustomerId()}");
@@ -663,10 +660,17 @@ class CartService
             $orderCreateModel->setQuote($quote);
             $orderCreateModel->getQuote()->setTotalsCollectedFlag(true);
             $orderCreateModel->setRecollect(true);
+
+            // Set account email so admin order create model uses it instead of generating timestamp@example.com
+            $customerEmail = $quote->getCustomerEmail();
+            if ($customerEmail) {
+                $orderCreateModel->setAccountData(['email' => $customerEmail]);
+            }
+
             \Mage::log('PlaceOrder - OrderCreateModel initialized');
 
             // Import payment data using orderCreateModel to ensure proper availability
-            $paymentData = ['method' => $paymentMethod];
+            $paymentData = array_merge($additionalPaymentData, ['method' => $paymentMethod]);
 
             // Add PO number for purchaseorder payment method
             if ($paymentMethod === 'purchaseorder') {
@@ -719,13 +723,28 @@ class CartService
 
             \Mage::log("Order created: {$order->getIncrementId()} (ID: {$order->getId()})");
 
+            // Generate storefront order token and save origin
+            $orderToken = bin2hex(random_bytes(16));
+            $resource = \Mage::getSingleton('core/resource');
+            $db = $resource->getConnection('core_write');
+            $db->update(
+                $resource->getTableName('sales/order'),
+                [
+                    'storefront_order_token' => $orderToken,
+                    'storefront_origin' => $storefrontOrigin,
+                ],
+                ['entity_id = ?' => $order->getId()],
+            );
+
             $result = [
                 'order_id' => (int) $order->getId(),
                 'increment_id' => $order->getIncrementId(),
                 'status' => $order->getStatus(),
                 'grand_total' => (float) $order->getGrandTotal(),
+                'order_token' => $orderToken,
                 'invoice' => null,
                 'shipment' => null,
+                'redirect_url' => null,
             ];
 
             // Create invoice (similar to MDN PointOfSales approach)
@@ -750,9 +769,118 @@ class CartService
                 \Mage::log('Shipment created - order will auto-transition to complete');
             }
 
+            // Check for redirect-based payment (PayPal, Klarna, hosted checkout, etc.)
+            try {
+                $redirectUrl = $order->getPayment()->getMethodInstance()->getOrderPlaceRedirectUrl();
+                if ($redirectUrl) {
+                    // Append order context so the payment controller can load the correct order
+                    $separator = str_contains($redirectUrl, '?') ? '&' : '?';
+                    $redirectUrl .= $separator . 'order_id=' . (int) $order->getId()
+                        . '&sft=' . urlencode($orderToken);
+                    $result['redirect_url'] = $redirectUrl;
+                }
+            } catch (\Exception $e) {
+                // Payment method may not support redirect — that's fine
+            }
+
             return $result;
         } catch (\Exception $e) {
             \Mage::log("Error placing order with payment method '{$paymentMethod}': " . $e->getMessage());
+            \Mage::logException($e);
+            throw new \RuntimeException('Failed to place order: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Place order using standard frontend checkout flow (Mage_Sales_Model_Service_Quote).
+     * Used for storefront/API orders where frontend validation rules should apply.
+     * Unlike placeOrder() which uses adminhtml order create model (intended for POS/admin),
+     * this method validates addresses, shipping, and payment through Mage's standard pipeline.
+     */
+    public function placeOrder(
+        \Mage_Sales_Model_Quote $quote,
+        string $paymentMethod,
+        array $additionalPaymentData = [],
+        ?string $storefrontOrigin = null,
+    ): array {
+        try {
+            \Mage::log("PlaceStorefrontOrder START - Quote ID: {$quote->getId()}, Customer: {$quote->getCustomerId()}");
+
+            // Set checkout method
+            if ($quote->getCustomerId()) {
+                $quote->setCheckoutMethod('customer');
+                $quote->setCustomerIsGuest(0);
+            } else {
+                $quote->setCheckoutMethod(\Mage_Checkout_Model_Type_Onepage::METHOD_GUEST);
+                $quote->setCustomerIsGuest(1);
+                $quote->setCustomerGroupId(\Mage_Customer_Model_Group::NOT_LOGGED_IN_ID);
+            }
+
+            // Set payment method with any additional data (e.g. payment intent ID)
+            $paymentData = array_merge($additionalPaymentData, ['method' => $paymentMethod]);
+            $quote->getPayment()->importData($paymentData);
+
+            // Collect totals
+            $quote->setTotalsCollectedFlag(false);
+            $quote->collectTotals()->save();
+
+            // Use the standard frontend quote service — validates addresses, shipping, payment
+            /** @var \Mage_Sales_Model_Service_Quote $service */
+            $service = \Mage::getModel('sales/service_quote', $quote);
+            $order = $service->submitOrder();
+
+            if (!$order || !$order->getId()) {
+                throw new \RuntimeException('Failed to create order');
+            }
+
+            \Mage::log("PlaceStorefrontOrder - Order created: {$order->getIncrementId()} (ID: {$order->getId()})");
+
+            // Generate storefront order token and save origin
+            $orderToken = bin2hex(random_bytes(16));
+            $resource = \Mage::getSingleton('core/resource');
+            $db = $resource->getConnection('core_write');
+            $db->update(
+                $resource->getTableName('sales/order'),
+                [
+                    'storefront_order_token' => $orderToken,
+                    'storefront_origin' => $storefrontOrigin,
+                ],
+                ['entity_id = ?' => $order->getId()],
+            );
+
+            // Send order confirmation email
+            try {
+                $order->sendNewOrderEmail();
+            } catch (\Exception $e) {
+                \Mage::logException($e);
+                // Don't fail the order for email issues
+            }
+
+            $result = [
+                'order_id' => (int) $order->getId(),
+                'increment_id' => $order->getIncrementId(),
+                'status' => $order->getStatus(),
+                'grand_total' => (float) $order->getGrandTotal(),
+                'order_token' => $orderToken,
+                'redirect_url' => null,
+            ];
+
+            // Check for redirect-based payment (PayPal, Klarna, hosted checkout, etc.)
+            try {
+                $redirectUrl = $order->getPayment()->getMethodInstance()->getOrderPlaceRedirectUrl();
+                if ($redirectUrl) {
+                    $separator = str_contains($redirectUrl, '?') ? '&' : '?';
+                    $redirectUrl .= $separator . 'order_id=' . (int) $order->getId()
+                        . '&sft=' . urlencode($orderToken);
+                    $result['redirect_url'] = $redirectUrl;
+                }
+            } catch (\Exception $e) {
+                // Payment method may not support redirect — that's fine
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            \Mage::log('Error in placeStorefrontOrder: ' . $e->getMessage());
             \Mage::logException($e);
             throw new \RuntimeException('Failed to place order: ' . $e->getMessage(), 0, $e);
         }

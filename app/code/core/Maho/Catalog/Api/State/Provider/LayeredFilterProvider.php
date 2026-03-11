@@ -183,8 +183,10 @@ final class LayeredFilterProvider implements ProviderInterface
                     value: $mediaBaseUrl . '/attribute/swatch/' . ltrim($row['filename'], '/'),
                 );
             } elseif (!empty($row['value'])) {
+                // Detect hex color (#RGB, #RRGGBB, #RRGGBBAA) vs text swatch
+                $isHex = preg_match('/^#([0-9a-fA-F]{3,8})$/', $row['value']);
                 $map[$optionId] = new FilterOptionSwatch(
-                    type: 'color',
+                    type: $isHex ? 'color' : 'text',
                     value: $row['value'],
                 );
             }
