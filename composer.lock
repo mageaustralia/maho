@@ -1893,16 +1893,16 @@
         },
         {
             "name": "mahocommerce/icons",
-            "version": "3.39.0",
+            "version": "3.40.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MahoCommerce/icons.git",
-                "reference": "5704f95a9aef1b9b7284d0d9b259b5b0a5aa97b5"
+                "reference": "0b225e48cb78cc791a92311740c4924aae429fff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MahoCommerce/icons/zipball/5704f95a9aef1b9b7284d0d9b259b5b0a5aa97b5",
-                "reference": "5704f95a9aef1b9b7284d0d9b259b5b0a5aa97b5",
+                "url": "https://api.github.com/repos/MahoCommerce/icons/zipball/0b225e48cb78cc791a92311740c4924aae429fff",
+                "reference": "0b225e48cb78cc791a92311740c4924aae429fff",
                 "shasum": ""
             },
             "type": "library",
@@ -1913,9 +1913,9 @@
             "description": "A huge package of optimized SVG icons",
             "support": {
                 "issues": "https://github.com/MahoCommerce/icons/issues",
-                "source": "https://github.com/MahoCommerce/icons/tree/3.39.0"
+                "source": "https://github.com/MahoCommerce/icons/tree/3.40.0"
             },
-            "time": "2026-03-06T08:05:49+00:00"
+            "time": "2026-03-07T13:07:59+00:00"
         },
         {
             "name": "mahocommerce/maho-composer-plugin",
@@ -8471,21 +8471,21 @@
         },
         {
             "name": "pestphp/pest",
-            "version": "v4.4.1",
+            "version": "v4.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pestphp/pest.git",
-                "reference": "f96a1b27864b585b0b29b0ee7331176726f7e54a"
+                "reference": "5d42e8fe3ae1d9fdf7c9f73ee88138fd30265701"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pestphp/pest/zipball/f96a1b27864b585b0b29b0ee7331176726f7e54a",
-                "reference": "f96a1b27864b585b0b29b0ee7331176726f7e54a",
+                "url": "https://api.github.com/repos/pestphp/pest/zipball/5d42e8fe3ae1d9fdf7c9f73ee88138fd30265701",
+                "reference": "5d42e8fe3ae1d9fdf7c9f73ee88138fd30265701",
                 "shasum": ""
             },
             "require": {
                 "brianium/paratest": "^7.19.0",
-                "nunomaduro/collision": "^8.9.0",
+                "nunomaduro/collision": "^8.9.1",
                 "nunomaduro/termwind": "^2.4.0",
                 "pestphp/pest-plugin": "^4.0.0",
                 "pestphp/pest-plugin-arch": "^4.0.0",
@@ -8505,7 +8505,7 @@
                 "pestphp/pest-dev-tools": "^4.1.0",
                 "pestphp/pest-plugin-browser": "^4.3.0",
                 "pestphp/pest-plugin-type-coverage": "^4.0.3",
-                "psy/psysh": "^0.12.20"
+                "psy/psysh": "^0.12.21"
             },
             "bin": [
                 "bin/pest"
@@ -8571,7 +8571,7 @@
             ],
             "support": {
                 "issues": "https://github.com/pestphp/pest/issues",
-                "source": "https://github.com/pestphp/pest/tree/v4.4.1"
+                "source": "https://github.com/pestphp/pest/tree/v4.4.2"
             },
             "funding": [
                 {
@@ -8583,7 +8583,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-17T15:27:18+00:00"
+            "time": "2026-03-10T21:09:12+00:00"
         },
         {
             "name": "pestphp/pest-plugin",
@@ -9857,16 +9857,16 @@
         },
         {
             "name": "psy/psysh",
-            "version": "v0.12.20",
+            "version": "v0.12.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bobthecow/psysh.git",
-                "reference": "19678eb6b952a03b8a1d96ecee9edba518bb0373"
+                "reference": "4821fab5b7cd8c49a673a9fd5754dc9162bb9e97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/19678eb6b952a03b8a1d96ecee9edba518bb0373",
-                "reference": "19678eb6b952a03b8a1d96ecee9edba518bb0373",
+                "url": "https://api.github.com/repos/bobthecow/psysh/zipball/4821fab5b7cd8c49a673a9fd5754dc9162bb9e97",
+                "reference": "4821fab5b7cd8c49a673a9fd5754dc9162bb9e97",
                 "shasum": ""
             },
             "require": {
@@ -9930,9 +9930,9 @@
             ],
             "support": {
                 "issues": "https://github.com/bobthecow/psysh/issues",
-                "source": "https://github.com/bobthecow/psysh/tree/v0.12.20"
+                "source": "https://github.com/bobthecow/psysh/tree/v0.12.21"
             },
-            "time": "2026-02-11T15:05:28+00:00"
+            "time": "2026-03-06T21:21:28+00:00"
         },
         {
             "name": "react/cache",

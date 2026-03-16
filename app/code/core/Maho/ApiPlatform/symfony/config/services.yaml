@@ -24,4 +24,14 @@ services:
         tags:
             - { name: 'api_platform.graphql.query_resolver' }
 
+    # ProductService needs a factory because of optional Meilisearch dependency
+    Maho\ApiPlatform\Service\ProductService:
+        factory: ['@Maho\ApiPlatform\Factory\ServiceFactory', 'createProductService']
+
+    Maho\ApiPlatform\EventListener\DefaultDenyListener:
+        arguments:
+            $resourceMetadataFactory: '@api_platform.metadata.resource.metadata_collection_factory'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 28 }
+
     # Tag all our state providers so CustomQueryResolver can locate them

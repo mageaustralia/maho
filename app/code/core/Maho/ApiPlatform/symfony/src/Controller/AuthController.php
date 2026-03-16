@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Maho\ApiPlatform\Controller;
 
+use Maho\ApiPlatform\Service\CartService;
 use Maho\ApiPlatform\Service\JwtService;
 use Maho\ApiPlatform\Service\RateLimiter;
 use Maho\ApiPlatform\Service\StoreContext;
@@ -29,16 +30,12 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 class AuthController extends AbstractController
 {
-    private JwtService $jwtService;
-    private RateLimiter $rateLimiter;
-    private TokenBlacklist $tokenBlacklist;
-
-    public function __construct()
-    {
-        $this->jwtService = new JwtService();
-        $this->rateLimiter = new RateLimiter();
-        $this->tokenBlacklist = new TokenBlacklist();
-    }
+    public function __construct(
+        private JwtService $jwtService,
+        private RateLimiter $rateLimiter,
+        private TokenBlacklist $tokenBlacklist,
+        private CartService $cartService,
+    ) {}
     /**
      * Token endpoint - supports customer, client_credentials, and api_user grant types
      */
@@ -135,8 +132,7 @@ class AuthController extends AbstractController
                     }
 
                     if ($guestCartMaskedId) {
-                        $cartService = new \Maho\ApiPlatform\Service\CartService();
-                        $guestCart = $cartService->getCart(null, $guestCartMaskedId);
+                        $guestCart = $this->cartService->getCart(null, $guestCartMaskedId);
 
                         if ($guestCart && $guestCart->getId() && !$guestCart->getCustomerId()) {
                             $customerCart = \Mage::getModel('sales/quote')
@@ -173,6 +169,14 @@ class AuthController extends AbstractController
                 $cartId = $customerCart->getId() ? (int) $customerCart->getId() : null;
             }
 
+            // Get masked ID and qty for storefront cart restoration
+            $cartMaskedId = null;
+            $cartItemsQty = 0;
+            if (isset($customerCart) && $customerCart->getId()) {
+                $cartMaskedId = $customerCart->getData('masked_quote_id');
+                $cartItemsQty = (float) $customerCart->getItemsQty();
+            }
+
             return new JsonResponse([
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -184,6 +188,8 @@ class AuthController extends AbstractController
                     'lastName' => $customer->getLastname(),
                 ],
                 'cartId' => $cartId,
+                'cartMaskedId' => $cartMaskedId,
+                'cartItemsQty' => $cartItemsQty,
             ]);
         } catch (\Exception $e) {
             \Mage::logException($e);
