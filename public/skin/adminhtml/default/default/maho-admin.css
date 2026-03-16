@@ -2230,7 +2230,7 @@ table.form-list tr:last-child {
     border-bottom: none !important;
 }
 table.form-list td {
-    padding: 9px 16px !important;
+    padding: 0 !important;
     vertical-align: top !important;
     line-height: 1.5 !important;
 }
