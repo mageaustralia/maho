@@ -381,7 +381,7 @@
 
 /* Content header bar */
 
-.content-header h3, .content-header h4 { margin: 0; }
+.content-header h3, .content-header h4 { margin: 0; flex: auto; }
 
 /* =====================
    CARDS / GRID TABLES
@@ -1524,7 +1524,7 @@ dl.accordion dt,
 .entry-edit .entry-edit-head {
     background: #fefefe !important;
     color: #2f2f2f !important;
-    padding: 4px 16px !important;
+    padding: 0 !important;
     border: 1px solid #d3d3d3 !important;
     border-radius: 8px 8px 0 0 !important;
     border-radius: var(--radius) var(--radius) 0 0 !important;
@@ -1733,7 +1733,7 @@ dl.accordion dt,
     background: #fff !important;
     border-bottom: 1px solid #f1f5f9 !important;
     border-radius: 0 !important;
-    padding: 12px 16px !important;
+    padding: 0 !important;
     border-top: none !important;
 }
 .entry-edit .entry-edit-head h4,
