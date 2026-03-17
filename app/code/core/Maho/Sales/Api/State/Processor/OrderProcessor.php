@@ -271,6 +271,19 @@ final class OrderProcessor implements ProcessorInterface
         $dto->productType = $item->getProductType();
         $dto->parentItemId = $item->getParentItemId() ? (int) $item->getParentItemId() : null;
 
+        // Product thumbnail for order detail display
+        try {
+            $product = \Mage::getModel("catalog/product")->load($item->getProductId());
+            if ($product->getId()) {
+                $imageUrl = (string) \Mage::helper("catalog/image")->init($product, "thumbnail")->resize(120);
+                if ($imageUrl && !str_contains($imageUrl, "placeholder")) {
+                    $dto->thumbnailUrl = $imageUrl;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Image not available — skip silently
+        }
+
         return $dto;
     }
 

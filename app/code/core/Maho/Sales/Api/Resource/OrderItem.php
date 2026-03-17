@@ -40,6 +40,7 @@ class OrderItem
     public ?int $productId = null;
     public ?string $productType = null;
     public ?int $parentItemId = null;
+    public ?string $thumbnailUrl = null;
 
     /**
      * Module-provided extension data.
