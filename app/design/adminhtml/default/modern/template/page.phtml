@@ -1,0 +1,141 @@
+<?php
+/**
+ * Maho Admin Theme - Modern Left Sidebar Layout
+ *
+ * @package     default_default
+ * @copyright   Copyright (c) 2024-2026 Maho (https://mahocommerce.com)
+ * @license     https://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+
+/** @var Mage_Adminhtml_Block_Page $this */
+/** @var Mage_Adminhtml_Block_Page_Header $headerBlock */
+$headerBlock = $this->getChild('header');
+$adminUser   = Mage::getSingleton('admin/session')->getUser();
+$userName    = $adminUser ? htmlspecialchars($adminUser->getName()) : '';
+$logoutUrl   = $headerBlock ? $headerBlock->getLogoutLink() : $this->helper('adminhtml')->getUrl('adminhtml/index/logout');
+$accountUrl  = $this->helper('adminhtml')->getUrl('adminhtml/system_account');
+$homeUrl     = $this->helper('adminhtml')->getUrl('*');
+?>
+<?php /*{
+    "label":"Root page layout (Maho Modern Theme)",
+    "type":"core/template"
+}*/ ?>
+<!DOCTYPE html>
+<html lang="<?= $this->getLang() ?>">
+<head>
+    <?= $this->getChildHtml('head') ?>
+    <!-- Disable browser speculation/prefetch: admin URLs have session tokens, concurrent prefetch causes PHP session lock 503s -->
+    <script type="speculationrules">{"prefetch":[],"prerender":[]}</script>
+</head>
+
+<body id="html-body"<?= $this->getBodyClass() ? ' class="' . $this->getBodyClass() . '"' : '' ?>>
+<?= $this->getChildHtml('notification_window') ?>
+
+<div class="admin-shell" id="admin-shell" data-controller="admin-sidebar">
+
+    <!-- ============================================================
+         SIDEBAR
+         ============================================================ -->
+    <aside class="admin-sidebar">
+
+        <!-- Brand -->
+        <div class="sidebar-brand">
+            <a href="<?= $homeUrl ?>" class="sidebar-logo-link" title="Maho <?= Mage::getVersion() ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 242 237" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2">
+                    <g transform="matrix(.710571 0 0 .710571 -564.814 315.583)">
+                        <clipPath id="maho-sidebar-logo"><path d="M844.242-396.422h241.346v236.975H844.242z"/></clipPath>
+                        <g clip-path="url(#maho-sidebar-logo)">
+                            <path d="M1075.34-395.845c5.8 0 10.49 4.654 10.49 10.392v109.133c0 64.867-53.09 117.45-118.569 117.45h-112.28c-5.796 0-10.496-4.654-10.496-10.396v-115.717c0-61.225 50.113-110.863 111.929-110.863h118.926v.001zm-111.229 40.954c-42.454 0-76.871 34.088-76.871 76.142s34.417 76.138 76.871 76.138c42.459 0 76.869-34.088 76.869-76.138s-34.41-76.142-76.869-76.142z" fill="#d7df22"/>
+                        </g>
+                    </g>
+                </svg>
+                <span class="sidebar-brand-name">Maho</span>
+            </a>
+            <button class="sidebar-collapse-btn" data-action="click->admin-sidebar#toggleCollapse" title="Toggle sidebar">
+                <svg class="icon-sidebar-toggle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75M3 18h14.25m-5.25-9.75 3 3-3 3"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Nav -->
+        <nav class="sidebar-nav" data-controller="admin-nav">
+            <?= $this->getChildHtml('menu') ?>
+        </nav>
+
+        <!-- User footer -->
+        <div class="sidebar-user">
+            <a href="<?= $accountUrl ?>" class="sidebar-user-link" title="<?= $this->__('My Account') ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+                </svg>
+                <?php if ($userName): ?><span class="sidebar-user-name"><?= $userName ?></span><?php endif ?>
+            </a>
+            <a href="<?= $logoutUrl ?>" class="sidebar-logout-btn" title="<?= $this->__('Log Out') ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"/>
+                </svg>
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- ============================================================
+         MAIN AREA
+         ============================================================ -->
+    <div class="admin-main" id="admin-main">
+
+        <!-- Notifications bar (sticky, variable height) -->
+        <div class="admin-notices">
+            <?= $this->getChildHtml('global_notices') ?>
+            <?= $this->getChildHtml('notifications') ?>
+        </div>
+
+        <!-- Page content -->
+        <div class="admin-content-wrap" id="anchor-content">
+            <div id="page:main-container">
+                <?php $leftHtml = $this->getChildHtml('left'); ?>
+                <?php if ($leftHtml): ?>
+                    <div class="admin-page-cols <?= $this->getContainerCssClass() ?>">
+                        <div class="admin-page-left" id="page:left">
+                            <?= $leftHtml ?>
+                        </div>
+                        <div class="admin-page-content" id="content">
+                            <div id="messages"><?= $this->getMessagesBlock()->toHtml() ?></div>
+                            <?= $this->getChildHtml('content') ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div id="messages"><?= $this->getMessagesBlock()->toHtml() ?></div>
+                    <?= $this->getChildHtml('content') ?>
+                <?php endif ?>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="admin-footer">
+            <?= $this->getChildHtml('footer') ?>
+        </div>
+
+    </div><!-- .admin-main -->
+
+</div><!-- .admin-shell -->
+
+<?= $this->getChildHtml('js') ?>
+<?= $this->getChildHtml('profiler') ?>
+
+<div id="loading-mask" style="display:none">
+    <div class="backdrop"></div>
+    <p class="loader" id="loading_mask_loader">
+        <img src="<?= $this->getSkinUrl('images/loading.svg') ?>" alt="<?= $this->quoteEscape(Mage::helper('adminhtml')->__('Loading...')) ?>"/>
+        <br/><?= Mage::helper('adminhtml')->__('Please wait...') ?>
+    </p>
+</div>
+
+<?= $this->getChildHtml('before_body_end') ?>
+
+<!-- Maho Admin JS: Stimulus controllers -->
+<script type="module" src="<?= $this->getSkinUrl('js/maho-admin.js') ?>"></script>
+
+</body>
+</html>
