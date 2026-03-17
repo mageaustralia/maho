@@ -147,19 +147,11 @@ big {
     font-size: 1.25em
 }
 
-#loading-process {
+#loading-mask {
     position: absolute;
-    top: 45%;
-    left: 50%;
-    margin-left: -60px;
-    border: 2px solid #f1af73;
-    padding: 15px 60px;
-    background: #fff4e9;
-    color: #d85909;
-    font-size: 1.1em;
-    font-weight: 700;
-    text-align: center;
-    z-index: 501
+    inset: 0;
+    opacity: .8;
+    z-index: 9999
 }
 
 #message-popup-window-mask {
@@ -492,10 +484,6 @@ table.actions td {
     padding: 0
 }
 
-.massaction .entry-edit .validation-advice {
-    display: none!important
-}
-
 .massaction a {
     text-decoration: none
 }
@@ -654,18 +642,6 @@ dl.accordion dt,.entry-edit .entry-edit-head {
     padding: 2px 10px
 }
 
-dl.accordion dt,div.collapseable {
-    margin-top: 1px
-}
-
-dl.accordion dt a,div.collapseable a {
-    background: url(images/entry_edit_head_arrow_down.gif)100% 50%no-repeat;
-    color: #fff;
-    display: block;
-    font-weight: 700;
-    text-decoration: none
-}
-
 div.disabled {
     background: #c6cbc9!important
 }
@@ -677,15 +653,6 @@ div.disabled a {
 
 .entry-edit fieldset.collapseable {
     margin-bottom: 10px
-}
-
-dl.accordion dt a:hover,div.collapseable a:hover {
-    color: #fff;
-    text-decoration: none
-}
-
-dl.accordion dt.open a,div.collapseable a.open {
-    background: url(images/entry_edit_head_arrow_up.gif)100% 50%no-repeat
 }
 
 dl.accordion dd {
@@ -824,10 +791,6 @@ ul.tabs-horiz li a.active {
     position: relative
 }
 
-.notification-global-notice {
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-name="bulb" data-variant="outline"><path d="M9 21h6"/><path d="M12 3a7 7 0 0 1 7 7c0 2.8-2 5.2-2 7h-10c0-1.8-2-4.2-2-7a7 7 0 0 1 7-7z"/><path d="M12.5 17h-1a2 2 0 0 1-2-2v-.5a1.5 1.5 0 0 1 1.5-1.5h2a1.5 1.5 0 0 1 1.5 1.5v.5a2 2 0 0 1-2 2z"/></svg>')
-}
-
 .notification-global .label {
     color: #eb5e00
 }
@@ -838,11 +801,6 @@ ul.tabs-horiz li a.active {
 
 .notification-global a:hover {
     text-decoration: none
-}
-
-.error,a.error span,.required,.validation-advice {
-    color: #d40707!important;
-    font-weight: 700!important
 }
 
 .notice {
@@ -885,16 +843,6 @@ ul.tabs-horiz li a.active {
     color: #185b00!important
 }
 
-.notice-msg {
-    background-image: url(images/information-variant.svg)!important;
-    background-repeat: no-repeat!important;
-    background-size: 23px 23px!important;
-    background-color: #f9f5ec!important;
-    background-position: 8px center!important;
-    border: 1px solid #dfc97a!important;
-    color: #2f2f2f!important
-}
-
 .warning-msg {
     background-image: url(images/information-variant.svg)!important;
     background-repeat: no-repeat!important;
@@ -903,17 +851,6 @@ ul.tabs-horiz li a.active {
     background-position: 8px center!important;
     border: 1px solid #d87e34!important;
     color: #2f2f2f!important
-}
-
-.validation-advice {
-    clear: both;
-    min-height: 15px;
-    margin: 3px 0 0 9px;
-    background: url(images/validation_advice_bg.gif)no-repeat 2px 1px;
-    padding-left: 16px;
-    font-size: .95em;
-    font-weight: 700;
-    line-height: 1.25em
 }
 
 input.validation-failed,textarea.validation-failed {
@@ -1055,6 +992,11 @@ input.qty {
 
 input.item-qty {
     width: 22px!important
+}
+
+input.price {
+    width: 50px!important;
+    text-align: right
 }
 
 input[type=text].disabled {
@@ -1353,10 +1295,6 @@ button.fail,button.cancel,button.delete {
     color: #fff
 }
 
-button.fail:hover,button.cancel:hover,button.delete:hover {
-    background-image: url(images/cancel_btn_over_bg.gif)
-}
-
 button.fail:active,button.cancel:active,button.delete:active {
     background-image: url(images/cancel_btn_active_bg.gif);
     background-color: #e0612f
@@ -1453,25 +1391,6 @@ button.icon-btn span {
     border: 1px solid #cddddd;
     background: #e7efef;
     padding: 10px
-}
-
-.side-col .switcher {
-    padding-right: 26px
-}
-
-.side-col .switcher label {
-    display: block
-}
-
-.side-col .switcher .link-store-scope {
-    float: right;
-    margin-right: -19px;
-    margin-left: 3px
-}
-
-.side-col .switcher select {
-    width: 100%;
-    float: left
 }
 
 .link-store-scope {
@@ -1626,15 +1545,6 @@ td.divider {
 .note-list {
     width: 100%;
     overflow: hidden
-}
-
-.note-list li {
-    border-top: 1px solid #e3e3e3;
-    padding-block: 12px 9px
-}
-
-.note-list li:first-child {
-    border-top: none
 }
 
 .note-list .note-header {
@@ -1942,10 +1852,6 @@ div.autocomplete ul li {
     font-size: .95em
 }
 
-.login-form .validation-advice {
-    margin: 3px 0 0 0
-}
-
 .login-form .forgot-link {
     margin: 0 17px 0 0;
     text-align: right
@@ -2060,6 +1966,10 @@ div.autocomplete ul li {
     top: 50%;
     margin: -5px 0 0;
     color: #000
+}
+
+.price {
+    white-space: nowrap!important
 }
 
 .order-tables td h5.title {
@@ -2224,10 +2134,6 @@ ul.item-options li {
     top: 50%;
     width: 540px;
     z-index: 400
-}
-
-.product-configure-popup .validation-advice {
-    margin-left: 0
 }
 
 #product_composite_configure_messages {
@@ -2517,14 +2423,6 @@ ul.item-options li {
     padding: 0 20px
 }
 
-.order-totals table .validation-advice {
-    text-align: right;
-    white-space: nowrap;
-    background-position: 100% 1px;
-    padding-right: 14px;
-    padding-left: 0
-}
-
 .grand-total,.grand_total {
     font-size: 1.2em;
     font-weight: 700;
@@ -2571,10 +2469,6 @@ ul.item-options li {
 
 .payment-methods dd {
     margin-left: 20px
-}
-
-.payment-methods .validation-advice {
-    margin-left: 2px
 }
 
 .cards-list .offset {
@@ -2734,6 +2628,11 @@ ul.item-options li {
     margin-bottom: 8px
 }
 
+.tier-price-input input.price {
+    width: 80px;
+    margin-right: 10px
+}
+
 .tier-price-input input.qty {
     width: 80px
 }
@@ -2753,11 +2652,6 @@ ul.item-options li {
     padding: 0
 }
 
-.tier-price-input .validation-advice {
-    margin: 0;
-    height: 25px
-}
-
 .tier-price-input .custgroup-div select {
     width: auto;
     padding: 0
@@ -2769,10 +2663,6 @@ ul.item-options li {
 
 .tier-price-input .price-div {
     padding-left: 20px
-}
-
-.tier-price-input .price-div .validation-advice {
-    margin: 0
 }
 
 .btn-remove-tier-group {
@@ -3131,10 +3021,6 @@ td.input-price {
     white-space: nowrap
 }
 
-td.input-price .validation-advice {
-    white-space: normal
-}
-
 td.input-price input.input-text {
     width: 4em!important
 }
@@ -3333,11 +3219,6 @@ ul.config-tabs a.last span {
 .comment a {
     color: #888;
     margin-left: 3px
-}
-
-.paypal-payment-notice {
-    font-weight: 700;
-    margin: -10px 0 10px 0
 }
 
 .payment-group-title {
@@ -3780,11 +3661,6 @@ ul.super-product-attributes {
     margin: 1px 0
 }
 
-.super-attributes li.attribute-value .validation-advice {
-    margin: 0;
-    white-space: normal
-}
-
 .super-attributes li.attribute-value .attribute-value-label-container {
     width: 200px
 }
@@ -4218,16 +4094,6 @@ ul.super-product-attributes {
     text-decoration: line-through
 }
 
-.config-heading:after,.side-col .switcher:after,.message-popup .message-popup-head:after,.message-popup .message-popup-content .message:after,.login-form .form-buttons:after,.wrapper:after,.option-title:after,.columns:after,.main-col:after,.entry-edit .entry-edit-head:after,.content-header:after,.login-box .button-set:after,ul.tabs-horiz:after,.header-top:after,dl.accordion dt:after,.field-100:after,.entry-edit fieldset li:after,.entry-edit fieldset span.field-row:after,.content:after,#topnav:after,.main:after,.container:after,.footer:after,.middle:after,.header:after,.box-head:after,div.actions:after,.tier-container:after,.clear:after,.notification-global:after,.files .row:after,.files-wide .row:after,.grid tr.filter .range .range-line:after,.store-scope:after {
-    display: block;
-    clear: both;
-    content: ".";
-    font-size: 0;
-    line-height: 0;
-    height: 0;
-    overflow: hidden
-}
-
 input[type=date],input[type=time],input[type=datetime-local] {
     font-family: "Lucida Grande",Verdana,Arial,Helvetica,sans-serif;
     font-size: 11px;
@@ -4340,47 +4206,6 @@ ul.tabs a:hover,ul.tabs a.active {
     background: #f4f4f4;
     color: #2f2f2f;
     transition: background .3s ease-in-out
-}
-
-dl.accordion dt.open a,dl.accordion dt a:hover,dl.accordion dt a,div.collapseable a.open,div.collapseable a:hover,div.collapseable a,.entry-edit .entry-edit-head a,.entry-edit .entry-edit-head strong {
-    color: #2f2f2f;
-    font-weight: 300;
-    font-size: 18px;
-    line-height: 32px
-}
-
-dl.accordion dt a:after,div.collapseable a:after {
-    content: "";
-    display: block;
-    position: absolute;
-    right: 0;
-    bottom: 10px;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 8px 6px 0 6px;
-    border-color: #888 transparent transparent transparent
-}
-
-dl.accordion dt.open a:after,div.collapseable a.open:after {
-    content: "";
-    display: block;
-    position: absolute;
-    right: 0;
-    bottom: 10px;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 6px 8px 6px;
-    border-color: transparent transparent #888 transparent
-}
-
-.warning-msg,.success-msg,.error-msg,.notice-msg {
-    border-radius: 5px;
-    margin: 20px 0;
-    padding: 10px 26px 10px 35px;
-    position: relative;
-    text-shadow: none
 }
 
 .grid-severity-minor,.grid-severity-major,.grid-severity-critical,.grid-severity-notice {
@@ -4720,10 +4545,6 @@ small {
     background: #f7f7f7!important
 }
 
-.grid tbody tr.selected td.sorted {
-    background: #e1f3ff!important
-}
-
 .grid td input.input-text {
     min-width: 80px
 }
@@ -4873,19 +4694,6 @@ ul.config-tabs dt {
     border: 0
 }
 
-div.collapseable {
-    margin-top: 10px
-}
-
-div.collapseable a {
-    position: relative;
-    background: 0 0
-}
-
-div.collapseable a.open {
-    background: 0 0
-}
-
 div.autocomplete {
     border: 0;
     box-shadow: 0 3px 3px rgba(50,50,50,.15)
@@ -4980,18 +4788,16 @@ div.autocomplete ul li.selected {
     margin-right: 0
 }
 
+#loading-mask {
+    opacity: 1
+}
+
 .error {
     color: #fa4545!important
 }
 
 .required {
     color: #fa4545!important
-}
-
-.validation-advice {
-    color: #fa4545!important;
-    font-size: 12px;
-    font-weight: 600!important
 }
 
 .order-totals {
@@ -5128,14 +4934,6 @@ div.autocomplete ul li.selected {
 
 .no-display {
     display: none!important
-}
-
-.side-col .switcher select {
-    margin: 4px 0
-}
-
-.side-col .switcher .link-store-scope {
-    margin: 9px -19px 0 3px
 }
 
 dl.accordion dt {
@@ -6231,15 +6029,6 @@ p.switcher {
     padding: 0 15px;
 }
 p.switcher select { font-size: 12px; padding: 4px 8px; max-width: fit-content; }
-
-/* Store View switcher in page-left */
-.admin-page-left .switcher,
-.side-col .switcher {
-    border: none !important;
-    background: none !important;
-    padding: 10px 12px !important;
-    margin: 0 !important;
-}
 .admin-page-left .switcher label,
 .admin-page-left .switcher select { font-size: 12px; }
 
@@ -6496,34 +6285,6 @@ div[id].entry-edit:not(.box-right):not(.box-left) > .entry-edit-head h4 {
     border-top: 1px solid var(--card-border) !important;
 }
 .grid.np .hor-scroll { overflow-x: auto; }
-
-/* Accordion */
-dl.accordion dt a,
-div.collapseable a {
-    display: block !important;
-    position: relative !important;
-    padding: 10px 28px 10px 12px !important;
-    margin: 0 !important;
-    background-image: none !important;
-    background: none !important;
-    text-decoration: none !important;
-}
-dl.accordion dt a:after,
-div.collapseable a:after {
-    border-color: var(--text-muted) transparent transparent transparent !important;
-    right: 8px !important;
-    bottom: auto !important;
-    top: 50% !important;
-    margin-top: -4px !important;
-}
-dl.accordion dt.open a:after,
-div.collapseable a.open:after {
-    border-color: transparent transparent var(--text-muted) transparent !important;
-    right: 8px !important;
-    bottom: auto !important;
-    top: 50% !important;
-    margin-top: -4px !important;
-}
 dl.accordion dt {
     border: none !important;
     border-bottom: 1px solid var(--card-border) !important;
@@ -7014,7 +6775,6 @@ table.massaction fieldset label { font-size: 13px !important; color: var(--eleva
 table.massaction fieldset select { width: auto !important; min-width: 160px !important; }
 table.massaction .right { display: flex !important; justify-content: flex-end !important; }
 table.massaction .entry-edit { display: inline-flex !important; align-items: center !important; }
-.paypal-payment-notice { font-weight: 700 !important; padding: 15px !important; }
 
 /* Grid toolbar */
 .grid-toolbar, .grid-header-row { display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: wrap !important; }
@@ -7117,7 +6877,6 @@ button.scalable.delete:hover {
 button.save, button.add { background: var(--primary) !important; background-image: none !important; border-color: var(--accent) !important; color: var(--card-bg) !important; border-radius: var(--elevate-btn-radius) !important; }
 button.save:hover, button.add:hover { background: var(--accent) !important; }
 button.fail, button.cancel, button.delete { background: var(--elevate-danger) !important; background-image: none !important; border-color: var(--elevate-danger) !important; color: var(--card-bg) !important; border-radius: var(--elevate-btn-radius) !important; }
-button.fail:hover, button.cancel:hover, button.delete:hover { background: #b91c1c !important; background-image: none !important; }
 button.save span, button.add span, button.cancel span, button.delete span, button.back span, button.add-image span, button.add-widget span { background-image: none !important; padding-left: 0 !important; }
 
 /* Remove box-shadows on content-header buttons */
@@ -7272,25 +7031,6 @@ button[onclick*="massaction"]::before {
 .admin-page-left .content-header { border: none !important; margin-bottom: 0 !important; padding-bottom: 0 !important; }
 .categories-side-col { border-bottom: none !important; }
 
-/* ======================================================================
-   S10. PAGE-SPECIFIC STYLES
-   ====================================================================== */
-
-/* Order status badge */
-#order_status {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 700;
-    background: var(--warning-bg);
-    color: var(--warning-text);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    vertical-align: middle;
-}
-
 /* Icon-copy */
 .icon-copy {
     display: inline-flex;
@@ -7314,6 +7054,7 @@ h5.title { margin: 0 0 3px 0; font-size: 13px; font-weight: 600; color: var(--te
 dl.item-options { margin: 5px 0 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
 dl.item-options dt { display: inline; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0; }
 dl.item-options dd { display: inline; font-size: 11px; font-weight: 500; color: var(--text-primary); margin: 0 4px 0 2px; background: var(--elevate-border-light); padding: 1px 5px; border-radius: 3px; }
+.price { font-weight: 600; color: var(--text-primary); font-family: var(--font); }
 .qty-table { font-size: 12px; border-collapse: collapse; width: auto; }
 .qty-table td { padding: 1px 4px; font-size: 12px; border: none; background: transparent; color: var(--text-secondary); }
 .qty-table td strong { color: var(--text-primary); font-weight: 600; }
@@ -7339,14 +7080,11 @@ dl.item-options dd { display: inline; font-size: 11px; font-weight: 500; color: 
 #order_history_block { background: transparent; }
 .order-history-form { padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--elevate-border-light); }
 .note-list { list-style: none; margin: 0; padding: 0; }
-.note-list li { padding: 10px 0; border-bottom: 1px solid var(--elevate-border-light); font-size: 12px; color: var(--text-secondary); }
-.note-list li:last-child { border-bottom: none; padding-bottom: 0; }
 .note-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); }
 .note-header strong { color: var(--text-secondary); font-weight: 600; }
 .note-header > strong:nth-child(2) { background: var(--elevate-border-light); padding: 1px 6px; border-radius: 8px; font-size: 11px; }
 .note-header .icon { display: inline-flex; color: var(--text-muted); }
 .note-header .icon svg { width: 14px; height: 14px; }
-.note-list li > div:last-child { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
 .order-comment-form { padding: 16px; border-bottom: 1px solid var(--elevate-border-light); }
 .order-comment-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--elevate-border-light); }
 .field-row { margin-bottom: 10px; }
@@ -7396,9 +7134,6 @@ dl.item-options dd { display: inline; font-size: 11px; font-weight: 500; color: 
 .messages li { padding: 10px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 8px; }
 .messages li.success-msg { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); }
 .messages li.error-msg { background: #fef2f2; border: 1px solid var(--error-border); color: var(--error-text); }
-.messages li.notice-msg { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-
-/* Loading mask */
 
 /* Footer */
 .admin-footer { display: none; }
