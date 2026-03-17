@@ -274,14 +274,11 @@ final class OrderProcessor implements ProcessorInterface
         // Product thumbnail for order detail display
         try {
             $product = \Mage::getModel("catalog/product")->load($item->getProductId());
-            if ($product->getId()) {
-                $imageUrl = (string) \Mage::helper("catalog/image")->init($product, "thumbnail")->resize(120);
-                if ($imageUrl && !str_contains($imageUrl, "placeholder")) {
-                    $dto->thumbnailUrl = $imageUrl;
-                }
+            if ($product->getId() && $product->getThumbnail() && $product->getThumbnail() !== "no_selection") {
+                $dto->thumbnailUrl = \Mage::getBaseUrl(\Mage_Core_Model_Store::URL_TYPE_MEDIA) . "catalog/product" . $product->getThumbnail();
             }
         } catch (\Throwable $e) {
-            // Image not available — skip silently
+            // Image not available
         }
 
         return $dto;
