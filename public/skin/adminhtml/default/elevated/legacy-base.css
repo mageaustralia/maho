@@ -648,30 +648,9 @@ ul.tabs a.changed {
     font-style: italic
 }
 
-ul.tabs-horiz {
-    margin: 0 0 18px 0;
-    background: url(images/horiz_tabs_ul_bg.gif)repeat-x 0 100%#f8f8f8;
-    padding: 8px 0 0 5px
-}
 
-ul.tabs-horiz li {
-    float: left;
-    margin: 0 4px
-}
 
-ul.tabs-horiz li a {
-    display: block;
-    background: #e2e2e2;
-    border: 1px solid #ccc;
-    padding: 2px 10px;
-    color: #333!important;
-    text-decoration: none!important
-}
 
-ul.tabs-horiz li a.active {
-    border-bottom: 1px solid #fff;
-    background: #fff
-}
 
 .notification-global {
     padding: 5px 27px 5px 47px;
@@ -799,13 +778,6 @@ table.form-edit {
     float: right
 }
 
-.entry-edit .entry-edit-head strong,.entry-edit .entry-edit-head a {
-    color: #fff;
-    font-size: 1em;
-    line-height: 18px;
-    min-height: 0;
-    font-weight: 700
-}
 
 .entry-edit .content {
     margin-left: 0!important;
@@ -958,17 +930,11 @@ select.multiselect option {
     padding-top: 1px
 }
 
-.form-list td.value input.input-text,.form-list td.value textarea {
-    width: 274px
-}
 
 .form-list td.value textarea {
     height: 15em
 }
 
-.form-list td.value select {
-    width: 280px
-}
 
 .form-list td.value select.select-date {
     width: 87px
@@ -1033,9 +999,6 @@ select.multiselect option {
     width: auto!important
 }
 
-.fieldset-wide .form-list td.value p.note,.fieldset-wide .form-list td.value input.input-text,.fieldset-wide .form-list td.value textarea {
-    width: 98%!important
-}
 
 .fieldset-wide .form-list td.scope-label {
     white-space: nowrap;
@@ -1118,9 +1081,6 @@ button:active {
     background: #f77c16 url(images/btn_on_bg.gif)repeat-x 0 0
 }
 
-button.delete,button.save,button.add {
-    padding-left: 6px
-}
 
 button.cancel span,button.delete span,button.save span,button.add span,button.back span,button.add-image span,button.add-widget span {
     padding-left: 20px
@@ -1142,12 +1102,6 @@ button.back span {
     background-image: url(images/icon_btn_back.gif)
 }
 
-button.fail,button.cancel,button.delete {
-    border-color: #d24403 #a92000 #a92000 #d24403;
-    background-image: url(images/cancel_btn_bg.gif);
-    background-color: #fcaf81;
-    color: #fff
-}
 
 button.fail:active,button.cancel:active,button.delete:active {
     background-image: url(images/cancel_btn_active_bg.gif);
@@ -1240,12 +1194,6 @@ button.icon-btn span {
     margin-right: 5px
 }
 
-.switcher {
-    margin-bottom: 10px;
-    border: 1px solid #cddddd;
-    background: #e7efef;
-    padding: 10px
-}
 
 .link-store-scope {
     display: inline-block;
@@ -2399,9 +2347,7 @@ ul.item-options li {
     padding-right: 5px
 }
 
-.categories-side-col .content-header {
-    padding: 0
-}
+
 
 .categories-side-col .content-header h3 {
     float: none
@@ -2411,9 +2357,6 @@ ul.item-options li {
     margin: 5px 0 0
 }
 
-.categories-side-col .switcher {
-    margin: 10px 20px 0 0
-}
 
 .categories-side-col .tree-actions {
     text-align: center;
@@ -4122,11 +4065,6 @@ small {
     background: 0 0
 }
 
-.switcher {
-    background: 0 0;
-    padding: 0 0 10px;
-    border: 0
-}
 
 .order-status-color-marker {
     display: inline-block;
@@ -4350,31 +4288,9 @@ small {
     gap: .5em
 }
 
-ul.tabs-horiz {
-    background: 0 0;
-    margin: 0;
-    padding: 0
-}
 
-ul.tabs-horiz li {
-    border: 0;
-    margin: 0 2px 0 0
-}
 
-ul.tabs-horiz li a {
-    background: #eee;
-    color: #2f2f2f!important;
-    font-size: 16px;
-    font-weight: 300;
-    padding: 9px 15px;
-    border: 0
-}
 
-ul.tabs-horiz li a.active {
-    border: 0;
-    background: #71798e;
-    color: #fff!important
-}
 
 ul.tabs {
     background: 0 0;

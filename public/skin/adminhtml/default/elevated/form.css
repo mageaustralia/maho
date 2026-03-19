@@ -52,12 +52,7 @@ button.disabled, .form-button.disabled, button[disabled], .form-button[disabled]
   opacity: 0.5; }
 
 button.save, button.ok_button, button.add, .form-button.ok_button {
-  background-image: none;
-  background-color: #0090FF;
-  padding: 0 13px;
-  color: #fff;
-  border: 0;
-  cursor: pointer;
+  /* styling moved to base.css */
   display: inline-block;
   font-size: 13px;
   font-weight: 400;
@@ -128,17 +123,12 @@ button {
       padding: 0; }
     button.cancel:hover {
       background: #fa4545; }
-  button.delete {
-    background: #e63a3a;
-    color: #fff;
-    padding: 0 13px; }
     button.delete span {
       background: none;
       padding: 0; }
     button.delete:hover {
       background: #fa4545; }
-  button.save {
-    padding: 0 13px; }
+  /* button.save padding moved to base.css */
     button.save span {
       background: none;
       padding: 0; }
@@ -230,8 +220,6 @@ button {
   font-size: 11px; }
 .form-list td.value {
   padding-left: 0 !important; }
-  .form-list td.value input.input-text, .form-list td.value textarea, .form-list td.value select {
-    width: 330px; }
   .form-list td.value p.note {
     color: #202856;
     font-size: 11px;
