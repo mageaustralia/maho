@@ -57,6 +57,7 @@ Default layout, loads most of the pages
 
 
                 <action method="addItem"><type>skin_css</type><name>base.css</name></action>
+                <action method="addItem"><type>skin_css</type><name>legacy-base.css</name></action>
                 <action method="addItem"><type>skin_css</type><name>form.css</name></action>
                 <action method="addItem"><type>skin_css</type><name>menu.css</name><params>media="screen, projection"</params></action>
                 <action method="addItem"><type>skin_css</type><name>maho-admin.css</name></action>

@@ -6,40 +6,13 @@
 /* =====================
    THEME VARIABLES
    ===================== */
-:root {
-    --sidebar-w: 240px;
-    --sidebar-slim: 56px;
-    --sidebar-bg: #1e293b;
-    --sidebar-text: #94a3b8;
-    --sidebar-text-hover: #e2e8f0;
-    --sidebar-text-active: #ffffff;
-    --sidebar-hover-bg: rgba(255,255,255,0.07);
-    --sidebar-active-bg: rgba(255,255,255,0.12);
-    --sidebar-active-accent: #3b82f6;
-    --sidebar-border: rgba(255,255,255,0.08);
-    --topbar-h: 56px;
-    --topbar-bg: #ffffff;
-    --topbar-border: #e2e8f0;
-    --content-bg: #f8fafc;
-    --content-pad: 24px;
-    --card-bg: #ffffff;
-    --card-border: #e2e8f0;
-    --primary: #3b82f6;
-    --radius: 8px;
-}
+/* :root variables consolidated into elevated/base.css */
 
 /* =====================
    BODY / SHELL
    ===================== */
 
-.admin-shell {
-    display: grid;
-    grid-template-columns: var(--sidebar-w) 1fr;
-    height: 100vh;
-    width: 100%;
-    overflow: hidden;
-    transition: grid-template-columns 0.25s ease;
-}
+/* .admin-shell consolidated into base.css */
 
 .admin-shell.sidebar-collapsed {
     grid-template-columns: 56px 1fr;
@@ -50,46 +23,14 @@
 /* =====================
    SIDEBAR
    ===================== */
-.admin-sidebar {
-    background: var(--sidebar-bg);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    z-index: 200;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.1) transparent;
-}
+/* .admin-sidebar consolidated into base.css */
 
 /* Brand */
-.sidebar-brand {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 16px;
-    border-bottom: 1px solid var(--sidebar-border);
-    flex-shrink: 0;
-    min-height: var(--topbar-h);
-}
+/* .sidebar-brand consolidated into base.css */
 
-.sidebar-logo-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    color: #fff;
-    min-width: 0;
-}
+/* .sidebar-logo-link consolidated into base.css */
 
-.sidebar-brand-name {
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: #fff;
-    white-space: nowrap;
-    transition: opacity 0.2s, width 0.2s;
-}
+/* .sidebar-brand-name consolidated into base.css */
 
 .sidebar-collapse-btn {
     background: none;
@@ -110,24 +51,8 @@
     color: var(--sidebar-text-active);
 }
 
-/* Nav area */
-.sidebar-nav {
-    flex: 1;
-    padding: 10px 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: none;
-}
-
-/* User footer */
-.sidebar-user {
-    display: flex;
-    align-items: center;
-    padding: 12px 10px;
-    border-top: 1px solid var(--sidebar-border);
-    flex-shrink: 0;
-    gap: 4px;
-}
+/* .sidebar-nav consolidated into base.css */
+/* .sidebar-user consolidated into base.css */
 
 .sidebar-user-link {
     flex: 1;
@@ -256,14 +181,7 @@
 /* =====================
    MAIN AREA
    ===================== */
-.admin-main {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-width: 0;
-}
+/* .admin-main consolidated into base.css */
 
 /* =====================
    TOPBAR
@@ -352,11 +270,7 @@
 /* =====================
    CONTENT AREA
    ===================== */
-.admin-content-wrap {
-    flex: 1;
-    padding: var(--content-pad);
-    min-height: 0;
-}
+/* .admin-content-wrap consolidated into base.css */
 
 /* Page-level two-column layout (e.g. category tree + form) */
 .admin-page-cols {
@@ -365,23 +279,11 @@
     align-items: flex-start;
 }
 
-.admin-page-left {
-    width: 220px;
-    flex-shrink: 0;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    overflow: hidden;
-}
 
-.admin-page-content {
-    flex: 1;
-    min-width: 0;
-}
 
 /* Content header bar */
 
-.content-header h3, .content-header h4 { margin: 0; flex: auto; }
+/* .content-header h3/h4 consolidated into base.css */
 
 /* =====================
    CARDS / GRID TABLES
@@ -405,7 +307,7 @@
 /* =====================
    MISC FIXES
    ===================== */
-#messages { margin-bottom: 16px; }
+/* #messages consolidated into base.css */
 
 /* Old .columns / .side-col / .main-col passthrough */
 div.side-col, div.main-col, div.main-col-inner { float: none; margin: 0; width: auto; padding: 0; min-height: unset; }
@@ -414,12 +316,9 @@ div.side-col, div.main-col, div.main-col-inner { float: none; margin: 0; width: 
 
 /* Global notices at top of topbar */
 
-/* Buttons - subtle modernisation */
-button, .button, input[type="submit"], input[type="button"] {
-    border-radius: 6px;
-}
+/* button border-radius consolidated into base.css */
 
-.scalable { border-radius: 6px; }
+/* .scalable border-radius consolidated into base.css */
 
 /* =====================
    LAYOUT FIX: natural page scroll, sticky sidebar
@@ -427,26 +326,13 @@ button, .button, input[type="submit"], input[type="button"] {
 
 /* Let the page scroll naturally instead of overflow on .admin-main */
 
-.admin-shell {
-    height: auto !important;
-    overflow: visible !important;
-    min-height: 100vh;
-}
+/* .admin-shell height/overflow consolidated into base.css */
 
 /* Sidebar: sticky so it stays while page scrolls */
-.admin-sidebar {
-    position: sticky !important;
-    top: 0 !important;
-    height: 100vh !important;
-    overflow-y: auto !important;
-}
+/* .admin-sidebar sticky consolidated into base.css */
 
 /* Main area: natural height, no overflow constraint */
-.admin-main {
-    height: auto !important;
-    overflow: visible !important;
-    min-height: 100vh;
-}
+/* .admin-main height/overflow consolidated into base.css */
 
 /* Topbar: still sticky within natural scroll */
 .admin-topbar {
@@ -464,25 +350,11 @@ button, .button, input[type="submit"], input[type="button"] {
    SIDEBAR BRAND: logo above toggle button
    ===================== */
 
-.sidebar-brand {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    padding: 20px 12px 10px !important;
-    gap: 8px !important;
-    border-bottom: 1px solid var(--sidebar-border);
-}
+/* .sidebar-brand column layout consolidated into base.css */
 
-.sidebar-logo-link {
-    justify-content: center;
-    padding: 4px 8px;
-    border-radius: 8px;
-    transition: background 0.15s;
-}
-.sidebar-logo-link:hover { background: var(--sidebar-hover-bg); }
+/* .sidebar-logo-link hover consolidated into base.css */
 
-.sidebar-brand-name {
-    font-size: 1.05rem;
-}
+/* .sidebar-brand-name font-size consolidated into base.css */
 
 .sidebar-collapse-btn {
     align-self: stretch;
@@ -678,10 +550,6 @@ div.main-col-inner:empty,
     display: none !important;
 }
 
-/* Ensure .admin-page-left clips any overflow */
-.admin-page-left {
-    overflow: hidden;
-}
 
 /* =====================
    FIX: old .header background still painting in some browsers
@@ -690,32 +558,16 @@ div.main-col-inner:empty,
 /* =====================
    FIX: overflow-x clipping right-side buttons
    ===================== */
-.admin-main {
-    overflow-x: visible !important;
-}
+/* .admin-main overflow-x consolidated into base.css */
 /* overflow-x removed from admin-content-wrap — it breaks position:sticky on content-header.
    Horizontal scroll is handled by .hor-scroll wrappers inside each grid. */
 
-/* =====================
-   FIX: button.back - no GIF, modern outline style
-   ===================== */
-button.back:hover {
-    background: #f3f4f6 !important;
-    border-color: #9ca3af !important;
-}
+/* button.back:hover consolidated into base.css */
 
 /* =====================
    FIX: all other GIF button backgrounds → modern CSS
    ===================== */
 
-/* Save / primary actions */
-button.save, button.add {
-    background: #3b82f6 !important;
-    background-image: none !important;
-    border-color: #2563eb !important;
-    color: #fff !important;
-    border-radius: 6px !important;
-}
 button.save:hover, button.add:hover {
     background: #2563eb !important;
 }
@@ -737,10 +589,7 @@ button.fail:active, button.cancel:active, button.delete:active {
     background-image: none !important;
 }
 
-/* General scalable buttons */
-.scalable {
-    background-image: none !important;
-}
+/* .scalable background-image consolidated into base.css */
 button.scalable span {
     background-image: none !important;
     padding-left: 0 !important;
@@ -759,10 +608,7 @@ button.back span, button.add-image span, button.add-widget span {
 /* =====================
    FIX: content-header vertical alignment
    ===================== */
-.content-header .form-buttons,
-.content-header button {
-    margin: 0 !important;
-}
+/* .content-header buttons consolidated into base.css */
 
 /* =====================
    FIX: admin-page-left layout (left sidebar nav card)
@@ -771,17 +617,6 @@ button.back span, button.add-image span, button.add-widget span {
     display: flex !important;
     align-items: flex-start !important;
     gap: 10px !important;
-}
-.admin-page-left {
-    flex-shrink: 0 !important;
-    width: 200px !important;
-    background: #fff !important;
-    border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
-    overflow: hidden !important;
-    padding: 6px 0 !important;
-    position: sticky !important;
-    top: 70px !important;
 }
 .admin-page-left h3 {
     font-size: 10px !important;
@@ -792,10 +627,6 @@ button.back span, button.add-image span, button.add-widget span {
     padding: 10px 14px 6px !important;
     margin: 0 !important;
     border-bottom: none !important;
-}
-.admin-page-content {
-    flex: 1 !important;
-    min-width: 0 !important;
 }
 
 /* =====================
@@ -888,13 +719,7 @@ select:focus {
     outline: none !important;
 }
 
-/* Grid filter row inputs — slightly smaller */
-.grid tr.filter input[type="text"],
-.grid tr.filter select,
-.grid tr.filter input[type="date"] {
-    font-size: 12.5px !important;
-    padding: 4px 8px !important;
-}
+/* grid tr.filter inputs consolidated into base.css */
 
 /* =====================
    Grid toolbar: Export/Actions combo groups
@@ -946,21 +771,11 @@ div.actions select + input[type="button"] {
 /* =====================
    Grid toolbar: pager/export/filter actions table
    ===================== */
-table.actions td.pager {
-    font-size: 13px !important;
-    color: #475569 !important;
-}
+/* table.actions td.pager consolidated into base.css */
 table.actions td.pager select {
     display: inline-block !important;
     width: auto !important;
     padding: 3px 6px !important;
-}
-table.actions td.export {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    font-size: 13px !important;
-    color: #475569 !important;
 }
 /* Hide export GIF — we'll use text */
 table.actions td.export img.v-middle {
@@ -975,48 +790,13 @@ table.actions td.export select {
 /* =====================
    Massaction toolbar — inline fieldset
    ===================== */
-table.massaction {
-    width: 100% !important;
-    border: none !important;
-    background: none !important;
-    margin-bottom: 10px !important;
-}
-table.massaction td {
-    padding: 4px 0 !important;
-    border: none !important;
-    background: none !important;
-    vertical-align: middle !important;
-    font-size: 13px !important;
-    color: #475569 !important;
-}
+/* table.massaction consolidated into base.css */
+/* table.massaction td consolidated into base.css */
 table.massaction .right {
     display: flex !important;
     justify-content: flex-end !important;
 }
-table.massaction .entry-edit {
-    display: inline-flex !important;
-    align-items: center !important;
-}
-table.massaction fieldset {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-table.massaction fieldset .field-row {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    float: none !important;
-}
-table.massaction fieldset label {
-    font-size: 13px !important;
-    color: #475569 !important;
-    white-space: nowrap !important;
-    margin: 0 !important;
-}
+/* table.massaction fieldset label consolidated into base.css */
 table.massaction fieldset select {
     width: auto !important;
     min-width: 160px !important;
@@ -1086,18 +866,7 @@ table.massaction fieldset select {
    FIX: Padding/shadow on content-header buttons area
    (buttons group gaps and box shadows)
    ===================== */
-.content-header .form-buttons button + button,
-.content-header .content-buttons button + button {
-    margin-left: 0 !important;
-}
-.content-header .content-buttons + .content-buttons {
-    margin-left: 0 !important;
-}
-/* Remove unexpected box-shadows on buttons that appear as gaps */
-button.save, button.add, button.back, button.reset,
-.content-header button {
-    box-shadow: none !important;
-}
+/* content-header button margins + box-shadow consolidated into base.css */
 
 /* =====================
    FIX: Empty left column boxes — hide admin-page-left when it has no ul.tabs
@@ -1115,21 +884,8 @@ table.actions td.export select {
 }
 
 /* Massaction fieldset — add surrounding padding/card feel */
-table.massaction fieldset {
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    padding: 5px 10px !important;
-    background: #fff !important;
-}
+/* table.massaction fieldset border consolidated into base.css */
 
-/* =====================
-   FIX: Pagination page input too narrow
-   ===================== */
-table.actions td.pager input.page {
-    width: 48px !important;
-    min-width: 48px !important;
-    text-align: center !important;
-}
 
 /* =====================
    Resizable left panel drag handle
@@ -1137,17 +893,7 @@ table.actions td.pager input.page {
 .admin-page-cols {
     align-items: stretch !important;
 }
-.admin-left-resize-handle {
-    flex-shrink: 0;
-    width: 8px;
-    cursor: col-resize;
-    position: relative;
-    margin: 0 -2px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+/* .admin-left-resize-handle consolidated into base.css */
 .admin-left-resize-handle::after {
     content: '';
     display: block;
@@ -1521,14 +1267,6 @@ table.actions td.pager input.page {
    Accordion / entry-edit section headers
    ===================== */
 dl.accordion dt,
-.entry-edit .entry-edit-head {
-    background: #fefefe !important;
-    color: #2f2f2f !important;
-    padding: 0 !important;
-    border: 1px solid #d3d3d3 !important;
-    border-radius: 8px 8px 0 0 !important;
-    border-radius: var(--radius) var(--radius) 0 0 !important;
-}
 
 /* =====================
    Command Palette — Tabs
@@ -1621,28 +1359,7 @@ dl.accordion dt,
 }
 
 /* Push action buttons to the right of content-header */
-.content-header .form-buttons,
-
-/* =====================
-   Cmd+K badge in content-header
-   ===================== */
-.cmd-launch-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 5px !important;
-    padding: 5px 10px !important;
-    background: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 6px !important;
-    color: #64748b !important;
-    font-size: 12px !important;
-    cursor: pointer !important;
-    white-space: nowrap !important;
-    flex-shrink: 0 !important;
-    margin-left: 8px !important;
-    box-shadow: none !important;
-    background-image: none !important;
-}
+/* .content-header .form-buttons consolidated into base.css */
 .cmd-launch-btn:hover {
     background: #e2e8f0 !important;
     color: #334155 !important;
@@ -1667,12 +1384,7 @@ dl.accordion dt,
    ===================== */
 
 /* Notifications bar: sticky at very top, variable height */
-.admin-notices {
-    position: sticky;
-    top: 0;
-    z-index: 200;
-    flex-shrink: 0;
-}
+/* .admin-notices consolidated into base.css */
 .admin-notices .notification-global {
     margin: 0 !important;
     border-radius: 0 !important;
@@ -1690,17 +1402,7 @@ dl.accordion dt,
 /* content-header is now the effective topbar */
 
 /* cmd-launch-btn — just a ⌘K kbd chip */
-.cmd-launch-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    padding: 0 !important;
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    background-image: none !important;
-    cursor: pointer !important;
-    margin-left: 8px !important;
-}
+/* .cmd-launch-btn second block consolidated into base.css */
 .cmd-launch-btn kbd {
     background: #f1f5f9 !important;
     border: 1px solid #cbd5e1 !important;
@@ -1722,20 +1424,9 @@ dl.accordion dt,
    MODERN CARD & TABLE SYSTEM
    ====================================================== */
 
-/* Page background — cooler, lighter grey */
-.admin-main,
-.admin-content-wrap,
+/* .admin-main, .admin-content-wrap, .entry-edit-head consolidated into base.css */
 
 /* ---- Cards: entry-edit blocks ---- */
-
-/* Card header */
-.entry-edit .entry-edit-head {
-    background: #fff !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    border-top: none !important;
-}
 .entry-edit .entry-edit-head h4,
 .entry-edit .entry-edit-head h3 {
     font-size: 13px !important;
@@ -1746,13 +1437,6 @@ dl.accordion dt,
     text-transform: none !important;
 }
 
-/* Card body */
-.entry-edit fieldset {
-    padding: 12px 16px !important;
-    border: none !important;
-    background: none !important;
-    margin: 0 !important;
-}
 
 /* ---- Form-list labels & values ---- */
 table.form-list td.label,
@@ -1781,18 +1465,7 @@ table.data {
     border-radius: 0 0 10px 10px !important;
     overflow: hidden !important;
 }
-table.data thead th {
-    background: #f8fafc !important;
-    color: #64748b !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    padding: 6px 8px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    border-top: 1px solid #e2e8f0 !important;
-    white-space: nowrap !important;
-}
+/* table.data thead th consolidated into base.css */
 table.data thead th a,
 table.data thead th a:hover {
     color: inherit !important;
@@ -1877,13 +1550,6 @@ table.data tbody tr.odd:hover td {
 /* The real card unit is entry-edit */
 
 /* Card head: no background, just a bottom divider */
-.entry-edit .entry-edit-head {
-    background: #fff !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    border-radius: 0 !important;
-    padding: 12px 16px !important;
-    margin: 0 !important;
-}
 .entry-edit .entry-edit-head h4,
 .entry-edit .entry-edit-head h3 {
     font-size: 13px !important;
@@ -1893,13 +1559,6 @@ table.data tbody tr.odd:hover td {
     letter-spacing: 0 !important;
 }
 
-/* Card body */
-.entry-edit fieldset {
-    padding: 14px 16px !important;
-    border: none !important;
-    background: none !important;
-    margin: 0 !important;
-}
 
 /* Collapse .clear divs — they add phantom gaps */
 .clear { margin: 0 !important; padding: 0 !important; height: 0 !important; }
@@ -2052,16 +1711,6 @@ table.order-tables tr:hover td,
 }
 
 /* Card header */
-.entry-edit > .entry-edit-head {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 12px 16px !important;
-    margin: 0 !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
-    background: #fff !important;
-}
 .entry-edit > .entry-edit-head h4,
 .entry-edit > .entry-edit-head h3 {
     font-size: 13px !important;
@@ -2073,13 +1722,6 @@ table.order-tables tr:hover td,
 }
 
 /* Card body: both .fieldset (div) and fieldset (element) */
-.entry-edit > .fieldset,
-.entry-edit > fieldset {
-    padding: 14px 16px !important;
-    border: none !important;
-    background: none !important;
-    margin: 0 !important;
-}
 
 /* Order Totals: .box-right.entry-edit — single element is both column and card */
 .box-right.entry-edit {
@@ -2114,25 +1756,12 @@ table.order-tables tr:hover td,
    ================================================================ */
 
 /* ---- Missing CSS variables ---- */
-:root {
-    --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --accent: #2563eb;
-    --accent-bg: rgba(37, 99, 235, 0.06);
-    --card-radius: 10px;
-    --card-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
+/* :root variables consolidated into elevated/base.css */
 
 /* ================================================================
    CARD HEADER — update to flex-start + gap, tools Edit button style
    ================================================================ */
 
-.entry-edit > .entry-edit-head {
-    justify-content: flex-start !important;
-    gap: 10px !important;
-}
 
 /* Card header h4/h3 — uppercase label style */
 .entry-edit > .entry-edit-head h4,
@@ -2306,14 +1935,6 @@ address,
     box-shadow: none !important;
 }
 
-/* Cards inside column containers — restore full card styling */
-.box-left > .entry-edit,
-.box-right > .entry-edit:not(.box-right) {
-    border: 1px solid var(--card-border) !important;
-    border-radius: var(--card-radius) !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
-    margin-bottom: 0 !important;
-}
 
 /* Stray <br> tags between cards in order view — hide only direct children of wrapper */
 #sales_order_view_tabs_order_info_content > div > br { display: none !important; }
@@ -2348,10 +1969,7 @@ table.order-tables tr.headings th {
     white-space: nowrap !important;
     font-family: var(--font) !important;
 }
-table.data tr.headings th:first-child,
-table.order-tables tr.headings th:first-child {
-    border-left: none !important;
-}
+/* table.data tr.headings th:first-child consolidated into base.css */
 table.data tr.headings th.a-center,
 table.order-tables tr.headings th.a-center {
     text-align: center !important;
@@ -2563,22 +2181,6 @@ dl.item-options {
    GRID PAGER — inline compact row
    ================================================================ */
 
-td.pager {
-    white-space: normal !important;
-    padding: 8px 12px !important;
-    font-size: 12px !important;
-    color: var(--text-secondary) !important;
-    line-height: 1.8 !important;
-}
-td.pager input.page {
-    display: inline !important;
-    width: 40px !important;
-    text-align: center !important;
-    padding: 2px 4px !important;
-    font-size: 12px !important;
-    border: 1px solid #cbd5e1 !important;
-    border-radius: 4px !important;
-}
 td.pager select {
     display: inline !important;
     width: auto !important;
@@ -2592,8 +2194,6 @@ td.pager .pager-arrow svg {
     height: 16px !important;
     vertical-align: middle !important;
 }
-td.pager .pager-arrow.disabled { opacity: 0.3 !important; }
-td.pager .separator { margin: 0 4px !important; color: #cbd5e1 !important; }
 
 /* ================================================================
    COMMENTS & HISTORY
@@ -2651,47 +2251,18 @@ input[type="checkbox"] { accent-color: var(--accent) !important; }
    Icons always visible; panel appears/disappears (no width animation)
    ===================== */
 
-.admin-shell { grid-template-columns: 56px 1fr !important; transition: none !important; }
+/* .admin-shell grid-template consolidated into base.css */
 
 /* Sidebar: always 56px, expands to 240px on hover */
-.admin-sidebar {
-    width: 56px !important;
-    overflow: hidden !important;
-    transition: width 0.25s ease !important;
-    z-index: 300 !important;
-    position: sticky !important;
-}
-.admin-sidebar:hover { width: 240px !important; }
+/* .admin-sidebar width/hover consolidated into base.css */
 
 .sidebar-collapse-btn { display: none !important; }
 
 /* ---- Brand: styled exactly like a nav item ---- */
-.sidebar-brand {
-    flex-direction: row !important;
-    align-items: center !important;
-    padding: 10px 0 10px 18px !important;
-    gap: 0 !important;
-    border-bottom: none !important;
-    min-height: unset !important;
-}
-.sidebar-logo-link {
-    display: flex !important;
-    align-items: center !important;
-    padding: 0 !important;
-    gap: 0 !important;
-}
-/* Logo icon: same size as nav icons */
-.sidebar-logo-link svg { width: 20px !important; height: 20px !important; flex-shrink: 0 !important; }
+/* .sidebar-brand slim mode consolidated into base.css */
+/* .sidebar-logo-link slim consolidated into base.css */
 /* Brand name hidden in slim, slides in on hover */
-.sidebar-brand-name {
-    display: none;
-    opacity: 0;
-    transform: translateX(-10px);
-    white-space: nowrap;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-}
-.admin-sidebar:hover .sidebar-logo-link { gap: 10px !important; }
+/* .sidebar-brand-name slim consolidated into base.css */
 .admin-sidebar:hover .sidebar-brand-name {
     display: inline;
     opacity: 1;
@@ -2700,7 +2271,7 @@ input[type="checkbox"] { accent-color: var(--accent) !important; }
 }
 
 /* ---- User footer ---- */
-.sidebar-user { justify-content: center !important; padding: 10px 8px !important; }
+/* .sidebar-user slim consolidated into base.css */
 .sidebar-user-name { display: none !important; }
 .admin-sidebar:hover .sidebar-user { justify-content: flex-start !important; padding: 12px 16px !important; }
 .admin-sidebar:hover .sidebar-user-name {
