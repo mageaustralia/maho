@@ -51,14 +51,6 @@ button.disabled, .form-button.disabled, button[disabled], .form-button[disabled]
   pointer-events: none;
   opacity: 0.5; }
 
-button.save, button.ok_button, button.add, .form-button.ok_button {
-  /* styling moved to base.css */
-  display: inline-block;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 26px;
-  box-sizing: border-box;
-  vertical-align: middle; }
 
 button.save:focus, button.save:active, button.ok_button:focus, button.ok_button:active, button.add:focus, button.add:active, .form-button.ok_button:focus, .form-button.ok_button:active {
   background-color: #026294;
@@ -141,8 +133,6 @@ button {
       padding: 0; }
     button.ok_button:hover {
       background-color: #0090FF; }
-  button.add {
-    padding: 0 13px; }
     button.add span {
       background: none;
       padding: 0; }

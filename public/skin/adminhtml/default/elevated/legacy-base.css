@@ -13,96 +13,29 @@
 
 /* a, a:hover removed — covered by base.css */
 
-a img {
-    border: 0
-}
 
-:focus {
-    outline: 0
-}
 
 /* h1-h4, h2, h3 heading resets removed — covered by base.css */
 
-h4 {
-    margin-bottom: .6em;
-    color: #494848;
-    font-size: 1.05em
-}
 
-h5 {
-    font-size: 1.05em
-}
 
-h6 {
-    font-size: 1em
-}
 
-h1 a,h1 a:hover,h2 a,h2 a:hover,h3 a,h3 a:hover,h4 a,h4 a:hover {
-    font-weight: 400
-}
 
-th {
-    padding: 0;
-    text-align: left;
-    vertical-align: top
-}
 
 /* td removed — covered by base.css */
 
 /* p,address margin-bottom removed — covered by base.css */
 
-address {
-    font-style: normal
-}
 
-cite {
-    font-style: normal;
-    font-size: 10px
-}
 
-q:before,q:after {
-    content: ""
-}
 
-form {
-    display: inline
-}
 
-fieldset {
-    border: 0
-}
 
-legend {
-    display: none;
-    display: block!important;
-    height: 0;
-    line-height: 0;
-    margin: 0;
-    overflow: hidden;
-    padding: 0;
-    width: 0;
-    visibility: hidden
-}
 
-label {
-    color: #333
-}
 
-input,select {
-    vertical-align: middle
-}
 
-textarea {
-    overflow: auto
-}
 
-ul,ol {
-    list-style: none
-}
 
-dt {
-    display: block
-}
 
 small {
     font-size: .9em
@@ -213,11 +146,6 @@ big {
 }
 
 
-.grid table {
-    width: 100%;
-    border: 1px solid #cbd3d4;
-    border-bottom: none
-}
 
 .grid table.border {
     border: 1px solid #cbd3d4
@@ -336,19 +264,8 @@ table.actions {
     width: 2em!important
 }
 
-.grid tr.headings th {
-    border-width: 1px;
-    border-color: #f9f9f9 #d1cfcf #f9f9f9 #f9f9f9;
-    border-style: solid;
-    padding-top: 1px;
-    padding-bottom: 0;
-    font-size: .9em;
-    white-space: nowrap
-}
 
-.grid tr.headings th.last {
-    border-right: 0
-}
+
 
 .grid tr.headings th.no-link {
     padding-top: 2px;
@@ -375,21 +292,8 @@ table.actions {
     padding-bottom: 2px
 }
 
-.grid tr.headings th span.sort-title {
-    display: block;
-    padding: 3px 12px 4px 0;
-    line-height: 1
-}
 
-.grid tr.headings th a.sort-arrow-desc span.sort-title,.grid tr.headings th a.sort-arrow-asc span.sort-title {
-    background-position: right 50%;
-    background-repeat: no-repeat;
-    padding: 3px 12px 2px 8px
-}
 
-.grid tr.headings th a.sort-arrow-desc span.sort-title {
-    background-image: url(images/grid_sort_desc.gif)
-}
 
 .grid tr.headings th a.sort-arrow-asc span.sort-title {
     background-image: url(images/grid_sort_asc.gif)
@@ -824,9 +728,6 @@ input.input-text,input.input-color,textarea,select {
     font-size: 12px
 }
 
-select {
-    min-height: 17px
-}
 
 input.input-text,textarea {
     padding: 2px
@@ -879,13 +780,6 @@ select.multiselect option {
     margin: 0 0 5px!important
 }
 
-.field-100 {
-    background-color: #fff;
-    border-width: 1px;
-    border-style: solid;
-    border-color: #aaa #c8c8c8 #c8c8c8 #aaa;
-    padding: 2px
-}
 
 /* .field-100 removed — covered by base.css */
 
@@ -1067,9 +961,6 @@ button::-moz-focus-inner {
     border: 0
 }
 
-button {
-    -webkit-border-fit: lines
-}
 
 /* button, .form-button removed — covered by base.css */
 
@@ -1310,10 +1201,7 @@ td.divider {
     height: 15px
 }
 
-.up a,.up a img,.dn a,.dn a img,.thumb a,.thumb a img {
-    border: 0
-}
-
+.up a,.up a img,.dn a,.dn a img,.thumb a,.thumb 
 .up a:active,.dn a:active {
     outline: 0
 }
@@ -1340,17 +1228,7 @@ td.divider {
     margin-bottom: -4px
 }
 
-.note-list {
-    width: 100%;
-    overflow: hidden
-}
 
-.note-list .note-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap
-}
 
 .note-list .note-header > *:not(:last-child):after {
     content: "|";
@@ -3885,11 +3763,6 @@ input[type=date]:focus,input[type=time]:focus,input[type=datetime-local]:focus {
     padding-top: 10px
 }
 
-.footer-content,.middle,#nav,.header-top {
-    padding-inline: 10px;
-    box-sizing: border-box;
-    width: 100%
-}
 
 /* .content-header h3, .content-header removed — covered by base.css */
 
@@ -3982,49 +3855,19 @@ ul.tabs a:hover,ul.tabs a.active {
     box-shadow: none
 }
 
-h1 {
-    color: #2f2f2f;
-    font-weight: 400
-}
 
-h2 {
-    color: #2f2f2f;
-    font-weight: 400
-}
 
 /* h3 removed — covered by base.css */
 
-h4 {
-    color: #2f2f2f;
-    font-weight: 400
-}
 
-h5 {
-    color: #2f2f2f;
-    font-weight: 400
-}
 
-h6 {
-    color: #2f2f2f;
-    font-weight: 400
-}
 
-label {
-    color: #2f2f2f;
-    font-weight: 400
-}
 
 /* a, a:visited removed — covered by base.css */
 
-a:focus {
-    color: #3378a3;
     text-decoration: none
 }
 
-a:hover {
-    color: #3378a3;
-    text-decoration: none
-}
 
 a:active {
     color: #3378a3;
@@ -4097,10 +3940,6 @@ small {
     filter: revert
 }
 
-.grid table {
-    border: 1px solid #d3d3d3;
-    border-collapse: collapse
-}
 
 .grid table.border {
     border: 1px solid #d3d3d3
@@ -4165,13 +4004,6 @@ small {
     border: 1px solid #71798e
 }
 
-.grid tr.headings th {
-    padding: 4px;
-    font-size: 12px;
-    vertical-align: middle;
-    color: #fff;
-    font-weight: 400
-}
 
 .grid tr.headings th a {
     color: #fff;
@@ -4182,9 +4014,6 @@ small {
     color: #d3d3d3
 }
 
-.grid tr.headings th a.sort-arrow-desc span.sort-title {
-    background: 0 0
-}
 
 .grid tr.headings th a.sort-arrow-desc span.sort-title:after {
     border-width: 6px 5px 0 5px;
@@ -4200,10 +4029,6 @@ small {
     border-color: transparent transparent #d3d3d3 transparent
 }
 
-.grid tr.headings th.no-link {
-    color: #fff;
-    padding: 4px
-}
 
 .grid tr.even td {
     background: #eee
@@ -4537,11 +4362,6 @@ div.autocomplete ul li.selected {
     margin-bottom: 10px
 }
 
-.grid-severity-notice span {
-    border: 0;
-    background: #56af45;
-    color: #fff
-}
 
 .grid-severity-critical span {
     border: 0;

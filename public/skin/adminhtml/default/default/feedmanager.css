@@ -198,6 +198,8 @@
     }
 }
 
+.feed-preview-dialog { top: 70% !important; }
+
 .feed-preview-dialog .dialog-content {
     padding: 0;
     background: #1e1e1e;
@@ -1389,3 +1391,4 @@
     border-radius: 3px;
     font-size: 13px;
 }
+

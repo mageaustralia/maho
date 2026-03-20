@@ -96,13 +96,6 @@
 #nav li.active li {
   font-weight: normal;
 }
-#nav li.level0 > a {
-  text-transform: none;
-  font-weight: 400;
-  color: #fff;
-  height: 38px;
-  line-height: 38px;
-}
 #nav li.level0 > a:hover {
   background: #2c3878;
   color: #fff;
@@ -121,24 +114,6 @@
 #nav li.level0:hover > a {
   background: #293470;
   color: #fff;
-}
-#nav li.parent a {
-  cursor: default;
-}
-#nav li.parent li.parent a {
-  cursor: default;
-}
-#nav li.parent li.parent li.parent a {
-  cursor: default;
-}
-#nav li.parent li.parent li.parent li a {
-  cursor: pointer;
-}
-#nav li.parent li.parent li a {
-  cursor: pointer;
-}
-#nav li.parent li a {
-  cursor: pointer;
 }
 #nav li#bubblelauncher-status a {
   background-position: center 8px;
@@ -171,12 +146,6 @@
   padding: 0;
 }
 #nav ul li.active a {
-  color: #202856;
-  font-size: 12px;
-}
-#nav ul li a {
-  background: #fff;
-  padding: 9px 12px;
   color: #202856;
   font-size: 12px;
 }
