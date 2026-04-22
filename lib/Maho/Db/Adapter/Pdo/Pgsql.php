@@ -1610,8 +1610,7 @@ class Pgsql extends AbstractPdoAdapter
                         $qualifiedTable,
                         $quotedColumn,
                     ));
-                } elseif ($default === \Maho\Db\Ddl\Table::TIMESTAMP_INIT
-                    || $default === \Maho\Db\Ddl\Table::TIMESTAMP_INIT_UPDATE) {
+                } elseif ($default === \Maho\Db\Ddl\Table::TIMESTAMP_INIT) {
                     $this->raw_query(sprintf(
                         'ALTER TABLE %s ALTER COLUMN %s SET DEFAULT CURRENT_TIMESTAMP',
                         $qualifiedTable,
