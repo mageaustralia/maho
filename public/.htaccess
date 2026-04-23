@@ -55,7 +55,12 @@ DirectoryIndex index.php
 
     # Uncomment next line to enable light API calls processing
     #RewriteRule ^api/([a-z][0-9a-z_]+)/?$ api.php?type=$1 [QSA,L]
+
+    # Maho API Platform — route /api/* to rest.php (Symfony kernel bootstrap).
+    # Matches /api/graphql, /api/docs, /api/products, etc.
+    # Legacy /api/rest still falls through to api.php on the line above for back-compat.
     RewriteRule ^api/rest api.php?type=rest [QSA,L]
+    RewriteRule ^api(/.*)?$ rest.php [QSA,L]
 
     # Workaround for HTTP authorization in CGI environment
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
