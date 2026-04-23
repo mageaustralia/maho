@@ -1072,6 +1072,20 @@ Domain-specific traits that can be added to providers or processors as needed:
 
 All web servers must route `/api/*` requests to `rest.php` (the Symfony API Platform entry point). Below are example configurations for the three most common setups.
 
+### Why rest.php, not index.php?
+
+`rest.php` boots the Symfony API Platform kernel directly. `index.php` boots the full Maho front-controller stack and then hands off to Symfony via `Maho_ApiPlatform_IndexController::indexAction`. The first path is ~50-100 ms faster per request — noticeable under chatty API clients (POS terminals, headless storefronts making 5-10 requests per user action).
+
+Both paths end up at the same Symfony kernel; `rest.php` is just leaner. Maho is still initialised inside `rest.php` so store context, models, and config are available to API Platform resolvers.
+
+### Router-shim fallback for environments without rewrite rules
+
+For environments where web-server rewrite rules aren't configured (FrankenPHP with default Caddyfile, `php -S` dev servers, shared hosting without mod_rewrite), Maho also routes the canonical Symfony URLs `/api/graphql` and `/api/docs` through `index.php` via `GraphqlController`/`DocsController` shims that forward to `IndexController::indexAction()`. This means `/api/graphql` will work even without the web-server configuration below — just ~50 ms slower per request. REST resource paths (`/api/products`, `/api/cart`, etc.) still require the rewrite rules below to route through `rest.php`.
+
+### Legacy SOAP / XMLRPC / JSONRPC
+
+`/api/rest`, `/api/soap`, `/api/v2_soap`, `/api/xmlrpc`, `/api/jsonrpc` are legacy Magento 1 API paths handled by the original `Mage_Api_*Controller` classes. The default `.htaccess` explicitly excludes them from the `rest.php` rewrite so they keep working unchanged for existing consumers.
+
 ### Nginx
 
 Add these blocks **before** the main `location /` block in your nginx config.

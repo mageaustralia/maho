@@ -58,8 +58,22 @@ DirectoryIndex index.php
 
     # Maho API Platform — route /api/* to rest.php (Symfony kernel bootstrap).
     # Matches /api/graphql, /api/docs, /api/products, etc.
-    # Legacy /api/rest still falls through to api.php on the line above for back-compat.
+    #
+    # Excluded (fall through to index.php → IndexController::preDispatch which
+    # forwards to the original Mage_Api_*Controller classes):
+    #   /api/rest        → handled above by api.php?type=rest
+    #   /api/soap        → Mage_Api_SoapController
+    #   /api/v2_soap     → Mage_Api_V2_SoapController
+    #   /api/xmlrpc      → Mage_Api_XmlrpcController
+    #   /api/jsonrpc     → Mage_Api_JsonrpcController
+    #
+    # Why rest.php (not index.php → router shims): rest.php boots Symfony API
+    # Platform directly without a full Maho bootstrap → the round-trip is
+    # ~50-100ms faster per API call, which matters for chatty clients (POS
+    # terminals, headless storefronts). Maho is still inited inside rest.php
+    # so models/config/store context still work.
     RewriteRule ^api/rest api.php?type=rest [QSA,L]
+    RewriteCond %{REQUEST_URI} !^/api/(soap|v2_soap|xmlrpc|jsonrpc)(/|$)
     RewriteRule ^api(/.*)?$ rest.php [QSA,L]
 
     # Workaround for HTTP authorization in CGI environment
