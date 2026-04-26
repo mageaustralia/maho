@@ -55,6 +55,17 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
             }
         }
 
+        // Map uriVariables for sub-resource params. itemId is
+        // declared in URI templates but not in the operation's
+        // uriVariables map, so API Platform doesn't include it in
+        // the resolved $uriVariables array. Pull from Request
+        // route params as a fallback so PUT/DELETE on
+        // /items/{itemId} actually receive the id.
+        $req = $context['request'] ?? null;
+        if (!isset($uriVariables['itemId']) && $req instanceof \Symfony\Component\HttpFoundation\Request) {
+            $rp = $req->attributes->get('_route_params') ?? [];
+            if (isset($rp['itemId'])) $uriVariables['itemId'] = $rp['itemId'];
+        }
         // Map uriVariables for sub-resource params
         if (isset($uriVariables['itemId']) && !isset($context['args']['input']['itemId'])) {
             $context['args']['input']['itemId'] = $uriVariables['itemId'];
@@ -170,7 +181,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
     private function updateCartItem(array $context, array $uriVariables): Cart
     {
         $args = $context['args']['input'] ?? [];
-        $itemId = $args['itemId'] ?? null;
+        $itemId = $args["itemId"] ?? $uriVariables["itemId"] ?? null;
         $qty = (float) ($args['qty'] ?? 1);
 
         if (!$itemId) {
@@ -189,7 +200,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
     private function removeItemFromCart(array $context, array $uriVariables): Cart
     {
         $args = $context['args']['input'] ?? [];
-        $itemId = $args['itemId'] ?? null;
+        $itemId = $args["itemId"] ?? $uriVariables["itemId"] ?? null;
 
         if (!$itemId) {
             throw new \RuntimeException('Item ID is required');
@@ -207,7 +218,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
     private function setCartItemFulfillment(array $context, array $uriVariables): Cart
     {
         $args = $context['args']['input'] ?? [];
-        $itemId = $args['itemId'] ?? null;
+        $itemId = $args["itemId"] ?? $uriVariables["itemId"] ?? null;
         $fulfillmentType = $args['fulfillmentType'] ?? 'SHIP';
 
         if (!$itemId) {
