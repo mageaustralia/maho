@@ -22,6 +22,14 @@ class Mage_Core_Helper_UnserializeArray extends Mage_Core_Helper_Abstract
     {
         $str ??= '';
 
+        // Pass through if the value has already been decoded upstream
+        // (e.g., a previous call did setExtra(array), and the model still
+        // holds the array on a re-load). json_validate() requires string —
+        // a non-string fatals with TypeError otherwise.
+        if (!is_string($str)) {
+            return $str;
+        }
+
         if (json_validate($str)) {
             return Mage::helper('core')->jsonDecode($str);
         }
