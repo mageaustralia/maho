@@ -161,7 +161,7 @@ class Date extends AbstractElement
     /**
      * Get value instance, if any
      *
-     * @return DateTime|string|null
+     * @return DateTimeInterface|string|null
      */
     public function getValueInstance()
     {
