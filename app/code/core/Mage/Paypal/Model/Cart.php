@@ -37,7 +37,7 @@ class Mage_Paypal_Model_Cart
      * Rendered cart items
      * Array of \Maho\DataObject
      *
-     * @var array
+     * @var array<int, \Maho\DataObject>
      */
     protected $_items = [];
 
@@ -405,7 +405,7 @@ class Mage_Paypal_Model_Cart
             $this->_areTotalsValid = $itemsSubtotal > 0.00001;
         }
 
-        $this->_areItemsValid = $this->_areItemsValid && $this->_areTotalsValid;
+        $this->_areItemsValid = $this->_areTotalsValid;
     }
 
     /**
