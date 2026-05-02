@@ -381,7 +381,7 @@ class Maho_CustomerSegmentation_Model_Observer_EmailAutomation
 
                 // Convert DateTime to string if needed
                 $expirationDate = null;
-                if ($expirationDateRaw instanceof DateTime) {
+                if ($expirationDateRaw instanceof DateTimeInterface) {
                     $expirationDate = $expirationDateRaw->format('Y-m-d H:i:s');
                 } elseif (is_string($expirationDateRaw) && !empty($expirationDateRaw)) {
                     $expirationDate = $expirationDateRaw;

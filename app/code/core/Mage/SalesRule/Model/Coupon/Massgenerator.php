@@ -147,7 +147,7 @@ class Mage_SalesRule_Model_Coupon_Massgenerator extends Mage_Core_Model_Abstract
             } while ($this->getResource()->exists($code));
 
             $expirationDate = $this->getToDate();
-            if ($expirationDate instanceof DateTime) {
+            if ($expirationDate instanceof DateTimeInterface) {
                 $expirationDate = $expirationDate->format(Mage_Core_Model_Locale::DATETIME_FORMAT);
             }
 
