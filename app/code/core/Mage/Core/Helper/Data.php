@@ -243,7 +243,7 @@ class Mage_Core_Helper_Data extends Mage_Core_Helper_Abstract
         $locale = Mage::app()->getLocale();
         if (is_null($time)) {
             $date = $locale->utcToStore(null, time());
-        } elseif ($time instanceof DateTime) {
+        } elseif ($time instanceof DateTimeInterface) {
             $date = $time;
         } else {
             $date = $locale->utcToStore(null, strtotime($time));

@@ -27,7 +27,7 @@ use Maho\Data\Form\Element\AbstractElement;
 class Date extends AbstractElement
 {
     /**
-     * @var DateTime|string
+     * @var DateTimeInterface|string
      */
     protected $_value;
 
