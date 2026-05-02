@@ -14779,12 +14779,6 @@ parameters:
 			path: app/code/core/Mage/ImportExport/Model/Import/Entity/Abstract.php
 
 		-
-			rawMessage: 'Parameter #1 $str of method Mage_Core_Helper_UnserializeArray::unserialize() expects string, array given.'
-			identifier: argument.type
-			count: 1
-			path: app/code/core/Mage/ImportExport/Model/Import/Entity/Customer.php
-
-		-
 			rawMessage: 'Method Mage_ImportExport_Model_Import_Entity_Product::_filterRowData() has no return type specified.'
 			identifier: missingType.return
 			count: 1
