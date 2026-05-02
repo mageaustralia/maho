@@ -14,9 +14,11 @@ declare(strict_types=1);
 $installer = $this;
 $installer->startSetup();
 
-// Drop MySQL-only `ON UPDATE CURRENT_TIMESTAMP` clause on timestamp columns that were originally
-// declared with TIMESTAMP_INIT_UPDATE. Value is now managed explicitly in PHP (see Mage_Core_Model_Flag::_beforeSave)
-// for cross-engine parity (see issue #856).
+// Drop MySQL-only `ON UPDATE CURRENT_TIMESTAMP` clause on timestamp columns — value is now
+// managed via PHP _beforeSave for cross-engine parity. `core/flag.last_update` was originally
+// declared with TIMESTAMP_INIT_UPDATE (#856); `core/config_data.updated_at` was added via
+// upgrade-1.6.0.8-1.6.0.9 without options, which on MySQL receives the implicit
+// `ON UPDATE CURRENT_TIMESTAMP` injection (#857).
 if ($installer->getConnection() instanceof \Maho\Db\Adapter\Pdo\Mysql) {
     $installer->getConnection()->modifyColumn(
         $installer->getTable('core/flag'),
@@ -26,6 +28,16 @@ if ($installer->getConnection() instanceof \Maho\Db\Adapter\Pdo\Mysql) {
             'nullable' => false,
             'default'  => Maho\Db\Ddl\Table::TIMESTAMP_INIT,
             'comment'  => 'Date of Last Flag Update',
+        ],
+    );
+    $installer->getConnection()->modifyColumn(
+        $installer->getTable('core/config_data'),
+        'updated_at',
+        [
+            'type'     => Maho\Db\Ddl\Table::TYPE_TIMESTAMP,
+            'nullable' => false,
+            'default'  => Maho\Db\Ddl\Table::TIMESTAMP_INIT,
+            'comment'  => 'Last Update Time',
         ],
     );
 }
