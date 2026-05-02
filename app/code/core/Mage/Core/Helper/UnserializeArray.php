@@ -13,9 +13,9 @@
 class Mage_Core_Helper_UnserializeArray extends Mage_Core_Helper_Abstract
 {
     /**
-     * @param string $str
-     * @return array
-     * @throws Exception
+     * @param mixed $str  Serialized string, JSON string, or already-decoded value (passed through)
+     * @return mixed      Decoded array for serialized/JSON input; input unchanged for non-string input
+     * @throws Exception  When string input cannot be decoded
      * @SuppressWarnings("PHPMD.ErrorControlOperator")
      */
     public function unserialize($str)
