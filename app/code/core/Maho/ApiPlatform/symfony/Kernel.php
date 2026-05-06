@@ -33,7 +33,32 @@ class Kernel extends BaseKernel
 
     public function __construct(string $environment = 'prod', bool $debug = false)
     {
+        $this->resolveEnvironmentVars();
         parent::__construct($environment, $debug);
+    }
+
+    /**
+     * Resolve env vars from Maho config so they're available when
+     * configureContainer() runs `%env(APP_SECRET)%` / `%env(CORS_ALLOW_ORIGIN)%`.
+     * Mage must already be initialized before constructing the kernel.
+     */
+    private function resolveEnvironmentVars(): void
+    {
+        if (!isset($_ENV['APP_SECRET'])) {
+            $_ENV['APP_SECRET'] = \Mage::getStoreConfig('apiplatform/oauth2/secret')
+                ?: hash('sha256', (string) \Mage::getConfig()->getNode('global/crypt/key') . 'symfony_app_secret');
+        }
+
+        if (!isset($_ENV['CORS_ALLOW_ORIGIN'])) {
+            $corsOrigins = \Mage::getStoreConfig('apiplatform/general/cors_origins');
+            if (!$corsOrigins) {
+                $baseUrl = (string) \Mage::getStoreConfig('web/secure/base_url');
+                $parsed = parse_url($baseUrl);
+                $corsOrigins = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? 'localhost')
+                    . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
+            }
+            $_ENV['CORS_ALLOW_ORIGIN'] = $corsOrigins;
+        }
     }
 
     #[\Override]
@@ -240,8 +265,7 @@ class Kernel extends BaseKernel
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
         $routes->import('.', 'api_platform')->prefix('/api');
-        // Controller routes loaded via Maho routing, not Symfony attributes
-        // $routes->import('%kernel.project_dir%/Controller/', 'attribute');
+        $routes->import('%kernel.project_dir%/Controller/', 'attribute');
     }
 
     /**

@@ -11,94 +11,43 @@ declare(strict_types=1);
  */
 
 /**
- * API Platform Controller
+ * Legacy SOAP/XML-RPC/JSON-RPC dispatcher.
  *
- * Routes /api/* requests to Symfony/API Platform.
- * Legacy paths (soap, v2_soap, xmlrpc, jsonrpc) are forwarded to the original Mage_Api controllers.
+ * Modern /api/* requests are rewritten to rest.php (Symfony API Platform). The
+ * .htaccess RewriteCond at public/.htaccess:76 carves out the four legacy paths
+ * below so they fall through to index.php, where these #[Route] attributes match
+ * and forward to the original Mage_Api_*Controller classes.
  */
 class Maho_ApiPlatform_IndexController extends Mage_Core_Controller_Front_Action
 {
-    private const LEGACY_CONTROLLERS = [
-        'soap'    => 'Mage_Api_SoapController',
-        'v2_soap' => 'Mage_Api_V2_SoapController',
-        'xmlrpc'  => 'Mage_Api_XmlrpcController',
-        'jsonrpc' => 'Mage_Api_JsonrpcController',
-    ];
-
-    #[\Override]
-    public function preDispatch(): static
+    #[Maho\Config\Route('/api/soap', methods: ['GET', 'POST'])]
+    public function soapAction(): void
     {
-        parent::preDispatch();
-
-        $pathInfo = trim($this->getRequest()->getPathInfo(), '/');
-        $parts = explode('/', $pathInfo);
-        $controllerName = $parts[1] ?? '';
-
-        if (isset(self::LEGACY_CONTROLLERS[$controllerName])) {
-            $controllerClass = self::LEGACY_CONTROLLERS[$controllerName];
-            $controller = new $controllerClass($this->getRequest(), $this->getResponse());
-            $controller->dispatch('index');
-
-            $this->setFlag('', self::FLAG_NO_DISPATCH, true);
-            $this->setFlag('', self::FLAG_NO_POST_DISPATCH, true);
-        }
-
-        return $this;
+        $this->forwardToLegacy(Mage_Api_SoapController::class);
     }
 
-    /**
-     * Catch-all action for API Platform
-     */
-    public function indexAction(): void
+    #[Maho\Config\Route('/api/v2_soap', methods: ['GET', 'POST'])]
+    public function v2SoapAction(): void
     {
-        if (!Mage::getStoreConfigFlag('apiplatform/general/enabled')) {
-            $this->getResponse()
-                ->setHttpResponseCode(503)
-                ->setHeader('Content-Type', 'application/json')
-                ->setBody(json_encode([
-                    'error' => 'API Platform is not enabled',
-                    'message' => 'Please enable API Platform in System > Configuration > Services > API Platform',
-                ]));
-            return;
-        }
+        $this->forwardToLegacy(Mage_Api_V2_SoapController::class);
+    }
 
-        // Set environment variables for Symfony
-        $_ENV['APP_SECRET'] = Mage::getStoreConfig('apiplatform/oauth2/secret')
-            ?: hash('sha256', (string) Mage::getConfig()->getNode('global/crypt/key') . 'symfony_app_secret');
-        $corsOrigins = Mage::getStoreConfig('apiplatform/general/cors_origins');
-        if (!$corsOrigins) {
-            $baseUrl = (string) Mage::getStoreConfig('web/secure/base_url');
-            $parsed = parse_url($baseUrl);
-            $corsOrigins = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? 'localhost')
-                . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
-        }
-        $_ENV['CORS_ALLOW_ORIGIN'] = $corsOrigins;
+    #[Maho\Config\Route('/api/xmlrpc', methods: ['GET', 'POST'])]
+    public function xmlrpcAction(): void
+    {
+        $this->forwardToLegacy(Mage_Api_XmlrpcController::class);
+    }
 
-        // Boot Symfony kernel
-        $kernel = new \Maho\ApiPlatform\Kernel('prod', false);
-        $request = \Symfony\Component\HttpFoundation\Request::createFromGlobals();
-        $response = $kernel->handle($request);
-        $response->send();
-        $kernel->terminate($request, $response);
+    #[Maho\Config\Route('/api/jsonrpc', methods: ['GET', 'POST'])]
+    public function jsonrpcAction(): void
+    {
+        $this->forwardToLegacy(Mage_Api_JsonrpcController::class);
+    }
 
-        // Prevent Maho from sending additional response
+    private function forwardToLegacy(string $controllerClass): void
+    {
+        $controller = new $controllerClass($this->getRequest(), $this->getResponse());
+        $controller->dispatch('index');
         $this->setFlag('', self::FLAG_NO_POST_DISPATCH, true);
-        $this->setFlag('', self::FLAG_NO_DISPATCH, true);
-    }
-
-    /**
-     * GraphQL endpoint
-     */
-    public function graphqlAction(): void
-    {
-        $this->indexAction();
-    }
-
-    /**
-     * Documentation endpoint
-     */
-    public function docsAction(): void
-    {
-        $this->indexAction();
     }
 }

@@ -117,15 +117,6 @@
                 </Maho_ApiPlatform>
             </modules>
         </translate>
-        <routers>
-            <apiplatform>
-                <use>standard</use>
-                <args>
-                    <module>Maho_ApiPlatform</module>
-                    <frontName>api</frontName>
-                </args>
-            </apiplatform>
-        </routers>
     </frontend>
     <admin>
         <routers>
