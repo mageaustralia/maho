@@ -12,7 +12,7 @@
 <config>
     <modules>
         <Mage_Contacts>
-            <version>1.6.0.0</version>
+            <version>1.6.0.1</version>
         </Mage_Contacts>
     </modules>
     <frontend>
@@ -72,6 +72,11 @@
             <contacts>
                 <enabled>1</enabled>
             </contacts>
+            <api>
+                <enabled>1</enabled>
+                <honeypot_enabled>1</honeypot_enabled>
+                <rate_limit>3</rate_limit>
+            </api>
             <email>
                 <recipient_email><![CDATA[hello@example.com]]></recipient_email>
                 <sender_email_identity>custom2</sender_email_identity>
