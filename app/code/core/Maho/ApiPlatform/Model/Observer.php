@@ -61,25 +61,11 @@ class Maho_ApiPlatform_Model_Observer
             return;
         }
 
-        /** @var Maho_ApiPlatform_Helper_Data $helper */
-        $helper = Mage::helper('apiplatform');
-        $sunsetDate = $helper->getLegacySunsetDate();
-
         // RFC 8594 Deprecation header
         $response->setHeader('Deprecation', 'true', true);
 
-        // RFC 8594 Sunset header with validation
-        $sunsetTimestamp = strtotime($sunsetDate);
-        if ($sunsetTimestamp === false) {
-            Mage::log(
-                'Invalid legacy_sunset_date configuration: ' . $sunsetDate,
-                Mage::LOG_ERROR,
-                'apiplatform.log',
-            );
-            $sunsetTimestamp = strtotime(Maho_ApiPlatform_Helper_Data::DEFAULT_LEGACY_SUNSET_DATE);
-        }
-        $sunsetFormatted = gmdate('D, d M Y H:i:s', $sunsetTimestamp) . ' GMT';
-        $response->setHeader('Sunset', $sunsetFormatted, true);
+        // RFC 8594 Sunset header — legacy SOAP/REST APIs disabled on 2027-05-31
+        $response->setHeader('Sunset', 'Mon, 31 May 2027 00:00:00 GMT', true);
 
         // Link to successor version
         $successorPath = $this->getSuccessorPath($path);

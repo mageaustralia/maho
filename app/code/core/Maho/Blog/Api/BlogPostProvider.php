@@ -81,7 +81,7 @@ final class BlogPostProvider extends CrudProvider
         $collection->addFieldToFilter('publish_date', [
             'or' => [
                 ['null' => true],
-                ['lteq' => \Mage_Core_Model_Locale::nowUtc()],
+                ['lteq' => \Mage::app()->getLocale()->formatDateForDb('now')],
             ],
         ]);
     }

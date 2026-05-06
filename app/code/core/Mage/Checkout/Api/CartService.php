@@ -923,7 +923,7 @@ class CartService
 
             // Add PO number for purchaseorder payment method
             if ($paymentMethod === 'purchaseorder') {
-                $paymentData['po_number'] = 'POS-' . \Mage::getModel('core/date')->date('YmdHis');
+                $paymentData['po_number'] = 'POS-' . \Mage::app()->getLocale()->utcToStore()->format('YmdHis');
             }
 
             $orderCreateModel->getQuote()->getPayment()->addData($paymentData);

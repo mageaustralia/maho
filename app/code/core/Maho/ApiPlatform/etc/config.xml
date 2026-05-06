@@ -160,7 +160,6 @@
         <apiplatform>
             <general>
                 <enabled>1</enabled>
-                <legacy_sunset_date>2028-01-01</legacy_sunset_date>
             </general>
             <cache>
                 <ttl>300</ttl>

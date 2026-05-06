@@ -17,10 +17,8 @@ declare(strict_types=1);
 class Maho_ApiPlatform_Helper_Data extends Mage_Core_Helper_Abstract
 {
     public const XML_PATH_ENABLED = 'apiplatform/general/enabled';
-    public const XML_PATH_LEGACY_SUNSET_DATE = 'apiplatform/general/legacy_sunset_date';
     public const XML_PATH_TOKEN_LIFETIME = 'apiplatform/oauth2/token_lifetime';
     public const XML_PATH_REFRESH_TOKEN_LIFETIME = 'apiplatform/oauth2/refresh_token_lifetime';
-    public const DEFAULT_LEGACY_SUNSET_DATE = '2028-01-01';
     public const DEFAULT_TOKEN_LIFETIME = 3600;
     public const DEFAULT_REFRESH_TOKEN_LIFETIME = 86400;
 
@@ -30,15 +28,6 @@ class Maho_ApiPlatform_Helper_Data extends Mage_Core_Helper_Abstract
     public function isEnabled(): bool
     {
         return Mage::getStoreConfigFlag(self::XML_PATH_ENABLED);
-    }
-
-    /**
-     * Get the sunset date for legacy APIs (SOAP/REST)
-     */
-    public function getLegacySunsetDate(): string
-    {
-        return Mage::getStoreConfig(self::XML_PATH_LEGACY_SUNSET_DATE)
-            ?: self::DEFAULT_LEGACY_SUNSET_DATE;
     }
 
     /**

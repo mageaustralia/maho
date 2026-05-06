@@ -162,7 +162,7 @@ class IdempotencyListener
                 'response_code' => $response->getStatusCode(),
                 'response_body' => $response->getContent(),
                 'response_headers' => json_encode($headersToStore),
-                'created_at' => \Mage::getModel('core/date')->gmtDate(),
+                'created_at' => \Mage::app()->getLocale()->formatDateForDb('now'),
             ]);
         } catch (\Exception $e) {
             // Duplicate key — another concurrent request stored it first, that's fine
@@ -198,7 +198,7 @@ class IdempotencyListener
         try {
             $write = $resource->getConnection('core_write');
             $table = $resource->getTableName(self::TABLE);
-            $cutoff = gmdate('Y-m-d H:i:s', time() - (self::TTL_HOURS * 3600));
+            $cutoff = \Mage::app()->getLocale()->formatDateForDb('-' . self::TTL_HOURS . ' hours');
             $write->delete($table, $write->quoteInto('created_at < ?', $cutoff));
         } catch (\Exception $e) {
             // Cleanup failure is non-critical

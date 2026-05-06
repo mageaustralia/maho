@@ -28,13 +28,6 @@
                             <sort_order>15</sort_order>
                             <show_in_default>1</show_in_default>
                         </cors_origins>
-                        <legacy_sunset_date translate="label comment">
-                            <label>Legacy API Sunset Date</label>
-                            <comment>Date when legacy SOAP/REST APIs will be disabled</comment>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>20</sort_order>
-                            <show_in_default>1</show_in_default>
-                        </legacy_sunset_date>
                     </fields>
                 </general>
                 <cache translate="label">

@@ -89,10 +89,10 @@ class Maho_Giftcard_Model_Giftcard extends Mage_Core_Model_Abstract
                 $this->setStatus(self::STATUS_ACTIVE);
             }
 
-            $this->setData('created_at', Mage_Core_Model_Locale::nowUtc());
+            $this->setData('created_at', Mage::app()->getLocale()->formatDateForDb('now'));
         }
 
-        $this->setData('updated_at', Mage_Core_Model_Locale::nowUtc());
+        $this->setData('updated_at', Mage::app()->getLocale()->formatDateForDb('now'));
 
         return parent::_beforeSave();
     }

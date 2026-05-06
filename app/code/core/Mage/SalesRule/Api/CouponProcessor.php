@@ -298,7 +298,7 @@ final class CouponProcessor extends \Maho\ApiPlatform\Processor
             return $dto;
         }
 
-        $now = \Mage::getModel('core/date')->gmtDate('Y-m-d');
+        $now = \Mage::app()->getLocale()->formatDateForDb('now', withTime: false);
         if ($rule->getFromDate() && $now < $rule->getFromDate()) {
             $dto->isValid = false;
             $dto->validationMessage = 'Coupon is not yet active';
