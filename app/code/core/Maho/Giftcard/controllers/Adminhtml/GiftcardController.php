@@ -49,6 +49,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Index action - gift card grid
      */
+    #[Maho\Config\Route('/admin/giftcard/index')]
     public function indexAction(): void
     {
         $this->_initAction();
@@ -59,6 +60,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Grid action for AJAX
      */
+    #[Maho\Config\Route('/admin/giftcard/grid')]
     public function gridAction(): void
     {
         $this->loadLayout();
@@ -68,6 +70,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * New gift card
      */
+    #[Maho\Config\Route('/admin/giftcard/new')]
     public function newAction(): void
     {
         $this->_forward('edit');
@@ -76,6 +79,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Edit gift card
      */
+    #[Maho\Config\Route('/admin/giftcard/edit')]
     public function editAction(): void
     {
         $id = $this->getRequest()->getParam('id');
@@ -110,6 +114,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Save gift card
      */
+    #[Maho\Config\Route('/admin/giftcard/save')]
     public function saveAction(): void
     {
         if ($data = $this->getRequest()->getPost()) {
@@ -160,6 +165,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Delete gift card
      */
+    #[Maho\Config\Route('/admin/giftcard/delete')]
     public function deleteAction(): void
     {
         if ($id = $this->getRequest()->getParam('id')) {
@@ -190,6 +196,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Mass delete action
      */
+    #[Maho\Config\Route('/admin/giftcard/massDelete')]
     public function massDeleteAction(): void
     {
         $giftcardIds = $this->getRequest()->getParam('giftcard');
@@ -222,6 +229,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Mass status change action
      */
+    #[Maho\Config\Route('/admin/giftcard/massStatus')]
     public function massStatusAction(): void
     {
         $giftcardIds = $this->getRequest()->getParam('giftcard');
@@ -257,6 +265,7 @@ class Maho_Giftcard_Adminhtml_GiftcardController extends Mage_Adminhtml_Controll
     /**
      * Check balance action (AJAX)
      */
+    #[Maho\Config\Route('/admin/giftcard/checkBalance')]
     public function checkBalanceAction(): void
     {
         $this->getResponse()->setHeader('Content-Type', 'application/json', true);
