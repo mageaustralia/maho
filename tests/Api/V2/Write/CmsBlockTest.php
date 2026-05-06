@@ -26,7 +26,7 @@ afterAll(function (): void {
 describe('CMS Block Permission Enforcement (REST)', function (): void {
 
     it('denies create without authentication', function (): void {
-        $response = apiPost('/api/cms-blocks', [
+        $response = apiPost('/api/rest/v2/cms-blocks', [
             'identifier' => 'test-block-noauth',
             'title' => 'Test Block No Auth',
             'content' => '<p>Should fail</p>',
@@ -36,7 +36,7 @@ describe('CMS Block Permission Enforcement (REST)', function (): void {
     });
 
     it('denies create with customer token (wrong role)', function (): void {
-        $response = apiPost('/api/cms-blocks', [
+        $response = apiPost('/api/rest/v2/cms-blocks', [
             'identifier' => 'test-block-customer',
             'title' => 'Test Block Customer',
             'content' => '<p>Should fail</p>',
@@ -47,7 +47,7 @@ describe('CMS Block Permission Enforcement (REST)', function (): void {
 
     it('denies create without correct permission', function (): void {
         $token = serviceToken(['cms-pages/write']);
-        $response = apiPost('/api/cms-blocks', [
+        $response = apiPost('/api/rest/v2/cms-blocks', [
             'identifier' => 'test-block-noperm',
             'title' => 'Test Block No Permission',
             'content' => '<p>Should fail</p>',
@@ -65,7 +65,7 @@ describe('CMS Block CRUD Lifecycle (REST)', function (): void {
         $deleteToken = serviceToken(['cms-blocks/delete']);
 
         // 1. Create
-        $create = apiPost('/api/cms-blocks', [
+        $create = apiPost('/api/rest/v2/cms-blocks', [
             'identifier' => 'test-pest-crud-block',
             'title' => 'Test CRUD Block',
             'content' => '<p>Created by Pest test suite</p>',
@@ -82,12 +82,12 @@ describe('CMS Block CRUD Lifecycle (REST)', function (): void {
         trackCreated('cms_block', $blockId);
 
         // 2. Read (public, no auth)
-        $read = apiGet("/api/cms-blocks/{$blockId}");
+        $read = apiGet("/api/rest/v2/cms-blocks/{$blockId}");
         expect($read['status'])->toBe(200);
         expect($read['json']['identifier'])->toBe('test-pest-crud-block');
 
         // 3. Update
-        $update = apiPut("/api/cms-blocks/{$blockId}", [
+        $update = apiPut("/api/rest/v2/cms-blocks/{$blockId}", [
             'title' => 'Test CRUD Block Updated',
             'content' => '<p>Updated by Pest test suite</p>',
         ], $writeToken);
@@ -95,21 +95,21 @@ describe('CMS Block CRUD Lifecycle (REST)', function (): void {
         expect($update['json']['title'])->toBe('Test CRUD Block Updated');
 
         // 4. Verify update persisted
-        $verify = apiGet("/api/cms-blocks/{$blockId}");
+        $verify = apiGet("/api/rest/v2/cms-blocks/{$blockId}");
         expect($verify['status'])->toBe(200);
         expect($verify['json']['title'])->toBe('Test CRUD Block Updated');
         expect($verify['json']['content'])->toContain('Updated by Pest');
 
         // 5. Deny delete with only write permission
-        $denyDelete = apiDelete("/api/cms-blocks/{$blockId}", $writeToken);
+        $denyDelete = apiDelete("/api/rest/v2/cms-blocks/{$blockId}", $writeToken);
         expect($denyDelete['status'])->toBeForbidden();
 
         // 6. Delete with correct permission
-        $delete = apiDelete("/api/cms-blocks/{$blockId}", $deleteToken);
+        $delete = apiDelete("/api/rest/v2/cms-blocks/{$blockId}", $deleteToken);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // 7. Confirm gone
-        $gone = apiGet("/api/cms-blocks/{$blockId}");
+        $gone = apiGet("/api/rest/v2/cms-blocks/{$blockId}");
         expect($gone['status'])->toBeNotFound();
     });
 
@@ -121,7 +121,7 @@ describe('CMS Block CRUD with "all" permission', function (): void {
         $token = serviceToken(['all']);
 
         // Create
-        $create = apiPost('/api/cms-blocks', [
+        $create = apiPost('/api/rest/v2/cms-blocks', [
             'identifier' => 'test-pest-all-perm-block',
             'title' => 'All Permission Block',
             'content' => '<p>All permission test</p>',
@@ -134,21 +134,21 @@ describe('CMS Block CRUD with "all" permission', function (): void {
         trackCreated('cms_block', $blockId);
 
         // Read (public)
-        $read = apiGet("/api/cms-blocks/{$blockId}");
+        $read = apiGet("/api/rest/v2/cms-blocks/{$blockId}");
         expect($read['status'])->toBe(200);
 
         // Update
-        $update = apiPut("/api/cms-blocks/{$blockId}", [
+        $update = apiPut("/api/rest/v2/cms-blocks/{$blockId}", [
             'title' => 'All Permission Block Updated',
         ], $token);
         expect($update['status'])->toBe(200);
 
         // Delete
-        $delete = apiDelete("/api/cms-blocks/{$blockId}", $token);
+        $delete = apiDelete("/api/rest/v2/cms-blocks/{$blockId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Confirm gone
-        $gone = apiGet("/api/cms-blocks/{$blockId}");
+        $gone = apiGet("/api/rest/v2/cms-blocks/{$blockId}");
         expect($gone['status'])->toBeNotFound();
     });
 
@@ -184,7 +184,7 @@ describe('CMS Block via GraphQL (read)', function (): void {
         $token = serviceToken(['cms-blocks/write', 'cms-blocks/delete']);
 
         // Create via REST
-        $create = apiPost('/api/cms-blocks', [
+        $create = apiPost('/api/rest/v2/cms-blocks', [
             'identifier' => 'test-pest-gql-verify-block',
             'title' => 'GraphQL Verify Block',
             'content' => '<p>Verify via GraphQL</p>',
@@ -215,7 +215,7 @@ describe('CMS Block via GraphQL (read)', function (): void {
         expect($response['json']['data']['cmsBlockByIdentifierCmsBlock']['identifier'])->toBe('test-pest-gql-verify-block');
 
         // Cleanup via REST
-        $delete = apiDelete("/api/cms-blocks/{$blockId}", $token);
+        $delete = apiDelete("/api/rest/v2/cms-blocks/{$blockId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
     });
 

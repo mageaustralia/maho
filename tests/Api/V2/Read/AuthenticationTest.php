@@ -22,14 +22,14 @@ describe('API v2 Authentication', function (): void {
     describe('without token', function (): void {
 
         it('rejects requests to protected endpoints without token', function (): void {
-            // Use /api/customers/me which requires authentication (not public like /api/products)
-            $response = apiGet('/api/customers/me');
+            // Use /api/rest/v2/customers/me which requires authentication (not public like /api/rest/v2/products)
+            $response = apiGet('/api/rest/v2/customers/me');
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('returns proper error message for missing token', function (): void {
-            $response = apiGet('/api/customers/me');
+            $response = apiGet('/api/rest/v2/customers/me');
 
             expect($response['status'])->toBe(401);
             // Returns standardized error format with 'error' and 'message'
@@ -42,13 +42,13 @@ describe('API v2 Authentication', function (): void {
     describe('with invalid token', function (): void {
 
         it('rejects requests with malformed token', function (): void {
-            $response = apiGet('/api/customers/me', 'not-a-valid-jwt-token');
+            $response = apiGet('/api/rest/v2/customers/me', 'not-a-valid-jwt-token');
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('rejects requests with token signed by wrong secret', function (): void {
-            $response = apiGet('/api/customers/me', invalidToken());
+            $response = apiGet('/api/rest/v2/customers/me', invalidToken());
 
             expect($response['status'])->toBeUnauthorized();
         });
@@ -58,7 +58,7 @@ describe('API v2 Authentication', function (): void {
     describe('with expired token', function (): void {
 
         it('rejects requests with expired token', function (): void {
-            $response = apiGet('/api/customers/me', expiredToken());
+            $response = apiGet('/api/rest/v2/customers/me', expiredToken());
 
             expect($response['status'])->toBeUnauthorized();
             expect($response['json']['message'] ?? '')->toContain('expired');
@@ -69,13 +69,13 @@ describe('API v2 Authentication', function (): void {
     describe('with valid customer token', function (): void {
 
         it('accepts requests with valid customer token', function (): void {
-            $response = apiGet('/api/products', customerToken());
+            $response = apiGet('/api/rest/v2/products', customerToken());
 
             expect($response['status'])->toBeSuccessful();
         });
 
         it('can access product list', function (): void {
-            $response = apiGet('/api/products', customerToken());
+            $response = apiGet('/api/rest/v2/products', customerToken());
 
             expect($response['status'])->toBe(200);
             // API Platform returns hydra format or JSON-LD
@@ -87,7 +87,7 @@ describe('API v2 Authentication', function (): void {
     describe('with valid admin token', function (): void {
 
         it('accepts requests with valid admin token', function (): void {
-            $response = apiGet('/api/products', adminToken());
+            $response = apiGet('/api/rest/v2/products', adminToken());
 
             expect($response['status'])->toBeSuccessful();
         });
@@ -95,7 +95,7 @@ describe('API v2 Authentication', function (): void {
         it('can access admin-level endpoints', function (): void {
             // Test with a single order endpoint instead of collection
             // Collection endpoints require additional provider implementation
-            $response = apiGet('/api/products', adminToken());
+            $response = apiGet('/api/rest/v2/products', adminToken());
 
             // Admin should be able to access protected endpoints
             expect($response['status'])->toBeSuccessful();
@@ -112,7 +112,7 @@ describe('API v2 Authentication', function (): void {
                 'type' => 'customer',
             ]);
 
-            $response = apiGet('/api/customers/me', $token);
+            $response = apiGet('/api/rest/v2/customers/me', $token);
 
             // Should fail validation
             expect($response['status'])->toBeUnauthorized();

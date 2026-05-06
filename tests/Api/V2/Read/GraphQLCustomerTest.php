@@ -79,7 +79,7 @@ describe('GraphQL Customer By ID Query', function (): void {
 
     it('returns customer by IRI for admin', function (): void {
         $customerId = fixtures('customer_id');
-        $iri = "/api/customers/{$customerId}";
+        $iri = "/api/rest/v2/customers/{$customerId}";
 
         $query = <<<GRAPHQL
         {
@@ -105,7 +105,7 @@ describe('GraphQL Customer By ID Query', function (): void {
 
     it('denies customer by ID for regular customer', function (): void {
         $customerId = fixtures('customer_id');
-        $iri = "/api/customers/{$customerId}";
+        $iri = "/api/rest/v2/customers/{$customerId}";
 
         $query = <<<GRAPHQL
         {

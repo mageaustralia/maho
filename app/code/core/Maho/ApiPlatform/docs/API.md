@@ -55,17 +55,17 @@ All authenticated endpoints require a Bearer token in the `Authorization` header
 
 ```bash
 # Customer login
-curl -X POST /api/auth/token \
+curl -X POST /api/rest/v2/auth/token \
   -H 'Content-Type: application/json' \
   -d '{"email": "customer@example.com", "password": "password123"}'
 
 # Admin login
-curl -X POST /api/auth/token \
+curl -X POST /api/rest/v2/auth/token \
   -H 'Content-Type: application/json' \
   -d '{"username": "admin", "password": "admin123", "type": "admin"}'
 
 # API key login
-curl -X POST /api/auth/token \
+curl -X POST /api/rest/v2/auth/token \
   -H 'Content-Type: application/json' \
   -d '{"api_key": "your-api-key", "api_secret": "your-api-secret", "type": "api"}'
 ```
@@ -82,13 +82,13 @@ curl -X POST /api/auth/token \
 
 **Use the token:**
 ```bash
-curl /api/products \
+curl /api/rest/v2/products \
   -H 'Authorization: Bearer eyJ...'
 ```
 
 **Refresh a token:**
 ```bash
-curl -X POST /api/auth/refresh \
+curl -X POST /api/rest/v2/auth/refresh \
   -H 'Content-Type: application/json' \
   -d '{"refresh_token": "abc123..."}'
 ```
@@ -96,10 +96,10 @@ curl -X POST /api/auth/refresh \
 **Other auth endpoints:**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/auth/me` | Get current user info |
-| POST | `/api/auth/forgot-password` | Send password reset email |
-| POST | `/api/auth/reset-password` | Reset password with token |
-| POST | `/api/auth/logout` | Invalidate token |
+| GET | `/api/rest/v2/auth/me` | Get current user info |
+| POST | `/api/rest/v2/auth/forgot-password` | Send password reset email |
+| POST | `/api/rest/v2/auth/reset-password` | Reset password with token |
+| POST | `/api/rest/v2/auth/logout` | Invalidate token |
 
 ### Permission Levels
 
@@ -164,11 +164,11 @@ All responses include:
 **Conditional requests:**
 ```bash
 # First request — note the ETag
-curl -v /api/products/123
+curl -v /api/rest/v2/products/123
 # < ETag: "abc123"
 
 # Subsequent request — get 304 if unchanged
-curl /api/products/123 -H 'If-None-Match: "abc123"'
+curl /api/rest/v2/products/123 -H 'If-None-Match: "abc123"'
 # Returns 304 Not Modified (no body)
 ```
 
@@ -180,14 +180,14 @@ Protect against duplicate mutations by including `X-Idempotency-Key` on POST/PUT
 
 ```bash
 # First request — processed normally
-curl -X POST /api/orders/123/credit-memos \
+curl -X POST /api/rest/v2/orders/123/credit-memos \
   -H 'Authorization: Bearer eyJ...' \
   -H 'X-Idempotency-Key: refund-order-123-v1' \
   -H 'Content-Type: application/json' \
   -d '{"items": [{"orderItemId": 456, "qty": 1}]}'
 
 # Duplicate request — returns stored response
-curl -X POST /api/orders/123/credit-memos \
+curl -X POST /api/rest/v2/orders/123/credit-memos \
   -H 'Authorization: Bearer eyJ...' \
   -H 'X-Idempotency-Key: refund-order-123-v1' \
   -H 'Content-Type: application/json' \
@@ -209,7 +209,7 @@ The API supports GraphQL via API Platform's built-in GraphQL support.
 ```graphql
 # Example: Get a product
 query {
-  product(id: "/api/products/123") {
+  product(id: "/api/rest/v2/products/123") {
     id
     sku
     name
@@ -400,7 +400,7 @@ mutation {
 
 **Create shipment:**
 ```bash
-curl -X POST /api/orders/123/shipments \
+curl -X POST /api/rest/v2/orders/123/shipments \
   -H 'Authorization: Bearer eyJ...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -422,7 +422,7 @@ curl -X POST /api/orders/123/shipments \
 
 **Create a credit memo:**
 ```bash
-curl -X POST /api/orders/123/credit-memos \
+curl -X POST /api/rest/v2/orders/123/credit-memos \
   -H 'Authorization: Bearer eyJ...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -516,7 +516,7 @@ Fast direct-SQL stock updates — no model overhead, no observers.
 
 **Single update:**
 ```bash
-curl -X PUT /api/inventory \
+curl -X PUT /api/rest/v2/inventory \
   -H 'Authorization: Bearer eyJ...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -541,7 +541,7 @@ curl -X PUT /api/inventory \
 
 **Bulk update:**
 ```bash
-curl -X PUT /api/inventory/bulk \
+curl -X PUT /api/rest/v2/inventory/bulk \
   -H 'Authorization: Bearer eyJ...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -604,7 +604,7 @@ Full CRUD for coupon/discount rule management + validation.
 
 **Create a coupon:**
 ```bash
-curl -X POST /api/coupons \
+curl -X POST /api/rest/v2/coupons \
   -H 'Authorization: Bearer eyJ...' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -631,7 +631,7 @@ curl -X POST /api/coupons \
 
 **Validate a coupon:**
 ```bash
-curl -X POST /api/coupons/validate \
+curl -X POST /api/rest/v2/coupons/validate \
   -H 'Authorization: Bearer eyJ...' \
   -H 'Content-Type: application/json' \
   -d '{"code": "SUMMER25"}'
@@ -652,9 +652,9 @@ curl -X POST /api/coupons/validate \
 
 **Collection filters:**
 ```
-GET /api/coupons?code=SUMMER          # Filter by code (LIKE search)
-GET /api/coupons?isActive=true        # Filter by active status
-GET /api/coupons?page=2&itemsPerPage=50
+GET /api/rest/v2/coupons?code=SUMMER          # Filter by code (LIKE search)
+GET /api/rest/v2/coupons?isActive=true        # Filter by active status
+GET /api/rest/v2/coupons?page=2&itemsPerPage=50
 ```
 
 **GraphQL:**
@@ -1070,7 +1070,7 @@ Domain-specific traits that can be added to providers or processors as needed:
 
 ## Web Server Configuration
 
-All web servers must route `/api/*` requests to `rest.php` (the Symfony API Platform entry point). Below are example configurations for the three most common setups.
+All web servers must route the new API URLs (`/api/rest/v2/*`, `/api/graphql`, `/api/admin/graphql`, `/api/docs`) to `rest.php` (the Symfony API Platform entry point), while letting legacy paths (`/api/rest`, `/api/soap`, `/api/v2_soap`, `/api/xmlrpc`, `/api/jsonrpc`) fall through to the original Magento 1 controllers. Below are example configurations for the three most common setups.
 
 ### Why rest.php, not index.php?
 
@@ -1080,7 +1080,9 @@ Both paths end up at the same Symfony kernel; `rest.php` is just leaner. Maho is
 
 ### Router-shim fallback for environments without rewrite rules
 
-For environments where web-server rewrite rules aren't configured (FrankenPHP with default Caddyfile, `php -S` dev servers, shared hosting without mod_rewrite), Maho also routes the canonical Symfony URLs `/api/graphql` and `/api/docs` through `index.php` via `GraphqlController`/`DocsController` shims that forward to `IndexController::indexAction()`. This means `/api/graphql` will work even without the web-server configuration below — just ~50 ms slower per request. REST resource paths (`/api/products`, `/api/cart`, etc.) still require the rewrite rules below to route through `rest.php`.
+For environments where web-server rewrite rules aren't configured (FrankenPHP with default Caddyfile, `php -S` dev servers, shared hosting without mod_rewrite), Maho also routes the canonical Symfony URLs `/api/graphql` and `/api/docs` through `index.php` via `GraphqlController`/`DocsController` shims that forward to `IndexController::indexAction()`. This means `/api/graphql` will work even without the web-server configuration below — just ~50 ms slower per request. REST resource paths (`/api/rest/v2/products`, `/api/rest/v2/cart`, etc.) still require the rewrite rules below to route through `rest.php`.
+
+The bundled `public/.htaccess` already implements this routing — the snippets below are for installations using nginx/Caddy or for operators who need to replicate the behaviour in a different web server.
 
 ### Legacy SOAP / XMLRPC / JSONRPC
 
@@ -1091,8 +1093,12 @@ For environments where web-server rewrite rules aren't configured (FrankenPHP wi
 Add these blocks **before** the main `location /` block in your nginx config.
 
 ```nginx
-# API Platform REST/GraphQL endpoints - no basic auth required
-location ^~ /api/ {
+# API Platform endpoints (new REST + GraphQL + docs) — no basic auth required.
+# Matches /api/rest/v2/*, /api/graphql, /api/admin/graphql, /api/docs.
+# Explicitly EXCLUDES legacy paths (/api/rest, /api/soap, /api/v2_soap,
+# /api/xmlrpc, /api/jsonrpc) so the original Magento 1 controllers keep
+# handling them.
+location ~ ^/api/(rest/v2(/|$)|graphql$|admin/graphql$|docs(/|$)) {
     # Bypass any site-wide basic auth / IP restrictions
     satisfy any;
     allow all;
@@ -1139,8 +1145,8 @@ location = /rest.php {
 # Define zone in the http {} block:
 #   limit_req_zone $binary_remote_addr zone=api_write:10m rate=10r/s;
 #
-# Then add a location block BEFORE the ^~ /api/ block:
-#   location ~ ^/api/(newsletter|contact|auth/token|guest-carts) {
+# Then add a location block BEFORE the API Platform block above:
+#   location ~ ^/api/rest/v2/(newsletter|contact|auth/token|guest-carts) {
 #       satisfy any;
 #       allow all;
 #       auth_basic off;
@@ -1162,22 +1168,29 @@ Add these rules to your `public/.htaccess` **before** the main `RewriteRule .* i
     # Pass Authorization header through (required for JWT in CGI/FastCGI mode)
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Handle CORS preflight requests for /api/
+    # Handle CORS preflight requests for new API endpoints
     RewriteCond %{REQUEST_METHOD} OPTIONS
-    RewriteCond %{REQUEST_URI} ^/api/
+    RewriteCond %{REQUEST_URI} ^/api/(rest/v2/|graphql|admin/graphql|docs)
     RewriteRule ^(.*)$ $1 [R=204,L]
 
-    # Route /api/* to rest.php (Symfony API Platform)
-    RewriteCond %{REQUEST_URI} ^/api/
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^api/(.*)$ rest.php [QSA,L]
+    # Route new REST API to rest.php
+    RewriteRule ^api/rest/v2 rest.php [QSA,L]
+
+    # Legacy Magento 1 REST stays on api.php (must come AFTER the v2 rule)
+    RewriteRule ^api/rest api.php?type=rest [QSA,L]
+
+    # Route everything else under /api/* to rest.php, EXCEPT the legacy
+    # SOAP/XML-RPC/JSON-RPC paths which fall through to index.php and the
+    # original Mage_Api controllers.
+    RewriteCond %{REQUEST_URI} !^/api/(soap|v2_soap|xmlrpc|jsonrpc)(/|$)
+    RewriteRule ^api(/.*)?$ rest.php [QSA,L]
 
     # ---- End API Platform routing ----
 </IfModule>
 
 # CORS headers for API endpoints
 <IfModule mod_headers.c>
-    <LocationMatch "^/api/">
+    <LocationMatch "^/api/(rest/v2/|graphql|admin/graphql|docs)">
         Header always set Access-Control-Allow-Origin "*"
         Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
         Header always set Access-Control-Allow-Headers "Content-Type, Authorization, Accept, X-Store-Code, X-Idempotency-Key, If-None-Match"
@@ -1185,7 +1198,7 @@ Add these rules to your `public/.htaccess` **before** the main `RewriteRule .* i
     </LocationMatch>
 </IfModule>
 
-# If using basic auth site-wide, exclude /api/ and rest.php:
+# If using basic auth site-wide, exclude the API endpoints and rest.php:
 #
 # <LocationMatch "^/(api/|rest\.php)">
 #     Satisfy Any
@@ -1203,8 +1216,12 @@ maho.example.com {
 
     # ---- API Platform routing ----
 
-    # CORS headers for API endpoints
-    @api path /api/*
+    # Match new API endpoints (REST + GraphQL + docs). Legacy paths
+    # (/api/rest, /api/soap, /api/v2_soap, /api/xmlrpc, /api/jsonrpc)
+    # are NOT included so they fall through to the Magento 1 controllers.
+    @api {
+        path /api/rest/v2/* /api/graphql /api/admin/graphql /api/docs /api/docs/*
+    }
     header @api Access-Control-Allow-Origin "*"
     header @api Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
     header @api Access-Control-Allow-Headers "Content-Type, Authorization, Accept, X-Store-Code, X-Idempotency-Key, If-None-Match"
@@ -1213,13 +1230,13 @@ maho.example.com {
     # Handle CORS preflight
     @preflight {
         method OPTIONS
-        path /api/*
+        path /api/rest/v2/* /api/graphql /api/admin/graphql /api/docs /api/docs/*
     }
     respond @preflight 204
 
-    # Route /api/* to rest.php
+    # Route new API URLs to rest.php
     @apiRoute {
-        path /api/*
+        path /api/rest/v2/* /api/graphql /api/admin/graphql /api/docs /api/docs/*
         not file
     }
     rewrite @apiRoute /rest.php

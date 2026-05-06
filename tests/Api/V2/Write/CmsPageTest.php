@@ -26,7 +26,7 @@ afterAll(function (): void {
 describe('CMS Page Permission Enforcement (REST)', function (): void {
 
     it('denies create without authentication', function (): void {
-        $response = apiPost('/api/cms-pages', [
+        $response = apiPost('/api/rest/v2/cms-pages', [
             'identifier' => 'test-page-noauth',
             'title' => 'Test Page No Auth',
             'content' => '<p>Should fail</p>',
@@ -37,7 +37,7 @@ describe('CMS Page Permission Enforcement (REST)', function (): void {
     });
 
     it('denies create with customer token (wrong role)', function (): void {
-        $response = apiPost('/api/cms-pages', [
+        $response = apiPost('/api/rest/v2/cms-pages', [
             'identifier' => 'test-page-customer',
             'title' => 'Test Page Customer',
             'content' => '<p>Should fail</p>',
@@ -48,7 +48,7 @@ describe('CMS Page Permission Enforcement (REST)', function (): void {
 
     it('denies create without correct permission', function (): void {
         $token = serviceToken(['blog-posts/write']);
-        $response = apiPost('/api/cms-pages', [
+        $response = apiPost('/api/rest/v2/cms-pages', [
             'identifier' => 'test-page-noperm',
             'title' => 'Test Page No Permission',
             'content' => '<p>Should fail</p>',
@@ -66,7 +66,7 @@ describe('CMS Page CRUD Lifecycle (REST)', function (): void {
         $deleteToken = serviceToken(['cms-pages/delete']);
 
         // 1. Create
-        $create = apiPost('/api/cms-pages', [
+        $create = apiPost('/api/rest/v2/cms-pages', [
             'identifier' => 'test-pest-crud-page',
             'title' => 'Test CRUD Page',
             'content' => '<p>Created by Pest test suite</p>',
@@ -83,12 +83,12 @@ describe('CMS Page CRUD Lifecycle (REST)', function (): void {
         trackCreated('cms_page', $pageId);
 
         // 2. Read (public, no auth)
-        $read = apiGet("/api/cms-pages/{$pageId}");
+        $read = apiGet("/api/rest/v2/cms-pages/{$pageId}");
         expect($read['status'])->toBe(200);
         expect($read['json']['identifier'])->toBe('test-pest-crud-page');
 
         // 3. Update
-        $update = apiPut("/api/cms-pages/{$pageId}", [
+        $update = apiPut("/api/rest/v2/cms-pages/{$pageId}", [
             'title' => 'Test CRUD Page Updated',
             'content' => '<p>Updated by Pest test suite</p>',
         ], $writeToken);
@@ -96,21 +96,21 @@ describe('CMS Page CRUD Lifecycle (REST)', function (): void {
         expect($update['json']['title'])->toBe('Test CRUD Page Updated');
 
         // 4. Verify update persisted
-        $verify = apiGet("/api/cms-pages/{$pageId}");
+        $verify = apiGet("/api/rest/v2/cms-pages/{$pageId}");
         expect($verify['status'])->toBe(200);
         expect($verify['json']['title'])->toBe('Test CRUD Page Updated');
         expect($verify['json']['content'])->toContain('Updated by Pest');
 
         // 5. Deny delete with only write permission
-        $denyDelete = apiDelete("/api/cms-pages/{$pageId}", $writeToken);
+        $denyDelete = apiDelete("/api/rest/v2/cms-pages/{$pageId}", $writeToken);
         expect($denyDelete['status'])->toBeForbidden();
 
         // 6. Delete with correct permission
-        $delete = apiDelete("/api/cms-pages/{$pageId}", $deleteToken);
+        $delete = apiDelete("/api/rest/v2/cms-pages/{$pageId}", $deleteToken);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // 7. Confirm gone
-        $gone = apiGet("/api/cms-pages/{$pageId}");
+        $gone = apiGet("/api/rest/v2/cms-pages/{$pageId}");
         expect($gone['status'])->toBeNotFound();
     });
 
@@ -122,7 +122,7 @@ describe('CMS Page CRUD with "all" permission', function (): void {
         $token = serviceToken(['all']);
 
         // Create
-        $create = apiPost('/api/cms-pages', [
+        $create = apiPost('/api/rest/v2/cms-pages', [
             'identifier' => 'test-pest-all-perm-page',
             'title' => 'All Permission Page',
             'content' => '<p>All permission test</p>',
@@ -135,21 +135,21 @@ describe('CMS Page CRUD with "all" permission', function (): void {
         trackCreated('cms_page', $pageId);
 
         // Read (public)
-        $read = apiGet("/api/cms-pages/{$pageId}");
+        $read = apiGet("/api/rest/v2/cms-pages/{$pageId}");
         expect($read['status'])->toBe(200);
 
         // Update
-        $update = apiPut("/api/cms-pages/{$pageId}", [
+        $update = apiPut("/api/rest/v2/cms-pages/{$pageId}", [
             'title' => 'All Permission Page Updated',
         ], $token);
         expect($update['status'])->toBe(200);
 
         // Delete
-        $delete = apiDelete("/api/cms-pages/{$pageId}", $token);
+        $delete = apiDelete("/api/rest/v2/cms-pages/{$pageId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Confirm gone
-        $gone = apiGet("/api/cms-pages/{$pageId}");
+        $gone = apiGet("/api/rest/v2/cms-pages/{$pageId}");
         expect($gone['status'])->toBeNotFound();
     });
 
@@ -188,7 +188,7 @@ describe('CMS Page via GraphQL (read)', function (): void {
         $token = serviceToken(['cms-pages/write', 'cms-pages/delete']);
 
         // Create via REST
-        $create = apiPost('/api/cms-pages', [
+        $create = apiPost('/api/rest/v2/cms-pages', [
             'identifier' => 'test-pest-gql-verify-page',
             'title' => 'GraphQL Verify Page',
             'content' => '<p>Verify via GraphQL</p>',
@@ -201,7 +201,7 @@ describe('CMS Page via GraphQL (read)', function (): void {
         trackCreated('cms_page', $pageId);
 
         // Read via GraphQL by IRI
-        $iri = "/api/cms-pages/{$pageId}";
+        $iri = "/api/rest/v2/cms-pages/{$pageId}";
         $query = <<<GRAPHQL
         {
             cmsPage(id: "{$iri}") {
@@ -221,7 +221,7 @@ describe('CMS Page via GraphQL (read)', function (): void {
         expect($response['json']['data']['cmsPage']['title'])->toBe('GraphQL Verify Page');
 
         // Cleanup via REST
-        $delete = apiDelete("/api/cms-pages/{$pageId}", $token);
+        $delete = apiDelete("/api/rest/v2/cms-pages/{$pageId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
     });
 

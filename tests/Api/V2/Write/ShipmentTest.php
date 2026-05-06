@@ -18,16 +18,16 @@ declare(strict_types=1);
  * @group write
  */
 
-describe('POST /api/orders/{orderId}/shipments', function (): void {
+describe('POST /api/rest/v2/orders/{orderId}/shipments', function (): void {
 
     it('requires authentication', function (): void {
-        $response = apiPost('/api/orders/1/shipments', []);
+        $response = apiPost('/api/rest/v2/orders/1/shipments', []);
 
         expect($response['status'])->toBeUnauthorized();
     });
 
     it('returns 404 for non-existent order', function (): void {
-        $response = apiPost('/api/orders/999999999/shipments', [], adminToken());
+        $response = apiPost('/api/rest/v2/orders/999999999/shipments', [], adminToken());
 
         expect($response['status'])->toBeNotFound();
     });
@@ -40,7 +40,7 @@ describe('POST /api/orders/{orderId}/shipments', function (): void {
             $this->markTestSkipped('No shippable order found in database');
         }
 
-        $response = apiPost("/api/orders/{$orderId}/shipments", [
+        $response = apiPost("/api/rest/v2/orders/{$orderId}/shipments", [
             'notifyCustomer' => false,
             'comment' => 'Test shipment via API',
         ], adminToken());
@@ -63,7 +63,7 @@ describe('POST /api/orders/{orderId}/shipments', function (): void {
             $this->markTestSkipped('No shippable order found in database');
         }
 
-        $response = apiPost("/api/orders/{$orderId}/shipments", [
+        $response = apiPost("/api/rest/v2/orders/{$orderId}/shipments", [
             'tracks' => [
                 [
                     'carrierCode' => 'custom',
@@ -84,10 +84,10 @@ describe('POST /api/orders/{orderId}/shipments', function (): void {
 
 });
 
-describe('GET /api/orders/{orderId}/shipments', function (): void {
+describe('GET /api/rest/v2/orders/{orderId}/shipments', function (): void {
 
     it('requires authentication', function (): void {
-        $response = apiGet('/api/orders/1/shipments');
+        $response = apiGet('/api/rest/v2/orders/1/shipments');
 
         expect($response['status'])->toBeUnauthorized();
     });
@@ -99,7 +99,7 @@ describe('GET /api/orders/{orderId}/shipments', function (): void {
             $this->markTestSkipped('No order with shipments found');
         }
 
-        $response = apiGet("/api/orders/{$orderId}/shipments", adminToken());
+        $response = apiGet("/api/rest/v2/orders/{$orderId}/shipments", adminToken());
 
         expect($response['status'])->toBe(200);
         $items = $response['json']['hydra:member'] ?? $response['json']['member'] ?? $response['json'];
@@ -108,16 +108,16 @@ describe('GET /api/orders/{orderId}/shipments', function (): void {
 
 });
 
-describe('GET /api/shipments/{id}', function (): void {
+describe('GET /api/rest/v2/shipments/{id}', function (): void {
 
     it('requires authentication', function (): void {
-        $response = apiGet('/api/shipments/1');
+        $response = apiGet('/api/rest/v2/shipments/1');
 
         expect($response['status'])->toBeUnauthorized();
     });
 
     it('returns 404 for non-existent shipment', function (): void {
-        $response = apiGet('/api/shipments/999999999', adminToken());
+        $response = apiGet('/api/rest/v2/shipments/999999999', adminToken());
 
         expect($response['status'])->toBeNotFound();
     });
@@ -129,7 +129,7 @@ describe('GET /api/shipments/{id}', function (): void {
             $this->markTestSkipped('No shipments found in database');
         }
 
-        $response = apiGet("/api/shipments/{$shipmentId}", adminToken());
+        $response = apiGet("/api/rest/v2/shipments/{$shipmentId}", adminToken());
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toHaveKey('id');
@@ -213,7 +213,7 @@ describe('GraphQL Shipment queries', function (): void {
 
         $query = <<<GRAPHQL
         {
-            shipment(id: "/api/shipments/{$shipmentId}") {
+            shipment(id: "/api/rest/v2/shipments/{$shipmentId}") {
                 id
                 _id
                 orderId

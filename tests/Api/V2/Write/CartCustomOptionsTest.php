@@ -39,7 +39,7 @@ function createTestProductWithOptions(): array
     $token = serviceToken(['products/write', 'products/delete']);
 
     $sku = 'PEST-OPTS-' . uniqid();
-    $create = apiPost('/api/products', [
+    $create = apiPost('/api/rest/v2/products', [
         'sku' => $sku,
         'name' => 'Custom Options Test Product',
         'price' => 29.99,
@@ -79,7 +79,7 @@ function createTestProductWithOptions(): array
 
     $options = [];
     foreach ($optionSpecs as $spec) {
-        $result = apiPost("/api/products/{$productId}/custom-options", $spec, $token);
+        $result = apiPost("/api/rest/v2/products/{$productId}/custom-options", $spec, $token);
         if ($result['status'] < 200 || $result['status'] >= 300) {
             throw new \RuntimeException('Failed to create option "' . $spec['title'] . '": ' . json_encode($result['json']));
         }
@@ -212,7 +212,7 @@ function defaultFileData(): array
 function addItemWithOptions(array $options, array $optionsFiles = []): array
 {
     $product = createTestProductWithOptions();
-    $createResponse = apiPost('/api/guest-carts', []);
+    $createResponse = apiPost('/api/rest/v2/guest-carts', []);
     if ($createResponse['status'] !== 201) {
         throw new \RuntimeException('Failed to create cart');
     }
@@ -229,7 +229,7 @@ function addItemWithOptions(array $options, array $optionsFiles = []): array
         $payload['options_files'] = $optionsFiles;
     }
 
-    return apiPost("/api/guest-carts/{$cartId}/items", $payload);
+    return apiPost("/api/rest/v2/guest-carts/{$cartId}/items", $payload);
 }
 
 // ─── Cleanup ─────────────────────────────────────────────────────────────────

@@ -25,13 +25,13 @@ describe('API v2 Shipments', function (): void {
     describe('customer order shipments - without authentication', function (): void {
 
         it('rejects listing order shipments without token', function (): void {
-            $response = apiGet('/api/customers/me/orders');
+            $response = apiGet('/api/rest/v2/customers/me/orders');
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('returns 401 error for unauthenticated shipment request', function (): void {
-            $response = apiGet('/api/customers/me/orders');
+            $response = apiGet('/api/rest/v2/customers/me/orders');
 
             expect($response['status'])->toBe(401);
             expect($response['json'])->toHaveKey('error');
@@ -43,13 +43,13 @@ describe('API v2 Shipments', function (): void {
     describe('with invalid token', function (): void {
 
         it('rejects shipment request with malformed token', function (): void {
-            $response = apiGet('/api/customers/me/orders', 'invalid-token');
+            $response = apiGet('/api/rest/v2/customers/me/orders', 'invalid-token');
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('rejects shipment request with expired token', function (): void {
-            $response = apiGet('/api/customers/me/orders', expiredToken());
+            $response = apiGet('/api/rest/v2/customers/me/orders', expiredToken());
 
             expect($response['status'])->toBeUnauthorized();
         });
@@ -59,13 +59,13 @@ describe('API v2 Shipments', function (): void {
     describe('with valid customer token', function (): void {
 
         it('allows listing orders with valid token', function (): void {
-            $response = apiGet('/api/customers/me/orders', customerToken());
+            $response = apiGet('/api/rest/v2/customers/me/orders', customerToken());
 
             expect($response['status'])->toBeSuccessful();
         });
 
         it('orders include shipment information when available', function (): void {
-            $response = apiGet('/api/customers/me/orders', customerToken());
+            $response = apiGet('/api/rest/v2/customers/me/orders', customerToken());
 
             if ($response['status'] === 200) {
                 $orders = $response['json']['hydra:member'] ?? $response['json'] ?? [];

@@ -26,7 +26,7 @@ afterAll(function (): void {
 describe('Blog Post Permission Enforcement (REST)', function (): void {
 
     it('denies create without authentication', function (): void {
-        $response = apiPost('/api/blog-posts', [
+        $response = apiPost('/api/rest/v2/blog-posts', [
             'title' => 'Test Post No Auth',
             'urlKey' => 'test-post-noauth',
             'content' => '<p>Should fail</p>',
@@ -36,7 +36,7 @@ describe('Blog Post Permission Enforcement (REST)', function (): void {
     });
 
     it('denies create with customer token (wrong role)', function (): void {
-        $response = apiPost('/api/blog-posts', [
+        $response = apiPost('/api/rest/v2/blog-posts', [
             'title' => 'Test Post Customer',
             'urlKey' => 'test-post-customer',
             'content' => '<p>Should fail</p>',
@@ -47,7 +47,7 @@ describe('Blog Post Permission Enforcement (REST)', function (): void {
 
     it('denies create without correct permission', function (): void {
         $token = serviceToken(['cms-pages/write']);
-        $response = apiPost('/api/blog-posts', [
+        $response = apiPost('/api/rest/v2/blog-posts', [
             'title' => 'Test Post No Permission',
             'urlKey' => 'test-post-noperm',
             'content' => '<p>Should fail</p>',
@@ -65,7 +65,7 @@ describe('Blog Post CRUD Lifecycle (REST)', function (): void {
         $deleteToken = serviceToken(['blog-posts/delete']);
 
         // 1. Create
-        $create = apiPost('/api/blog-posts', [
+        $create = apiPost('/api/rest/v2/blog-posts', [
             'title' => 'Test CRUD Blog Post',
             'urlKey' => 'test-pest-crud-post',
             'content' => '<p>Created by Pest test suite</p>',
@@ -84,13 +84,13 @@ describe('Blog Post CRUD Lifecycle (REST)', function (): void {
         trackCreated('blog_post', $postId);
 
         // 2. Read (public, no auth)
-        $read = apiGet("/api/blog-posts/{$postId}");
+        $read = apiGet("/api/rest/v2/blog-posts/{$postId}");
         expect($read['status'])->toBe(200);
         expect($read['json']['title'])->toBe('Test CRUD Blog Post');
         expect($read['json']['urlKey'])->toBe('test-pest-crud-post');
 
         // 3. Update
-        $update = apiPut("/api/blog-posts/{$postId}", [
+        $update = apiPut("/api/rest/v2/blog-posts/{$postId}", [
             'title' => 'Test CRUD Blog Post Updated',
             'content' => '<p>Updated by Pest test suite</p>',
             'shortContent' => 'Updated short content',
@@ -99,21 +99,21 @@ describe('Blog Post CRUD Lifecycle (REST)', function (): void {
         expect($update['json']['title'])->toBe('Test CRUD Blog Post Updated');
 
         // 4. Verify update persisted
-        $verify = apiGet("/api/blog-posts/{$postId}");
+        $verify = apiGet("/api/rest/v2/blog-posts/{$postId}");
         expect($verify['status'])->toBe(200);
         expect($verify['json']['title'])->toBe('Test CRUD Blog Post Updated');
         expect($verify['json']['content'])->toContain('Updated by Pest');
 
         // 5. Deny delete with only write permission
-        $denyDelete = apiDelete("/api/blog-posts/{$postId}", $writeToken);
+        $denyDelete = apiDelete("/api/rest/v2/blog-posts/{$postId}", $writeToken);
         expect($denyDelete['status'])->toBeForbidden();
 
         // 6. Delete with correct permission
-        $delete = apiDelete("/api/blog-posts/{$postId}", $deleteToken);
+        $delete = apiDelete("/api/rest/v2/blog-posts/{$postId}", $deleteToken);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // 7. Confirm gone
-        $gone = apiGet("/api/blog-posts/{$postId}");
+        $gone = apiGet("/api/rest/v2/blog-posts/{$postId}");
         expect($gone['status'])->toBeNotFound();
     });
 
@@ -125,7 +125,7 @@ describe('Blog Post CRUD with "all" permission', function (): void {
         $token = serviceToken(['all']);
 
         // Create
-        $create = apiPost('/api/blog-posts', [
+        $create = apiPost('/api/rest/v2/blog-posts', [
             'title' => 'All Permission Post',
             'urlKey' => 'test-pest-all-perm-post',
             'content' => '<p>All permission test</p>',
@@ -138,21 +138,21 @@ describe('Blog Post CRUD with "all" permission', function (): void {
         trackCreated('blog_post', $postId);
 
         // Read (public)
-        $read = apiGet("/api/blog-posts/{$postId}");
+        $read = apiGet("/api/rest/v2/blog-posts/{$postId}");
         expect($read['status'])->toBe(200);
 
         // Update
-        $update = apiPut("/api/blog-posts/{$postId}", [
+        $update = apiPut("/api/rest/v2/blog-posts/{$postId}", [
             'title' => 'All Permission Post Updated',
         ], $token);
         expect($update['status'])->toBe(200);
 
         // Delete
-        $delete = apiDelete("/api/blog-posts/{$postId}", $token);
+        $delete = apiDelete("/api/rest/v2/blog-posts/{$postId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Confirm gone
-        $gone = apiGet("/api/blog-posts/{$postId}");
+        $gone = apiGet("/api/rest/v2/blog-posts/{$postId}");
         expect($gone['status'])->toBeNotFound();
     });
 
@@ -188,7 +188,7 @@ describe('Blog Post via GraphQL (read)', function (): void {
         $token = serviceToken(['blog-posts/write', 'blog-posts/delete']);
 
         // Create via REST
-        $create = apiPost('/api/blog-posts', [
+        $create = apiPost('/api/rest/v2/blog-posts', [
             'title' => 'GraphQL Verify Post',
             'urlKey' => 'test-pest-gql-verify-post',
             'content' => '<p>Verify via GraphQL</p>',
@@ -201,7 +201,7 @@ describe('Blog Post via GraphQL (read)', function (): void {
         trackCreated('blog_post', $postId);
 
         // Read via GraphQL by IRI
-        $iri = "/api/blog-posts/{$postId}";
+        $iri = "/api/rest/v2/blog-posts/{$postId}";
         $query = <<<GRAPHQL
         {
             blogPost(id: "{$iri}") {
@@ -242,7 +242,7 @@ describe('Blog Post via GraphQL (read)', function (): void {
         expect($edges[0]['node']['urlKey'])->toBe('test-pest-gql-verify-post');
 
         // Cleanup via REST
-        $delete = apiDelete("/api/blog-posts/{$postId}", $token);
+        $delete = apiDelete("/api/rest/v2/blog-posts/{$postId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
     });
 

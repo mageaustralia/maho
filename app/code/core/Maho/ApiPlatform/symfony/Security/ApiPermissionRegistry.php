@@ -372,7 +372,7 @@ class ApiPermissionRegistry
      *
      * Splits the path into segments and returns the resource mapped by the
      * last known segment. This correctly handles nested paths like
-     * /api/orders/5/shipments → 'shipments'.
+     * /api/rest/v2/orders/5/shipments → 'shipments'.
      */
     public function resolveRestResource(string $path): ?string
     {

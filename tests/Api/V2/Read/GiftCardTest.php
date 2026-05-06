@@ -13,11 +13,11 @@ declare(strict_types=1);
 /**
  * API v2 Gift Card Endpoint Tests
  *
- * Tests GET /api/giftcards endpoints.
+ * Tests GET /api/rest/v2/giftcards endpoints.
  * All tests are READ-ONLY (safe for synced database).
  */
 
-describe('GET /api/giftcards/{code}', function (): void {
+describe('GET /api/rest/v2/giftcards/{code}', function (): void {
 
     it('returns gift card balance for valid code', function (): void {
         $code = fixtures('giftcard_code');
@@ -26,7 +26,7 @@ describe('GET /api/giftcards/{code}', function (): void {
             $this->markTestSkipped('No giftcard_code configured in fixtures');
         }
 
-        $response = apiGet("/api/giftcards/{$code}", customerToken());
+        $response = apiGet("/api/rest/v2/giftcards/{$code}", customerToken());
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toBeArray();
@@ -40,7 +40,7 @@ describe('GET /api/giftcards/{code}', function (): void {
             $this->markTestSkipped('No giftcard_code configured in fixtures');
         }
 
-        $response = apiGet("/api/giftcards/{$code}", customerToken());
+        $response = apiGet("/api/rest/v2/giftcards/{$code}", customerToken());
 
         expect($response['status'])->toBe(200);
 
@@ -52,7 +52,7 @@ describe('GET /api/giftcards/{code}', function (): void {
     it('returns 404 for non-existent gift card code', function (): void {
         $invalidCode = fixtures('invalid_giftcard_code');
 
-        $response = apiGet("/api/giftcards/{$invalidCode}", customerToken());
+        $response = apiGet("/api/rest/v2/giftcards/{$invalidCode}", customerToken());
 
         expect($response['status'])->toBeNotFound();
     });
@@ -60,7 +60,7 @@ describe('GET /api/giftcards/{code}', function (): void {
     it('requires authentication', function (): void {
         $code = fixtures('giftcard_code') ?? 'TEST123';
 
-        $response = apiGet("/api/giftcards/{$code}");
+        $response = apiGet("/api/rest/v2/giftcards/{$code}");
 
         expect($response['status'])->toBeUnauthorized();
     });

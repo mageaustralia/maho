@@ -122,6 +122,7 @@ class Kernel extends BaseKernel
                 'html' => ['text/html'],
             ],
             'defaults' => [
+                'route_prefix' => '/rest/v2',
                 'pagination_enabled' => true,
                 'pagination_items_per_page' => 20,
                 'pagination_maximum_items_per_page' => 100,

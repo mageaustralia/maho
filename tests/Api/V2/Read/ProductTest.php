@@ -13,23 +13,23 @@ declare(strict_types=1);
 /**
  * API v2 Product Endpoint Tests
  *
- * Tests GET /api/products endpoints.
+ * Tests GET /api/rest/v2/products endpoints.
  * All tests are READ-ONLY (safe for synced database).
  *
  * @group read
  */
 
-describe('GET /api/products - Basic', function (): void {
+describe('GET /api/rest/v2/products - Basic', function (): void {
 
     it('returns a list of products', function (): void {
-        $response = apiGet('/api/products');
+        $response = apiGet('/api/rest/v2/products');
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toBeArray();
     });
 
     it('returns products in expected format', function (): void {
-        $response = apiGet('/api/products?pageSize=5');
+        $response = apiGet('/api/rest/v2/products?pageSize=5');
 
         expect($response['status'])->toBe(200);
 
@@ -47,7 +47,7 @@ describe('GET /api/products - Basic', function (): void {
     });
 
     it('returns product images', function (): void {
-        $response = apiGet('/api/products?pageSize=10');
+        $response = apiGet('/api/rest/v2/products?pageSize=10');
 
         expect($response['status'])->toBe(200);
 
@@ -68,7 +68,7 @@ describe('GET /api/products - Basic', function (): void {
     });
 
     it('supports pagination', function (): void {
-        $response = apiGet('/api/products?page=1&pageSize=5');
+        $response = apiGet('/api/rest/v2/products?page=1&pageSize=5');
 
         expect($response['status'])->toBe(200);
 
@@ -78,7 +78,7 @@ describe('GET /api/products - Basic', function (): void {
     });
 
     it('respects pageSize parameter', function (): void {
-        $response = apiGet('/api/products?pageSize=3');
+        $response = apiGet('/api/rest/v2/products?pageSize=3');
 
         expect($response['status'])->toBe(200);
 
@@ -92,10 +92,10 @@ describe('GET /api/products - Basic', function (): void {
 
 });
 
-describe('GET /api/products - Sorting by Name', function (): void {
+describe('GET /api/rest/v2/products - Sorting by Name', function (): void {
 
     it('sorts products by name ascending (A-Z)', function (): void {
-        $response = apiGet('/api/products?pageSize=10&sortBy=name&sortDir=asc');
+        $response = apiGet('/api/rest/v2/products?pageSize=10&sortBy=name&sortDir=asc');
 
         expect($response['status'])->toBe(200);
 
@@ -110,7 +110,7 @@ describe('GET /api/products - Sorting by Name', function (): void {
     });
 
     it('sorts products by name descending (Z-A)', function (): void {
-        $response = apiGet('/api/products?pageSize=10&sortBy=name&sortDir=desc');
+        $response = apiGet('/api/rest/v2/products?pageSize=10&sortBy=name&sortDir=desc');
 
         expect($response['status'])->toBe(200);
 
@@ -125,8 +125,8 @@ describe('GET /api/products - Sorting by Name', function (): void {
     });
 
     it('returns different first product for asc vs desc name sort', function (): void {
-        $ascResponse = apiGet('/api/products?pageSize=1&sortBy=name&sortDir=asc');
-        $descResponse = apiGet('/api/products?pageSize=1&sortBy=name&sortDir=desc');
+        $ascResponse = apiGet('/api/rest/v2/products?pageSize=1&sortBy=name&sortDir=asc');
+        $descResponse = apiGet('/api/rest/v2/products?pageSize=1&sortBy=name&sortDir=desc');
 
         expect($ascResponse['status'])->toBe(200);
         expect($descResponse['status'])->toBe(200);
@@ -143,10 +143,10 @@ describe('GET /api/products - Sorting by Name', function (): void {
 
 });
 
-describe('GET /api/products - Sorting by Price', function (): void {
+describe('GET /api/rest/v2/products - Sorting by Price', function (): void {
 
     it('sorts products by price ascending (low to high)', function (): void {
-        $response = apiGet('/api/products?pageSize=10&sortBy=price&sortDir=asc&priceMin=1');
+        $response = apiGet('/api/rest/v2/products?pageSize=10&sortBy=price&sortDir=asc&priceMin=1');
 
         expect($response['status'])->toBe(200);
 
@@ -165,7 +165,7 @@ describe('GET /api/products - Sorting by Price', function (): void {
     });
 
     it('sorts products by price descending (high to low)', function (): void {
-        $response = apiGet('/api/products?pageSize=10&sortBy=price&sortDir=desc');
+        $response = apiGet('/api/rest/v2/products?pageSize=10&sortBy=price&sortDir=desc');
 
         expect($response['status'])->toBe(200);
 
@@ -180,8 +180,8 @@ describe('GET /api/products - Sorting by Price', function (): void {
     });
 
     it('returns different first product for asc vs desc price sort', function (): void {
-        $ascResponse = apiGet('/api/products?pageSize=1&sortBy=price&sortDir=asc&priceMin=1');
-        $descResponse = apiGet('/api/products?pageSize=1&sortBy=price&sortDir=desc&priceMin=1');
+        $ascResponse = apiGet('/api/rest/v2/products?pageSize=1&sortBy=price&sortDir=asc&priceMin=1');
+        $descResponse = apiGet('/api/rest/v2/products?pageSize=1&sortBy=price&sortDir=desc&priceMin=1');
 
         expect($ascResponse['status'])->toBe(200);
         expect($descResponse['status'])->toBe(200);
@@ -197,11 +197,11 @@ describe('GET /api/products - Sorting by Price', function (): void {
 
 });
 
-describe('GET /api/products - Category Filtering', function (): void {
+describe('GET /api/rest/v2/products - Category Filtering', function (): void {
 
     it('filters products by categoryId', function (): void {
         // Category 8 = Sale (leaf category — products have 8 in their categoryIds)
-        $response = apiGet('/api/products?pageSize=10&categoryId=8');
+        $response = apiGet('/api/rest/v2/products?pageSize=10&categoryId=8');
 
         expect($response['status'])->toBe(200);
 
@@ -216,8 +216,8 @@ describe('GET /api/products - Category Filtering', function (): void {
 
     it('returns different products for different categories', function (): void {
         // Category 8 = Sale, Category 9 = VIP
-        $saleResponse = apiGet('/api/products?pageSize=5&categoryId=8');
-        $vipResponse = apiGet('/api/products?pageSize=5&categoryId=9');
+        $saleResponse = apiGet('/api/rest/v2/products?pageSize=5&categoryId=8');
+        $vipResponse = apiGet('/api/rest/v2/products?pageSize=5&categoryId=9');
 
         expect($saleResponse['status'])->toBe(200);
         expect($vipResponse['status'])->toBe(200);
@@ -238,7 +238,7 @@ describe('GET /api/products - Category Filtering', function (): void {
     it('returns products from parent category including subcategories', function (): void {
         // Category 4 = Women (children: 10=New Arrivals, 11=Tops, 12=Pants, 13=Dresses)
         // The API filter includes descendants, but products' categoryIds contain leaf IDs
-        $response = apiGet('/api/products?pageSize=5&categoryId=4');
+        $response = apiGet('/api/rest/v2/products?pageSize=5&categoryId=4');
 
         expect($response['status'])->toBe(200);
 
@@ -256,7 +256,7 @@ describe('GET /api/products - Category Filtering', function (): void {
     });
 
     it('can combine category filter with price filter', function (): void {
-        $response = apiGet('/api/products?pageSize=10&categoryId=8&priceMin=1');
+        $response = apiGet('/api/rest/v2/products?pageSize=10&categoryId=8&priceMin=1');
 
         expect($response['status'])->toBe(200);
 
@@ -276,7 +276,7 @@ describe('GET /api/products - Category Filtering', function (): void {
 
 });
 
-describe('GET /api/products/{id}', function (): void {
+describe('GET /api/rest/v2/products/{id}', function (): void {
 
     it('returns a single product by ID', function (): void {
         $productId = fixtures('product_id');
@@ -285,7 +285,7 @@ describe('GET /api/products/{id}', function (): void {
             $this->markTestSkipped('No product_id configured in fixtures');
         }
 
-        $response = apiGet("/api/products/{$productId}");
+        $response = apiGet("/api/rest/v2/products/{$productId}");
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toBeArray();
@@ -299,7 +299,7 @@ describe('GET /api/products/{id}', function (): void {
             $this->markTestSkipped('No product_id configured in fixtures');
         }
 
-        $response = apiGet("/api/products/{$productId}");
+        $response = apiGet("/api/rest/v2/products/{$productId}");
 
         expect($response['status'])->toBe(200);
 
@@ -316,18 +316,18 @@ describe('GET /api/products/{id}', function (): void {
     it('returns 404 for non-existent product', function (): void {
         $invalidId = fixtures('invalid_product_id');
 
-        $response = apiGet("/api/products/{$invalidId}");
+        $response = apiGet("/api/rest/v2/products/{$invalidId}");
 
         expect($response['status'])->toBeNotFound();
     });
 
 });
 
-describe('GET /api/products - Price Filtering', function (): void {
+describe('GET /api/rest/v2/products - Price Filtering', function (): void {
 
     it('filters products by minimum price', function (): void {
         $minPrice = 100;
-        $response = apiGet("/api/products?pageSize=10&priceMin={$minPrice}");
+        $response = apiGet("/api/rest/v2/products?pageSize=10&priceMin={$minPrice}");
 
         expect($response['status'])->toBe(200);
 
@@ -341,7 +341,7 @@ describe('GET /api/products - Price Filtering', function (): void {
 
     it('filters products by maximum price', function (): void {
         $maxPrice = 50;
-        $response = apiGet("/api/products?pageSize=10&priceMax={$maxPrice}");
+        $response = apiGet("/api/rest/v2/products?pageSize=10&priceMax={$maxPrice}");
 
         expect($response['status'])->toBe(200);
 
@@ -356,7 +356,7 @@ describe('GET /api/products - Price Filtering', function (): void {
     it('filters products by price range', function (): void {
         $minPrice = 50;
         $maxPrice = 100;
-        $response = apiGet("/api/products?pageSize=10&priceMin={$minPrice}&priceMax={$maxPrice}");
+        $response = apiGet("/api/rest/v2/products?pageSize=10&priceMin={$minPrice}&priceMax={$maxPrice}");
 
         expect($response['status'])->toBe(200);
 

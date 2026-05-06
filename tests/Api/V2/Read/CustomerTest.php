@@ -13,11 +13,11 @@ declare(strict_types=1);
 /**
  * API v2 Customer Endpoint Tests
  *
- * Tests GET /api/customers endpoints.
+ * Tests GET /api/rest/v2/customers endpoints.
  * All tests are READ-ONLY (safe for synced database).
  */
 
-describe('GET /api/customers/{id}', function (): void {
+describe('GET /api/rest/v2/customers/{id}', function (): void {
 
     it('returns customer data with valid token', function (): void {
         $customerId = fixtures('customer_id');
@@ -26,7 +26,7 @@ describe('GET /api/customers/{id}', function (): void {
             $this->markTestSkipped('No customer_id configured in fixtures');
         }
 
-        $response = apiGet("/api/customers/{$customerId}", customerToken($customerId));
+        $response = apiGet("/api/rest/v2/customers/{$customerId}", customerToken($customerId));
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toBeArray();
@@ -39,7 +39,7 @@ describe('GET /api/customers/{id}', function (): void {
             $this->markTestSkipped('No customer_id configured in fixtures');
         }
 
-        $response = apiGet("/api/customers/{$customerId}", customerToken($customerId));
+        $response = apiGet("/api/rest/v2/customers/{$customerId}", customerToken($customerId));
 
         expect($response['status'])->toBe(200);
 
@@ -50,7 +50,7 @@ describe('GET /api/customers/{id}', function (): void {
     it('returns 404 for non-existent customer', function (): void {
         $invalidId = fixtures('invalid_customer_id');
 
-        $response = apiGet("/api/customers/{$invalidId}", adminToken());
+        $response = apiGet("/api/rest/v2/customers/{$invalidId}", adminToken());
 
         expect($response['status'])->toBeNotFound();
     });
@@ -58,7 +58,7 @@ describe('GET /api/customers/{id}', function (): void {
     it('requires authentication', function (): void {
         $customerId = fixtures('customer_id') ?? 1;
 
-        $response = apiGet("/api/customers/{$customerId}");
+        $response = apiGet("/api/rest/v2/customers/{$customerId}");
 
         expect($response['status'])->toBeUnauthorized();
     });
@@ -68,7 +68,7 @@ describe('GET /api/customers/{id}', function (): void {
 
         // Use a different customer's token
         $differentCustomerId = $customerId + 1;
-        $response = apiGet("/api/customers/{$customerId}", customerToken($differentCustomerId));
+        $response = apiGet("/api/rest/v2/customers/{$customerId}", customerToken($differentCustomerId));
 
         // Should be forbidden (not your data) or not found
         expect($response['status'])->toBeGreaterThanOrEqual(400);
@@ -76,24 +76,24 @@ describe('GET /api/customers/{id}', function (): void {
 
 });
 
-describe('GET /api/customers', function (): void {
+describe('GET /api/rest/v2/customers', function (): void {
 
     it('allows admin to list customers', function (): void {
-        $response = apiGet('/api/customers', adminToken());
+        $response = apiGet('/api/rest/v2/customers', adminToken());
 
         // Admin should be able to list customers
         expect($response['status'])->toBeSuccessful();
     });
 
     it('prevents non-admin from listing all customers', function (): void {
-        $response = apiGet('/api/customers', customerToken());
+        $response = apiGet('/api/rest/v2/customers', customerToken());
 
         // Regular customer should not list all customers
         expect($response['status'])->toBeGreaterThanOrEqual(400);
     })->skip('Customer access control not yet enforced in provider');
 
     it('requires authentication', function (): void {
-        $response = apiGet('/api/customers');
+        $response = apiGet('/api/rest/v2/customers');
 
         expect($response['status'])->toBeUnauthorized();
     });

@@ -16,20 +16,20 @@ declare(strict_types=1);
  * WARNING: These tests may interact with real payment data!
  * Only run with: ./vendor/bin/pest --group=write
  *
- * Tests /api/pos-payments endpoints.
+ * Tests /api/rest/v2/pos-payments endpoints.
  */
 
-describe('GET /api/pos-payments', function (): void {
+describe('GET /api/rest/v2/pos-payments', function (): void {
 
     it('allows admin to list POS payments', function (): void {
-        $response = apiGet('/api/pos-payments', adminToken());
+        $response = apiGet('/api/rest/v2/pos-payments', adminToken());
 
         expect($response['status'])->toBeSuccessful();
         expect($response['json'])->toBeArray();
     });
 
     it('returns POS payments in expected format', function (): void {
-        $response = apiGet('/api/pos-payments', adminToken());
+        $response = apiGet('/api/rest/v2/pos-payments', adminToken());
 
         expect($response['status'])->toBe(200);
 
@@ -40,13 +40,13 @@ describe('GET /api/pos-payments', function (): void {
     });
 
     it('requires authentication', function (): void {
-        $response = apiGet('/api/pos-payments');
+        $response = apiGet('/api/rest/v2/pos-payments');
 
         expect($response['status'])->toBeUnauthorized();
     });
 
     it('requires admin role', function (): void {
-        $response = apiGet('/api/pos-payments', customerToken());
+        $response = apiGet('/api/rest/v2/pos-payments', customerToken());
 
         // Regular customer should not access POS payments
         expect($response['status'])->toBeGreaterThanOrEqual(400);
@@ -54,11 +54,11 @@ describe('GET /api/pos-payments', function (): void {
 
 });
 
-describe('GET /api/pos-payments/{id}', function (): void {
+describe('GET /api/rest/v2/pos-payments/{id}', function (): void {
 
     it('returns POS payment details with admin token', function (): void {
         // First list payments to get an ID
-        $listResponse = apiGet('/api/pos-payments', adminToken());
+        $listResponse = apiGet('/api/rest/v2/pos-payments', adminToken());
 
         if ($listResponse['status'] !== 200) {
             $this->markTestSkipped('Cannot list POS payments');
@@ -78,19 +78,19 @@ describe('GET /api/pos-payments/{id}', function (): void {
             $this->markTestSkipped('Cannot determine payment ID from response');
         }
 
-        $response = apiGet("/api/pos-payments/{$paymentId}", adminToken());
+        $response = apiGet("/api/rest/v2/pos-payments/{$paymentId}", adminToken());
 
         expect($response['status'])->toBe(200);
     });
 
     it('returns 404 for non-existent POS payment', function (): void {
-        $response = apiGet('/api/pos-payments/999999999', adminToken());
+        $response = apiGet('/api/rest/v2/pos-payments/999999999', adminToken());
 
         expect($response['status'])->toBeNotFound();
     });
 
     it('requires authentication', function (): void {
-        $response = apiGet('/api/pos-payments/1');
+        $response = apiGet('/api/rest/v2/pos-payments/1');
 
         expect($response['status'])->toBeUnauthorized();
     });

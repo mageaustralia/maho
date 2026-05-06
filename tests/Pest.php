@@ -151,7 +151,7 @@ uses()
         if ($apiAvailable === null) {
             try {
                 $baseUrl = ApiV2Helper::getBaseUrlPublic();
-                $ch = curl_init($baseUrl . '/api/store-config');
+                $ch = curl_init($baseUrl . '/api/rest/v2/store-config');
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 3);
                 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);

@@ -29,7 +29,7 @@ const TEST_CLIENT_SECRET = 'pest_test_secret_12345';
 describe('OAuth2 Client Credentials Flow', function (): void {
 
     it('rejects invalid client_id', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'client_credentials',
             'client_id' => 'nonexistent_key_12345',
             'client_secret' => 'doesntmatter',
@@ -40,7 +40,7 @@ describe('OAuth2 Client Credentials Flow', function (): void {
     });
 
     it('rejects invalid client_secret', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'client_credentials',
             'client_id' => TEST_CLIENT_ID,
             'client_secret' => 'wrong_secret_12345',
@@ -51,7 +51,7 @@ describe('OAuth2 Client Credentials Flow', function (): void {
     });
 
     it('rejects missing client_id', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'client_credentials',
             'client_secret' => TEST_CLIENT_SECRET,
         ]);
@@ -60,7 +60,7 @@ describe('OAuth2 Client Credentials Flow', function (): void {
     });
 
     it('returns token for valid credentials', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'client_credentials',
             'client_id' => TEST_CLIENT_ID,
             'client_secret' => TEST_CLIENT_SECRET,
@@ -77,7 +77,7 @@ describe('OAuth2 Client Credentials Flow', function (): void {
 
     it('returned token works for authorized endpoints', function (): void {
         // Get a real token
-        $authResponse = apiPost('/api/auth/token', [
+        $authResponse = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'client_credentials',
             'client_id' => TEST_CLIENT_ID,
             'client_secret' => TEST_CLIENT_SECRET,
@@ -86,7 +86,7 @@ describe('OAuth2 Client Credentials Flow', function (): void {
         $token = $authResponse['json']['token'];
 
         // This user has "all" permissions — create a CMS page
-        $create = apiPost('/api/cms-pages', [
+        $create = apiPost('/api/rest/v2/cms-pages', [
             'identifier' => 'pest-auth-flow-test-' . substr(uniqid(), -8),
             'title' => 'Auth Flow Test Page',
             'content' => '<p>Test</p>',
@@ -99,7 +99,7 @@ describe('OAuth2 Client Credentials Flow', function (): void {
         trackCreated('cms_page', $pageId);
 
         // Cleanup
-        $delete = apiDelete("/api/cms-pages/{$pageId}", $token);
+        $delete = apiDelete("/api/rest/v2/cms-pages/{$pageId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
     });
 
@@ -108,7 +108,7 @@ describe('OAuth2 Client Credentials Flow', function (): void {
 describe('Customer Auth Grant', function (): void {
 
     it('rejects missing email', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'customer',
             'password' => 'test123',
         ]);
@@ -118,7 +118,7 @@ describe('Customer Auth Grant', function (): void {
     });
 
     it('rejects invalid email format', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'customer',
             'email' => 'not-an-email',
             'password' => 'test123',
@@ -129,7 +129,7 @@ describe('Customer Auth Grant', function (): void {
     });
 
     it('rejects non-existent customer', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'customer',
             'email' => 'nonexistent@example.com',
             'password' => 'test123',
@@ -141,7 +141,7 @@ describe('Customer Auth Grant', function (): void {
 
     it('defaults to customer grant without grant_type', function (): void {
         // Without grant_type, defaults to 'customer' which requires email
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'email' => 'nonexistent@example.com',
             'password' => 'test123',
         ]);
@@ -155,7 +155,7 @@ describe('Customer Auth Grant', function (): void {
 describe('Unsupported Grant Types', function (): void {
 
     it('rejects unsupported grant_type', function (): void {
-        $response = apiPost('/api/auth/token', [
+        $response = apiPost('/api/rest/v2/auth/token', [
             'grant_type' => 'authorization_code',
             'client_id' => TEST_CLIENT_ID,
             'client_secret' => TEST_CLIENT_SECRET,

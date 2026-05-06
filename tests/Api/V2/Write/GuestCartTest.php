@@ -13,7 +13,7 @@ declare(strict_types=1);
 /**
  * API v2 Guest Cart Endpoint Tests (WRITE)
  *
- * Tests the /api/guest-carts endpoints (Symfony Controller).
+ * Tests the /api/rest/v2/guest-carts endpoints (Symfony Controller).
  * These tests validate the full cart lifecycle: create, add items, update, remove, checkout.
  *
  * All created carts are cleaned up after tests complete.
@@ -32,14 +32,14 @@ afterAll(function (): void {
  */
 function createGuestCart(): array
 {
-    $response = apiPost('/api/guest-carts', []);
+    $response = apiPost('/api/rest/v2/guest-carts', []);
     if ($response['status'] === 201 && isset($response['json']['id'])) {
         trackCreated('quote', (int) $response['json']['id']);
     }
     return $response;
 }
 
-describe('POST /api/guest-carts (Create Cart)', function (): void {
+describe('POST /api/rest/v2/guest-carts (Create Cart)', function (): void {
 
     it('creates an empty guest cart', function (): void {
         $response = createGuestCart();
@@ -59,7 +59,7 @@ describe('POST /api/guest-carts (Create Cart)', function (): void {
 
 });
 
-describe('GET /api/guest-carts/{id} (Get Cart)', function (): void {
+describe('GET /api/rest/v2/guest-carts/{id} (Get Cart)', function (): void {
 
     it('returns cart with items array', function (): void {
         $createResponse = createGuestCart();
@@ -67,7 +67,7 @@ describe('GET /api/guest-carts/{id} (Get Cart)', function (): void {
 
         $cartId = $createResponse['json']['maskedId'];
 
-        $response = apiGet("/api/guest-carts/{$cartId}");
+        $response = apiGet("/api/rest/v2/guest-carts/{$cartId}");
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toHaveKey('id');
@@ -84,12 +84,12 @@ describe('GET /api/guest-carts/{id} (Get Cart)', function (): void {
         $sku = fixtures('write_test_sku');
         $qty = fixtures('write_test_qty') ?? 1;
 
-        apiPost("/api/guest-carts/{$cartId}/items", [
+        apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'sku' => $sku,
             'qty' => $qty,
         ]);
 
-        $getResponse = apiGet("/api/guest-carts/{$cartId}");
+        $getResponse = apiGet("/api/rest/v2/guest-carts/{$cartId}");
 
         expect($getResponse['status'])->toBe(200);
 
@@ -115,7 +115,7 @@ describe('GET /api/guest-carts/{id} (Get Cart)', function (): void {
 
 });
 
-describe('POST /api/guest-carts/{id}/items (Add Item)', function (): void {
+describe('POST /api/rest/v2/guest-carts/{id}/items (Add Item)', function (): void {
 
     it('adds item to cart', function (): void {
         $createResponse = createGuestCart();
@@ -125,7 +125,7 @@ describe('POST /api/guest-carts/{id}/items (Add Item)', function (): void {
         $sku = fixtures('write_test_sku');
         $qty = fixtures('write_test_qty') ?? 1;
 
-        $response = apiPost("/api/guest-carts/{$cartId}/items", [
+        $response = apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'sku' => $sku,
             'qty' => $qty,
         ]);
@@ -142,7 +142,7 @@ describe('POST /api/guest-carts/{id}/items (Add Item)', function (): void {
         expect($createResponse['status'])->toBe(201);
         $cartId = $createResponse['json']['maskedId'];
 
-        $response = apiPost("/api/guest-carts/{$cartId}/items", [
+        $response = apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'sku' => 'NONEXISTENT-SKU-12345',
             'qty' => 1,
         ]);
@@ -155,7 +155,7 @@ describe('POST /api/guest-carts/{id}/items (Add Item)', function (): void {
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $response = apiPost("/api/guest-carts/{$cartId}/items", [
+        $response = apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'qty' => 1,
         ]);
 
@@ -164,7 +164,7 @@ describe('POST /api/guest-carts/{id}/items (Add Item)', function (): void {
     });
 
     it('auto-recreates expired or non-existent cart', function (): void {
-        $response = apiPost('/api/guest-carts/999999999/items', [
+        $response = apiPost('/api/rest/v2/guest-carts/999999999/items', [
             'sku' => fixtures('write_test_sku'),
             'qty' => 1,
         ]);
@@ -177,13 +177,13 @@ describe('POST /api/guest-carts/{id}/items (Add Item)', function (): void {
 
 });
 
-describe('PUT /api/guest-carts/{id}/items/{itemId} (Update Item)', function (): void {
+describe('PUT /api/rest/v2/guest-carts/{id}/items/{itemId} (Update Item)', function (): void {
 
     it('updates item quantity', function (): void {
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $addResponse = apiPost("/api/guest-carts/{$cartId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'sku' => fixtures('write_test_sku'),
             'qty' => 1,
         ]);
@@ -191,7 +191,7 @@ describe('PUT /api/guest-carts/{id}/items/{itemId} (Update Item)', function (): 
 
         $itemId = $addResponse['json']['items'][0]['id'];
 
-        $response = apiPut("/api/guest-carts/{$cartId}/items/{$itemId}", [
+        $response = apiPut("/api/rest/v2/guest-carts/{$cartId}/items/{$itemId}", [
             'qty' => 3,
         ]);
 
@@ -209,7 +209,7 @@ describe('PUT /api/guest-carts/{id}/items/{itemId} (Update Item)', function (): 
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $response = apiPut("/api/guest-carts/{$cartId}/items/999999999", [
+        $response = apiPut("/api/rest/v2/guest-carts/{$cartId}/items/999999999", [
             'qty' => 2,
         ]);
 
@@ -219,36 +219,36 @@ describe('PUT /api/guest-carts/{id}/items/{itemId} (Update Item)', function (): 
 
 });
 
-describe('DELETE /api/guest-carts/{id}/items/{itemId} (Remove Item)', function (): void {
+describe('DELETE /api/rest/v2/guest-carts/{id}/items/{itemId} (Remove Item)', function (): void {
 
     it('removes item from cart', function (): void {
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $addResponse = apiPost("/api/guest-carts/{$cartId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'sku' => fixtures('write_test_sku'),
             'qty' => 1,
         ]);
         $itemId = $addResponse['json']['items'][0]['id'];
 
-        $response = apiDelete("/api/guest-carts/{$cartId}/items/{$itemId}");
+        $response = apiDelete("/api/rest/v2/guest-carts/{$cartId}/items/{$itemId}");
 
         expect($response['status'])->toBe(200);
         expect($response['json']['items'])->toBeEmpty();
 
-        $getResponse = apiGet("/api/guest-carts/{$cartId}");
+        $getResponse = apiGet("/api/rest/v2/guest-carts/{$cartId}");
         expect($getResponse['json']['items'])->toBeEmpty();
     });
 
 });
 
-describe('PUT /api/guest-carts/{id}/coupon (Apply Coupon)', function (): void {
+describe('PUT /api/rest/v2/guest-carts/{id}/coupon (Apply Coupon)', function (): void {
 
     it('returns 400 for invalid coupon', function (): void {
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $response = apiPut("/api/guest-carts/{$cartId}/coupon", [
+        $response = apiPut("/api/rest/v2/guest-carts/{$cartId}/coupon", [
             'code' => 'INVALID-COUPON-CODE-12345',
         ]);
 
@@ -260,7 +260,7 @@ describe('PUT /api/guest-carts/{id}/coupon (Apply Coupon)', function (): void {
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $response = apiPut("/api/guest-carts/{$cartId}/coupon", []);
+        $response = apiPut("/api/rest/v2/guest-carts/{$cartId}/coupon", []);
 
         expect($response['status'])->toBe(400);
     });
@@ -273,7 +273,7 @@ describe('Cart Totals Consistency', function (): void {
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $addResponse = apiPost("/api/guest-carts/{$cartId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'sku' => fixtures('write_test_sku'),
             'qty' => 2,
         ]);
@@ -308,7 +308,7 @@ describe('Cart Item Response Structure', function (): void {
         $createResponse = createGuestCart();
         $cartId = $createResponse['json']['maskedId'];
 
-        $addResponse = apiPost("/api/guest-carts/{$cartId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$cartId}/items", [
             'sku' => fixtures('write_test_sku'),
             'qty' => 1,
         ]);

@@ -27,7 +27,7 @@ describe('Grouped Product Links — CRUD Lifecycle', function (): void {
         $suffix = substr(uniqid(), -6);
 
         // Create grouped product
-        $grouped = apiPost('/api/products', [
+        $grouped = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-GROUPED-{$suffix}",
             'name' => 'Pest Grouped Product',
             'type' => 'grouped',
@@ -38,7 +38,7 @@ describe('Grouped Product Links — CRUD Lifecycle', function (): void {
         trackCreated('product', $groupedId);
 
         // Create two simple children
-        $child1 = apiPost('/api/products', [
+        $child1 = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-GCHILD1-{$suffix}",
             'name' => 'Grouped Child 1',
             'price' => 15,
@@ -47,7 +47,7 @@ describe('Grouped Product Links — CRUD Lifecycle', function (): void {
         $child1Id = $child1['json']['id'];
         trackCreated('product', $child1Id);
 
-        $child2 = apiPost('/api/products', [
+        $child2 = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-GCHILD2-{$suffix}",
             'name' => 'Grouped Child 2',
             'price' => 25,
@@ -57,14 +57,14 @@ describe('Grouped Product Links — CRUD Lifecycle', function (): void {
         trackCreated('product', $child2Id);
 
         // Link both children
-        $link = apiPut("/api/products/{$groupedId}/grouped", [
+        $link = apiPut("/api/rest/v2/products/{$groupedId}/grouped", [
             ['childProductId' => $child1Id, 'qty' => 1, 'position' => 1],
             ['childProductId' => $child2Id, 'qty' => 2, 'position' => 2],
         ], $token);
         expect($link['status'])->toBe(200);
 
         // Read back
-        $read = apiGet("/api/products/{$groupedId}/grouped");
+        $read = apiGet("/api/rest/v2/products/{$groupedId}/grouped");
         expect($read['status'])->toBe(200);
         $items = getItems($read);
         $childIds = array_column($items, 'childProductId');
@@ -72,11 +72,11 @@ describe('Grouped Product Links — CRUD Lifecycle', function (): void {
         expect($childIds)->toContain($child2Id);
 
         // Remove one child
-        $remove = apiDelete("/api/products/{$groupedId}/grouped/{$child1Id}", $token);
+        $remove = apiDelete("/api/rest/v2/products/{$groupedId}/grouped/{$child1Id}", $token);
         expect($remove['status'])->toBeIn([200, 204]);
 
         // Verify
-        $readAfter = apiGet("/api/products/{$groupedId}/grouped");
+        $readAfter = apiGet("/api/rest/v2/products/{$groupedId}/grouped");
         $afterItems = getItems($readAfter);
         $afterIds = array_column($afterItems, 'childProductId');
         expect($afterIds)->not->toContain($child1Id);
@@ -85,7 +85,7 @@ describe('Grouped Product Links — CRUD Lifecycle', function (): void {
 
     it('rejects grouped operations on a non-grouped product', function (): void {
         $simpleId = fixtures('product_id');
-        $response = apiGet("/api/products/{$simpleId}/grouped");
+        $response = apiGet("/api/rest/v2/products/{$simpleId}/grouped");
         expect($response['status'])->toBeIn([400, 422]);
     });
 

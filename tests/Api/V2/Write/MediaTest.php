@@ -18,7 +18,7 @@ declare(strict_types=1);
  *
  * Note: Media DELETE is blocked by nginx static file handler intercepting
  * requests with image extensions (.webp, .png, etc) before they reach the
- * Symfony router. This requires `^~` on the `/api/` nginx location block
+ * Symfony router. This requires `^~` on the `/api/rest/v2/` nginx location block
  * to override the regex static file handler.
  *
  * @group write
@@ -32,7 +32,7 @@ describe('Media Upload Permission Enforcement (REST)', function (): void {
         imagepng($img, $tmpFile);
         imagedestroy($img);
 
-        $response = apiPostMultipart('/api/media', ['folder' => 'test'], ['file' => $tmpFile]);
+        $response = apiPostMultipart('/api/rest/v2/media', ['folder' => 'test'], ['file' => $tmpFile]);
         unlink($tmpFile);
 
         expect($response['status'])->toBe(401);
@@ -44,7 +44,7 @@ describe('Media Upload Permission Enforcement (REST)', function (): void {
         imagepng($img, $tmpFile);
         imagedestroy($img);
 
-        $response = apiPostMultipart('/api/media', ['folder' => 'test'], ['file' => $tmpFile], customerToken());
+        $response = apiPostMultipart('/api/rest/v2/media', ['folder' => 'test'], ['file' => $tmpFile], customerToken());
         unlink($tmpFile);
 
         expect($response['status'])->toBeForbidden();
@@ -57,7 +57,7 @@ describe('Media Upload Permission Enforcement (REST)', function (): void {
         imagedestroy($img);
 
         $token = serviceToken(['cms-pages/write']);
-        $response = apiPostMultipart('/api/media', ['folder' => 'test'], ['file' => $tmpFile], $token);
+        $response = apiPostMultipart('/api/rest/v2/media', ['folder' => 'test'], ['file' => $tmpFile], $token);
         unlink($tmpFile);
 
         expect($response['status'])->toBeForbidden();
@@ -77,7 +77,7 @@ describe('Media Upload (REST)', function (): void {
 
         $token = serviceToken(['media/write']);
         $response = apiPostMultipart(
-            '/api/media',
+            '/api/rest/v2/media',
             ['folder' => 'test', 'filename' => 'pest-test-upload'],
             ['file' => $tmpFile],
             $token,
@@ -112,7 +112,7 @@ describe('Media Upload (REST)', function (): void {
 
         $token = serviceToken(['media/write']);
         $response = apiPostMultipart(
-            '/api/media',
+            '/api/rest/v2/media',
             ['folder' => 'test/subfolder', 'filename' => 'pest-subfolder-upload'],
             ['file' => $tmpFile],
             $token,
@@ -131,7 +131,7 @@ describe('Media Upload (REST)', function (): void {
 
         $token = serviceToken(['all']);
         $response = apiPostMultipart(
-            '/api/media',
+            '/api/rest/v2/media',
             ['folder' => 'test', 'filename' => 'pest-all-perm'],
             ['file' => $tmpFile],
             $token,
@@ -151,7 +151,7 @@ describe('Media Upload (REST)', function (): void {
 
         $token = serviceToken(['all']);
         $upload = apiPostMultipart(
-            '/api/media',
+            '/api/rest/v2/media',
             ['folder' => 'test', 'filename' => 'pest-delete-test'],
             ['file' => $tmpFile],
             $token,
@@ -163,7 +163,7 @@ describe('Media Upload (REST)', function (): void {
         expect($path)->not->toBeNull();
 
         // DELETE should reach Symfony router now that nginx route is fixed
-        $delete = apiDelete("/api/media/{$path}", $token);
+        $delete = apiDelete("/api/rest/v2/media/{$path}", $token);
         expect($delete['status'])->toBeIn([200, 204, 404])
             ->and($delete['raw'])->not->toContain('nginx');
     });

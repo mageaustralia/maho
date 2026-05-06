@@ -26,7 +26,7 @@ afterAll(function (): void {
 describe('Product Permission Enforcement (REST)', function (): void {
 
     it('denies create without authentication', function (): void {
-        $response = apiPost('/api/products', [
+        $response = apiPost('/api/rest/v2/products', [
             'sku' => 'TEST-NOAUTH',
             'name' => 'Test Product No Auth',
             'price' => 9.99,
@@ -36,7 +36,7 @@ describe('Product Permission Enforcement (REST)', function (): void {
     });
 
     it('denies create with customer token (wrong role)', function (): void {
-        $response = apiPost('/api/products', [
+        $response = apiPost('/api/rest/v2/products', [
             'sku' => 'TEST-CUSTOMER',
             'name' => 'Test Product Customer',
             'price' => 9.99,
@@ -47,7 +47,7 @@ describe('Product Permission Enforcement (REST)', function (): void {
 
     it('denies create without correct permission', function (): void {
         $token = serviceToken(['cms-pages/write']);
-        $response = apiPost('/api/products', [
+        $response = apiPost('/api/rest/v2/products', [
             'sku' => 'TEST-NOPERM',
             'name' => 'Test Product No Permission',
             'price' => 9.99,
@@ -59,7 +59,7 @@ describe('Product Permission Enforcement (REST)', function (): void {
     it('denies update without correct permission', function (): void {
         $productId = fixtures('product_id');
         $token = serviceToken(['cms-pages/write']);
-        $response = apiPut("/api/products/{$productId}", [
+        $response = apiPut("/api/rest/v2/products/{$productId}", [
             'name' => 'Should Not Update',
         ], $token);
 
@@ -69,7 +69,7 @@ describe('Product Permission Enforcement (REST)', function (): void {
     it('denies delete without correct permission', function (): void {
         $productId = fixtures('product_id');
         $token = serviceToken(['products/write']);
-        $response = apiDelete("/api/products/{$productId}", $token);
+        $response = apiDelete("/api/rest/v2/products/{$productId}", $token);
 
         expect($response['status'])->toBeForbidden();
     });
@@ -82,7 +82,7 @@ describe('Product Create Lifecycle (REST)', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
         $suffix = substr(uniqid(), -8);
 
-        $create = apiPost('/api/products', [
+        $create = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-SIMPLE-{$suffix}",
             'name' => 'Pest Test Simple Product',
             'price' => 29.95,
@@ -100,7 +100,7 @@ describe('Product Create Lifecycle (REST)', function (): void {
         trackCreated('product', $productId);
 
         // Read back (public)
-        $read = apiGet("/api/products/{$productId}");
+        $read = apiGet("/api/rest/v2/products/{$productId}");
         expect($read['status'])->toBe(200);
         expect($read['json']['sku'])->toBe("PEST-SIMPLE-{$suffix}");
         expect($read['json']['price'])->toBe(29.95);
@@ -110,7 +110,7 @@ describe('Product Create Lifecycle (REST)', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
         $suffix = substr(uniqid(), -8);
 
-        $create = apiPost('/api/products', [
+        $create = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-FULL-{$suffix}",
             'name' => 'Pest Test Full Product',
             'type' => 'simple',
@@ -133,7 +133,7 @@ describe('Product Create Lifecycle (REST)', function (): void {
         trackCreated('product', $create['json']['id']);
 
         // Read back and verify extra fields persisted
-        $read = apiGet("/api/products/{$create['json']['id']}");
+        $read = apiGet("/api/rest/v2/products/{$create['json']['id']}");
         expect($read['status'])->toBe(200);
         expect($read['json']['price'])->toBe(49.95);
     });
@@ -142,7 +142,7 @@ describe('Product Create Lifecycle (REST)', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
         $suffix = substr(uniqid(), -8);
 
-        $create = apiPost('/api/products', [
+        $create = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-VIRTUAL-{$suffix}",
             'name' => 'Pest Test Virtual Product',
             'type' => 'virtual',
@@ -154,7 +154,7 @@ describe('Product Create Lifecycle (REST)', function (): void {
         $productId = $create['json']['id'];
         trackCreated('product', $productId);
 
-        $read = apiGet("/api/products/{$productId}");
+        $read = apiGet("/api/rest/v2/products/{$productId}");
         expect($read['status'])->toBe(200);
         expect($read['json']['type'])->toBe('virtual');
     });
@@ -163,7 +163,7 @@ describe('Product Create Lifecycle (REST)', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
         $suffix = substr(uniqid(), -8);
 
-        $create = apiPost('/api/products', [
+        $create = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-DISABLED-{$suffix}",
             'name' => 'Pest Test Disabled Product',
             'price' => 10.00,
@@ -180,14 +180,14 @@ describe('Product Create Lifecycle (REST)', function (): void {
         $token = serviceToken(['products/write']);
 
         // Missing SKU
-        $noSku = apiPost('/api/products', [
+        $noSku = apiPost('/api/rest/v2/products', [
             'name' => 'No SKU Product',
             'price' => 10.00,
         ], $token);
         expect($noSku['status'])->toBeIn([400, 422]);
 
         // Missing name
-        $noName = apiPost('/api/products', [
+        $noName = apiPost('/api/rest/v2/products', [
             'sku' => 'PEST-NO-NAME-' . substr(uniqid(), -8),
             'price' => 10.00,
         ], $token);
@@ -203,23 +203,23 @@ describe('Product Update (REST)', function (): void {
         $token = serviceToken(['products/write']);
 
         // Read original name
-        $original = apiGet("/api/products/{$productId}");
+        $original = apiGet("/api/rest/v2/products/{$productId}");
         expect($original['status'])->toBe(200);
         $originalName = $original['json']['name'];
 
         // Update
-        $update = apiPut("/api/products/{$productId}", [
+        $update = apiPut("/api/rest/v2/products/{$productId}", [
             'name' => 'Pest Test Temporary Name',
         ], $token);
         expect($update['status'])->toBe(200);
 
         // Verify
-        $verify = apiGet("/api/products/{$productId}");
+        $verify = apiGet("/api/rest/v2/products/{$productId}");
         expect($verify['status'])->toBe(200);
         expect($verify['json']['name'])->toBe('Pest Test Temporary Name');
 
         // Restore
-        $restore = apiPut("/api/products/{$productId}", [
+        $restore = apiPut("/api/rest/v2/products/{$productId}", [
             'name' => $originalName,
         ], $token);
         expect($restore['status'])->toBe(200);
@@ -234,7 +234,7 @@ describe('Product Delete (REST)', function (): void {
         $suffix = substr(uniqid(), -8);
 
         // Create a throwaway product to test delete
-        $create = apiPost('/api/products', [
+        $create = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-DEL-{$suffix}",
             'name' => 'Pest Delete Test',
             'price' => 1.00,
@@ -244,11 +244,11 @@ describe('Product Delete (REST)', function (): void {
         $productId = $create['json']['id'];
 
         // Delete should succeed now
-        $delete = apiDelete("/api/products/{$productId}", $token);
+        $delete = apiDelete("/api/rest/v2/products/{$productId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Confirm gone
-        $gone = apiGet("/api/products/{$productId}");
+        $gone = apiGet("/api/rest/v2/products/{$productId}");
         expect($gone['status'])->toBe(404);
     });
 
@@ -258,7 +258,7 @@ describe('Product Type Fields - Read Verification', function (): void {
 
     it('reads simple product with expected fields', function (): void {
         $productId = fixtures('product_id');
-        $response = apiGet("/api/products/{$productId}");
+        $response = apiGet("/api/rest/v2/products/{$productId}");
         expect($response['status'])->toBe(200);
 
         $product = $response['json'];
@@ -276,7 +276,7 @@ describe('Product Type Fields - Read Verification', function (): void {
     it('reads configurable product with options and variants', function (): void {
         // Look up configurable by SKU via collection search
         $sku = fixtures('configurable_sku');
-        $response = apiGet("/api/products?search={$sku}");
+        $response = apiGet("/api/rest/v2/products?search={$sku}");
         expect($response['status'])->toBe(200);
 
         $items = getItems($response);
@@ -293,7 +293,7 @@ describe('Product Type Fields - Read Verification', function (): void {
         }
 
         // Get detail
-        $detail = apiGet("/api/products/{$configurable['id']}");
+        $detail = apiGet("/api/rest/v2/products/{$configurable['id']}");
         expect($detail['status'])->toBe(200);
         expect($detail['json']['type'])->toBe('configurable');
         expect($detail['json'])->toHaveKey('configurableOptions');

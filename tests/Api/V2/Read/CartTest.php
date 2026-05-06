@@ -25,13 +25,13 @@ describe('API v2 Customer Cart', function (): void {
     describe('without authentication', function (): void {
 
         it('rejects getting customer cart without token', function (): void {
-            $response = apiGet('/api/carts/mine');
+            $response = apiGet('/api/rest/v2/carts/mine');
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('returns 401 error for unauthenticated cart request', function (): void {
-            $response = apiGet('/api/carts/mine');
+            $response = apiGet('/api/rest/v2/carts/mine');
 
             expect($response['status'])->toBe(401);
             expect($response['json'])->toHaveKey('error');
@@ -43,13 +43,13 @@ describe('API v2 Customer Cart', function (): void {
     describe('with invalid token', function (): void {
 
         it('rejects cart request with malformed token', function (): void {
-            $response = apiGet('/api/carts/mine', 'invalid-token');
+            $response = apiGet('/api/rest/v2/carts/mine', 'invalid-token');
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('rejects cart request with expired token', function (): void {
-            $response = apiGet('/api/carts/mine', expiredToken());
+            $response = apiGet('/api/rest/v2/carts/mine', expiredToken());
 
             expect($response['status'])->toBeUnauthorized();
         });
@@ -59,7 +59,7 @@ describe('API v2 Customer Cart', function (): void {
     describe('with valid customer token', function (): void {
 
         it('allows getting customer cart with valid token', function (): void {
-            $response = apiGet('/api/carts/mine', customerToken());
+            $response = apiGet('/api/rest/v2/carts/mine', customerToken());
 
             // Should succeed (200) or 404 if no cart exists
             expect($response['status'])->toBeIn([200, 404]);

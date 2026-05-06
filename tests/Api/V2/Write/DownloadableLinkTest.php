@@ -24,7 +24,7 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
 
     it('reads existing downloadable links', function (): void {
         // Product 448 is a known downloadable product
-        $read = apiGet('/api/products/448/downloadable-links');
+        $read = apiGet('/api/rest/v2/products/448/downloadable-links');
         expect($read['status'])->toBe(200);
         $items = getItems($read);
         expect(count($items))->toBeGreaterThanOrEqual(1);
@@ -38,7 +38,7 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
         $suffix = substr(uniqid(), -6);
 
         // Create downloadable product
-        $product = apiPost('/api/products', [
+        $product = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-DWNLD-{$suffix}",
             'name' => 'Pest Downloadable Product',
             'type' => 'downloadable',
@@ -49,7 +49,7 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
         trackCreated('product', $productId);
 
         // Add a URL-based link
-        $add = apiPost("/api/products/{$productId}/downloadable-links", [
+        $add = apiPost("/api/rest/v2/products/{$productId}/downloadable-links", [
             'title' => 'Test Download',
             'price' => 4.99,
             'linkType' => 'url',
@@ -62,7 +62,7 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
         expect($linkId)->not->toBeNull();
 
         // Read back
-        $read = apiGet("/api/products/{$productId}/downloadable-links");
+        $read = apiGet("/api/rest/v2/products/{$productId}/downloadable-links");
         expect($read['status'])->toBe(200);
         $links = getItems($read);
         expect(count($links))->toBe(1);
@@ -70,7 +70,7 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
         expect($links[0]['linkUrl'])->toBe('https://example.com/test-file.zip');
 
         // Update the title
-        $update = apiPut("/api/products/{$productId}/downloadable-links", [
+        $update = apiPut("/api/rest/v2/products/{$productId}/downloadable-links", [
             'linkId' => $linkId,
             'title' => 'Updated Download',
             'price' => 7.99,
@@ -78,11 +78,11 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
         expect($update['status'])->toBe(200);
 
         // Delete the link
-        $delete = apiDelete("/api/products/{$productId}/downloadable-links?linkId={$linkId}", $token);
+        $delete = apiDelete("/api/rest/v2/products/{$productId}/downloadable-links?linkId={$linkId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Verify empty
-        $empty = apiGet("/api/products/{$productId}/downloadable-links");
+        $empty = apiGet("/api/rest/v2/products/{$productId}/downloadable-links");
         expect($empty['status'])->toBe(200);
         $emptyLinks = getItems($empty);
         expect(count($emptyLinks))->toBe(0);
@@ -91,7 +91,7 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
     it('rejects downloadable operations on a simple product', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
         $suffix = substr(uniqid(), -6);
-        $simple = apiPost('/api/products', [
+        $simple = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-SIMPLE-DL-{$suffix}",
             'name' => 'Simple For Download Test',
             'price' => 10,
@@ -100,7 +100,7 @@ describe('Downloadable Links — CRUD Lifecycle', function (): void {
         $simpleId = $simple['json']['id'];
         trackCreated('product', $simpleId);
 
-        $response = apiGet("/api/products/{$simpleId}/downloadable-links");
+        $response = apiGet("/api/rest/v2/products/{$simpleId}/downloadable-links");
         expect($response['status'])->toBeIn([400, 422]);
     });
 

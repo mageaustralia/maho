@@ -13,24 +13,24 @@ declare(strict_types=1);
 /**
  * API v2 Guest Cart Endpoint Tests (READ)
  *
- * Tests GET /api/guest-carts endpoints.
+ * Tests GET /api/rest/v2/guest-carts endpoints.
  * All tests are READ-ONLY (safe for synced database).
  *
  * Note: To properly test cart items, we need a cart with items.
  * These tests verify the API contract and response structure.
  */
 
-describe('GET /api/guest-carts/{id}', function (): void {
+describe('GET /api/rest/v2/guest-carts/{id}', function (): void {
 
     it('returns 404 for non-existent masked ID', function (): void {
         // Numeric values are not valid masked IDs and will not resolve
-        $response = apiGet('/api/guest-carts/999999999');
+        $response = apiGet('/api/rest/v2/guest-carts/999999999');
 
         expect($response['status'])->toBeNotFound();
     });
 
     it('returns 404 for invalid cart ID format', function (): void {
-        $response = apiGet('/api/guest-carts/invalid-id');
+        $response = apiGet('/api/rest/v2/guest-carts/invalid-id');
 
         expect($response['status'])->toBeNotFound();
     });
@@ -38,7 +38,7 @@ describe('GET /api/guest-carts/{id}', function (): void {
     it('does not resolve numeric IDs as masked IDs', function (): void {
         // Guest carts are only accessible via masked ID (32-char hex token)
         // A bare numeric ID is not a valid masked ID and returns 404
-        $response = apiGet('/api/guest-carts/1');
+        $response = apiGet('/api/rest/v2/guest-carts/1');
 
         expect($response['status'])->toBeNotFound();
     });
@@ -58,7 +58,7 @@ describe('Guest Cart Response Structure', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiGet("/api/guest-carts/{$this->existingCartId}");
+        $response = apiGet("/api/rest/v2/guest-carts/{$this->existingCartId}");
 
         if ($response['status'] === 404) {
             $this->markTestSkipped('Test cart no longer exists');
@@ -78,7 +78,7 @@ describe('Guest Cart Response Structure', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiGet("/api/guest-carts/{$this->existingCartId}");
+        $response = apiGet("/api/rest/v2/guest-carts/{$this->existingCartId}");
 
         if ($response['status'] === 404) {
             $this->markTestSkipped('Test cart no longer exists');
@@ -98,7 +98,7 @@ describe('Guest Cart Response Structure', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiGet("/api/guest-carts/{$this->existingCartId}");
+        $response = apiGet("/api/rest/v2/guest-carts/{$this->existingCartId}");
 
         if ($response['status'] === 404) {
             $this->markTestSkipped('Test cart no longer exists');
@@ -121,10 +121,10 @@ describe('Guest Cart Response Structure', function (): void {
 
 });
 
-describe('GET /api/guest-carts/{id}/totals', function (): void {
+describe('GET /api/rest/v2/guest-carts/{id}/totals', function (): void {
 
     it('returns 404 for non-existent cart', function (): void {
-        $response = apiGet('/api/guest-carts/999999999/totals');
+        $response = apiGet('/api/rest/v2/guest-carts/999999999/totals');
 
         expect($response['status'])->toBeNotFound();
     });
@@ -136,7 +136,7 @@ describe('GET /api/guest-carts/{id}/totals', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiGet("/api/guest-carts/{$cartId}/totals");
+        $response = apiGet("/api/rest/v2/guest-carts/{$cartId}/totals");
 
         if ($response['status'] === 404) {
             $this->markTestSkipped('Test cart no longer exists');
@@ -149,10 +149,10 @@ describe('GET /api/guest-carts/{id}/totals', function (): void {
 
 });
 
-describe('POST /api/guest-carts/{id}/shipping-methods', function (): void {
+describe('POST /api/rest/v2/guest-carts/{id}/shipping-methods', function (): void {
 
     it('returns 404 for non-existent cart', function (): void {
-        $response = apiPost('/api/guest-carts/999999999/shipping-methods', [
+        $response = apiPost('/api/rest/v2/guest-carts/999999999/shipping-methods', [
             'address' => [
                 'countryId' => 'AU',
                 'postcode' => '3000',
@@ -170,7 +170,7 @@ describe('POST /api/guest-carts/{id}/shipping-methods', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiPost("/api/guest-carts/{$cartId}/shipping-methods", [
+        $response = apiPost("/api/rest/v2/guest-carts/{$cartId}/shipping-methods", [
             'address' => [
                 'firstName' => 'Test',
                 'lastName' => 'Customer',
@@ -199,10 +199,10 @@ describe('POST /api/guest-carts/{id}/shipping-methods', function (): void {
 
 });
 
-describe('GET /api/guest-carts/{id}/payment-methods', function (): void {
+describe('GET /api/rest/v2/guest-carts/{id}/payment-methods', function (): void {
 
     it('returns 404 for non-existent cart', function (): void {
-        $response = apiGet('/api/guest-carts/999999999/payment-methods');
+        $response = apiGet('/api/rest/v2/guest-carts/999999999/payment-methods');
 
         expect($response['status'])->toBeNotFound();
     });
@@ -214,7 +214,7 @@ describe('GET /api/guest-carts/{id}/payment-methods', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiGet("/api/guest-carts/{$cartId}/payment-methods");
+        $response = apiGet("/api/rest/v2/guest-carts/{$cartId}/payment-methods");
 
         if ($response['status'] === 404) {
             $this->markTestSkipped('Test cart no longer exists');
@@ -231,7 +231,7 @@ describe('GET /api/guest-carts/{id}/payment-methods', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiGet("/api/guest-carts/{$cartId}/payment-methods");
+        $response = apiGet("/api/rest/v2/guest-carts/{$cartId}/payment-methods");
 
         if ($response['status'] === 404) {
             $this->markTestSkipped('Test cart no longer exists');
@@ -264,7 +264,7 @@ describe('GET /api/guest-carts/{id}/payment-methods', function (): void {
             $this->markTestSkipped('No existing_cart_id configured in fixtures');
         }
 
-        $response = apiGet("/api/guest-carts/{$cartId}/payment-methods");
+        $response = apiGet("/api/rest/v2/guest-carts/{$cartId}/payment-methods");
 
         if ($response['status'] === 404) {
             $this->markTestSkipped('Test cart no longer exists');
@@ -285,17 +285,17 @@ describe('GET /api/guest-carts/{id}/payment-methods', function (): void {
 
     it('does not resolve numeric cart ID as masked ID', function (): void {
         // Payment methods require a valid masked cart ID
-        $response = apiGet('/api/guest-carts/1/payment-methods');
+        $response = apiGet('/api/rest/v2/guest-carts/1/payment-methods');
 
         expect($response['status'])->toBeNotFound();
     });
 
 });
 
-describe('GET /api/products/{sku}/options', function (): void {
+describe('GET /api/rest/v2/products/{sku}/options', function (): void {
 
     it('returns 404 for non-existent product', function (): void {
-        $response = apiGet('/api/products/NONEXISTENT-SKU-12345/options');
+        $response = apiGet('/api/rest/v2/products/NONEXISTENT-SKU-12345/options');
 
         expect($response['status'])->toBeNotFound();
     });
@@ -307,7 +307,7 @@ describe('GET /api/products/{sku}/options', function (): void {
             $this->markTestSkipped('No product_sku configured in fixtures');
         }
 
-        $response = apiGet("/api/products/{$sku}/options");
+        $response = apiGet("/api/rest/v2/products/{$sku}/options");
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toHaveKey('sku');

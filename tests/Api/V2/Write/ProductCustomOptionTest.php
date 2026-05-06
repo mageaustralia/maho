@@ -26,7 +26,7 @@ describe('Product Custom Options — Permission Enforcement', function (): void 
 
     it('denies custom option create without authentication', function (): void {
         $productId = fixtures('product_id');
-        $response = apiPost("/api/products/{$productId}/custom-options", [
+        $response = apiPost("/api/rest/v2/products/{$productId}/custom-options", [
             'title' => 'Test Option',
             'type' => 'field',
         ]);
@@ -36,7 +36,7 @@ describe('Product Custom Options — Permission Enforcement', function (): void 
     it('denies custom option create without correct permission', function (): void {
         $productId = fixtures('product_id');
         $token = serviceToken(['cms-pages/write']);
-        $response = apiPost("/api/products/{$productId}/custom-options", [
+        $response = apiPost("/api/rest/v2/products/{$productId}/custom-options", [
             'title' => 'Test Option',
             'type' => 'field',
         ], $token);
@@ -52,7 +52,7 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
 
         // Create
-        $create = apiPost("/api/products/{$productId}/custom-options", [
+        $create = apiPost("/api/rest/v2/products/{$productId}/custom-options", [
             'title' => 'Engraving Text',
             'type' => 'field',
             'required' => true,
@@ -63,7 +63,7 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
         expect($create['status'])->toBeIn([200, 201]);
 
         // Read back collection
-        $read = apiGet("/api/products/{$productId}/custom-options");
+        $read = apiGet("/api/rest/v2/products/{$productId}/custom-options");
         expect($read['status'])->toBe(200);
         $items = getItems($read);
         $found = array_filter($items, fn($o) => ($o['title'] ?? '') === 'Engraving Text');
@@ -73,13 +73,13 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
         $optionId = $option['id'];
 
         // Update title
-        $update = apiPut("/api/products/{$productId}/custom-options/{$optionId}", [
+        $update = apiPut("/api/rest/v2/products/{$productId}/custom-options/{$optionId}", [
             'title' => 'Custom Engraving',
         ], $token);
         expect($update['status'])->toBe(200);
 
         // Verify update
-        $readUpdated = apiGet("/api/products/{$productId}/custom-options");
+        $readUpdated = apiGet("/api/rest/v2/products/{$productId}/custom-options");
         $updatedItems = getItems($readUpdated);
         $updatedOption = array_filter($updatedItems, fn($o) => ($o['id'] ?? 0) === $optionId);
         $updatedOption = array_values($updatedOption)[0] ?? null;
@@ -87,11 +87,11 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
         expect($updatedOption['title'])->toBe('Custom Engraving');
 
         // Delete
-        $delete = apiDelete("/api/products/{$productId}/custom-options/{$optionId}", $token);
+        $delete = apiDelete("/api/rest/v2/products/{$productId}/custom-options/{$optionId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Verify gone
-        $readAfterDelete = apiGet("/api/products/{$productId}/custom-options");
+        $readAfterDelete = apiGet("/api/rest/v2/products/{$productId}/custom-options");
         $afterItems = getItems($readAfterDelete);
         $stillExists = array_filter($afterItems, fn($o) => ($o['id'] ?? 0) === $optionId);
         expect(count($stillExists))->toBe(0);
@@ -102,7 +102,7 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
 
         // Create dropdown
-        $create = apiPost("/api/products/{$productId}/custom-options", [
+        $create = apiPost("/api/rest/v2/products/{$productId}/custom-options", [
             'title' => 'Size Choice',
             'type' => 'drop_down',
             'required' => true,
@@ -115,7 +115,7 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
         expect($create['status'])->toBeIn([200, 201]);
 
         // Read and verify values
-        $read = apiGet("/api/products/{$productId}/custom-options");
+        $read = apiGet("/api/rest/v2/products/{$productId}/custom-options");
         $items = getItems($read);
         $dropdown = array_filter($items, fn($o) => ($o['title'] ?? '') === 'Size Choice');
         expect(count($dropdown))->toBe(1);
@@ -126,14 +126,14 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
 
         // Cleanup
         $optionId = $dropdown['id'];
-        apiDelete("/api/products/{$productId}/custom-options/{$optionId}", $token);
+        apiDelete("/api/rest/v2/products/{$productId}/custom-options/{$optionId}", $token);
     });
 
     it('rejects select-type option without values', function (): void {
         $productId = fixtures('product_id');
         $token = serviceToken(['products/write']);
 
-        $response = apiPost("/api/products/{$productId}/custom-options", [
+        $response = apiPost("/api/rest/v2/products/{$productId}/custom-options", [
             'title' => 'Empty Dropdown',
             'type' => 'drop_down',
         ], $token);
@@ -144,7 +144,7 @@ describe('Product Custom Options — CRUD Lifecycle', function (): void {
         $productId = fixtures('product_id');
         $token = serviceToken(['products/write']);
 
-        $response = apiPost("/api/products/{$productId}/custom-options", [
+        $response = apiPost("/api/rest/v2/products/{$productId}/custom-options", [
             'type' => 'field',
         ], $token);
         expect($response['status'])->toBeIn([400, 422]);

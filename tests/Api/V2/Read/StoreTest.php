@@ -24,30 +24,30 @@ describe('API v2 Stores', function (): void {
     describe('public access (no auth)', function (): void {
 
         it('allows listing stores without authentication', function (): void {
-            $response = apiGet('/api/stores');
+            $response = apiGet('/api/rest/v2/stores');
 
             expect($response['status'])->toBeSuccessful();
         });
 
         it('returns stores collection', function (): void {
-            $response = apiGet('/api/stores');
+            $response = apiGet('/api/rest/v2/stores');
 
             expect($response['status'])->toBe(200);
             expect($response['json'])->toBeArray();
         });
 
         it('allows getting single store without authentication', function (): void {
-            $list = apiGet('/api/stores');
+            $list = apiGet('/api/rest/v2/stores');
             $members = $list['json']['member'] ?? $list['json']['hydra:member'] ?? [];
 
             if (!empty($members) && isset($members[0]['id'])) {
                 $storeId = $members[0]['id'];
-                $response = apiGet("/api/stores/{$storeId}");
+                $response = apiGet("/api/rest/v2/stores/{$storeId}");
 
                 expect($response['status'])->toBeSuccessful();
             } elseif (isset($list['json'][0]['id'])) {
                 $storeId = $list['json'][0]['id'];
-                $response = apiGet("/api/stores/{$storeId}");
+                $response = apiGet("/api/rest/v2/stores/{$storeId}");
 
                 expect($response['status'])->toBeSuccessful();
             } else {
@@ -56,7 +56,7 @@ describe('API v2 Stores', function (): void {
         });
 
         it('returns 404 for non-existent store', function (): void {
-            $response = apiGet('/api/stores/999999');
+            $response = apiGet('/api/rest/v2/stores/999999');
 
             expect($response['status'])->toBe(404);
         });
@@ -66,13 +66,13 @@ describe('API v2 Stores', function (): void {
     describe('with authentication', function (): void {
 
         it('allows listing stores with valid token', function (): void {
-            $response = apiGet('/api/stores', customerToken());
+            $response = apiGet('/api/rest/v2/stores', customerToken());
 
             expect($response['status'])->toBeSuccessful();
         });
 
         it('allows listing stores with admin token', function (): void {
-            $response = apiGet('/api/stores', adminToken());
+            $response = apiGet('/api/rest/v2/stores', adminToken());
 
             expect($response['status'])->toBeSuccessful();
         });
@@ -82,7 +82,7 @@ describe('API v2 Stores', function (): void {
     describe('response format', function (): void {
 
         it('includes expected store fields', function (): void {
-            $response = apiGet('/api/stores');
+            $response = apiGet('/api/rest/v2/stores');
             $stores = $response['json']['member'] ?? $response['json']['hydra:member'] ?? $response['json'] ?? [];
 
             if (!empty($stores) && isset($stores[0])) {

@@ -26,7 +26,7 @@ describe('Configurable Setup — Read', function (): void {
         // Use the existing configurable SKU from fixtures
         $sku = fixtures('configurable_sku');
         // First get the product ID
-        $search = apiGet("/api/products?search={$sku}");
+        $search = apiGet("/api/rest/v2/products?search={$sku}");
         expect($search['status'])->toBe(200);
         $items = getItems($search);
         $configurable = array_filter($items, fn($p) => ($p['sku'] ?? '') === $sku);
@@ -40,7 +40,7 @@ describe('Configurable Setup — Read', function (): void {
         $configProduct = array_values($configurable)[0];
         $productId = $configProduct['id'];
 
-        $read = apiGet("/api/products/{$productId}/configurable");
+        $read = apiGet("/api/rest/v2/products/{$productId}/configurable");
         expect($read['status'])->toBe(200);
         $data = getItems($read);
         expect(count($data))->toBeGreaterThanOrEqual(1);
@@ -54,7 +54,7 @@ describe('Configurable Setup — Read', function (): void {
         // fixtures('product_id') (421) is actually configurable, so create a simple product
         $token = serviceToken(['products/write', 'products/delete']);
         $suffix = substr(uniqid(), -6);
-        $simple = apiPost('/api/products', [
+        $simple = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-SIMPLE-CFG-{$suffix}",
             'name' => 'Simple Product For Config Test',
             'price' => 10,
@@ -63,7 +63,7 @@ describe('Configurable Setup — Read', function (): void {
         $simpleId = $simple['json']['id'];
         trackCreated('product', $simpleId);
 
-        $response = apiGet("/api/products/{$simpleId}/configurable");
+        $response = apiGet("/api/rest/v2/products/{$simpleId}/configurable");
         expect($response['status'])->toBeIn([400, 422]);
     });
 
@@ -77,7 +77,7 @@ describe('Configurable Setup — Child Management', function (): void {
 
         // Find existing configurable
         $sku = fixtures('configurable_sku');
-        $search = apiGet("/api/products?search={$sku}");
+        $search = apiGet("/api/rest/v2/products?search={$sku}");
         $items = getItems($search);
         $configurable = array_filter($items, fn($p) => ($p['sku'] ?? '') === $sku);
 
@@ -89,12 +89,12 @@ describe('Configurable Setup — Child Management', function (): void {
         $configId = array_values($configurable)[0]['id'];
 
         // Read current children
-        $before = apiGet("/api/products/{$configId}/configurable");
+        $before = apiGet("/api/rest/v2/products/{$configId}/configurable");
         $beforeData = getItems($before);
         $beforeChildIds = $beforeData[0]['childProductIds'] ?? [];
 
         // Create a simple child
-        $child = apiPost('/api/products', [
+        $child = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-CFGCHILD-{$suffix}",
             'name' => 'Config Child Test',
             'price' => 30,
@@ -104,7 +104,7 @@ describe('Configurable Setup — Child Management', function (): void {
         trackCreated('product', $childId);
 
         // Add child
-        $add = apiPost("/api/products/{$configId}/configurable/children", [
+        $add = apiPost("/api/rest/v2/products/{$configId}/configurable/children", [
             'childProductId' => $childId,
         ], $token);
         expect($add['status'])->toBeIn([200, 201]);
@@ -119,11 +119,11 @@ describe('Configurable Setup — Child Management', function (): void {
         expect($setup)->toHaveKey('childProductIds');
 
         // Remove child
-        $remove = apiDelete("/api/products/{$configId}/configurable/children/{$childId}", $token);
+        $remove = apiDelete("/api/rest/v2/products/{$configId}/configurable/children/{$childId}", $token);
         expect($remove['status'])->toBeIn([200, 204]);
 
         // Verify removed
-        $final = apiGet("/api/products/{$configId}/configurable");
+        $final = apiGet("/api/rest/v2/products/{$configId}/configurable");
         $finalData = getItems($final);
         expect($finalData[0]['childProductIds'])->not->toContain($childId);
     });

@@ -13,7 +13,7 @@ declare(strict_types=1);
 /**
  * API v2 Cart Endpoint Tests (WRITE)
  *
- * Tests POST /api/carts endpoints.
+ * Tests POST /api/rest/v2/carts endpoints.
  * All created carts are cleaned up after tests complete.
  *
  * @group write
@@ -23,10 +23,10 @@ afterAll(function (): void {
     cleanupTestData();
 });
 
-describe('POST /api/carts', function (): void {
+describe('POST /api/rest/v2/carts', function (): void {
 
     it('creates an empty cart', function (): void {
-        $response = apiPost('/api/carts', [], customerToken());
+        $response = apiPost('/api/rest/v2/carts', [], customerToken());
 
         expect($response['status'])->toBeSuccessful();
         expect($response['json'])->toBeArray();
@@ -34,7 +34,7 @@ describe('POST /api/carts', function (): void {
     })->skip('Cart POST processor not yet implemented');
 
     it('returns cart with expected fields', function (): void {
-        $response = apiPost('/api/carts', [], customerToken());
+        $response = apiPost('/api/rest/v2/carts', [], customerToken());
 
         expect($response['status'])->toBeSuccessful();
 
@@ -43,36 +43,36 @@ describe('POST /api/carts', function (): void {
     })->skip('Cart POST processor not yet implemented');
 
     it('requires authentication', function (): void {
-        $response = apiPost('/api/carts', []);
+        $response = apiPost('/api/rest/v2/carts', []);
 
         expect($response['status'])->toBeUnauthorized();
     });
 
 });
 
-describe('GET /api/carts/{id}', function (): void {
+describe('GET /api/rest/v2/carts/{id}', function (): void {
 
     it('returns cart details', function (): void {
-        $createResponse = apiPost('/api/carts', [], customerToken());
+        $createResponse = apiPost('/api/rest/v2/carts', [], customerToken());
         expect($createResponse['status'])->toBeSuccessful();
 
         $cartId = $createResponse['json']['id'] ?? null;
         expect($cartId)->not->toBeNull();
 
-        $response = apiGet("/api/carts/{$cartId}", customerToken());
+        $response = apiGet("/api/rest/v2/carts/{$cartId}", customerToken());
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toHaveKey('id');
     })->skip('Depends on cart creation');
 
     it('returns 404 for non-existent cart', function (): void {
-        $response = apiGet('/api/carts/999999999', customerToken());
+        $response = apiGet('/api/rest/v2/carts/999999999', customerToken());
 
         expect($response['status'])->toBeNotFound();
     });
 
     it('requires authentication', function (): void {
-        $response = apiGet('/api/carts/1');
+        $response = apiGet('/api/rest/v2/carts/1');
 
         expect($response['status'])->toBeUnauthorized();
     });
@@ -85,13 +85,13 @@ describe('GET /api/carts/{id}', function (): void {
 describe('Cart Prices Field (Regression)', function (): void {
 
     it('returns prices object in guest cart response', function (): void {
-        $createResponse = apiPost('/api/guest-carts', []);
+        $createResponse = apiPost('/api/rest/v2/guest-carts', []);
         expect($createResponse['status'])->toBe(201);
 
         trackCreated('quote', (int) $createResponse['json']['id']);
         $maskedId = $createResponse['json']['maskedId'];
 
-        $addResponse = apiPost("/api/guest-carts/{$maskedId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$maskedId}/items", [
             'sku' => fixtures('write_test_sku'),
             'qty' => 1,
         ]);
@@ -108,13 +108,13 @@ describe('Cart Prices Field (Regression)', function (): void {
     });
 
     it('includes thumbnailUrl in cart items', function (): void {
-        $createResponse = apiPost('/api/guest-carts', []);
+        $createResponse = apiPost('/api/rest/v2/guest-carts', []);
         expect($createResponse['status'])->toBe(201);
 
         trackCreated('quote', (int) $createResponse['json']['id']);
         $maskedId = $createResponse['json']['maskedId'];
 
-        $addResponse = apiPost("/api/guest-carts/{$maskedId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$maskedId}/items", [
             'sku' => fixtures('write_test_sku'),
             'qty' => 1,
         ]);

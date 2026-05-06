@@ -44,8 +44,8 @@ class InvoiceProvider extends \Maho\ApiPlatform\Provider
 
         $invoices = [];
         $basePath = str_contains($operationName, 'my_')
-            ? '/api/customers/me/orders/' . $orderId . '/invoices/'
-            : '/api/orders/' . $orderId . '/invoices/';
+            ? '/api/rest/v2/customers/me/orders/' . $orderId . '/invoices/'
+            : '/api/rest/v2/orders/' . $orderId . '/invoices/';
 
         foreach ($order->getInvoiceCollection() as $invoice) {
             $dto = Invoice::fromModel($invoice);

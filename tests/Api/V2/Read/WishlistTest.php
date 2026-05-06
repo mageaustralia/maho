@@ -21,13 +21,13 @@ declare(strict_types=1);
 describe('API v2 Wishlist - Authentication', function (): void {
 
     it('rejects listing wishlist without token', function (): void {
-        $response = apiGet('/api/customers/me/wishlist');
+        $response = apiGet('/api/rest/v2/customers/me/wishlist');
 
         expect($response['status'])->toBeUnauthorized();
     });
 
     it('returns 401 error body for unauthenticated request', function (): void {
-        $response = apiGet('/api/customers/me/wishlist');
+        $response = apiGet('/api/rest/v2/customers/me/wishlist');
 
         expect($response['status'])->toBe(401);
         expect($response['json'])->toHaveKey('error');
@@ -35,19 +35,19 @@ describe('API v2 Wishlist - Authentication', function (): void {
     });
 
     it('rejects requests with malformed token', function (): void {
-        $response = apiGet('/api/customers/me/wishlist', 'invalid-token');
+        $response = apiGet('/api/rest/v2/customers/me/wishlist', 'invalid-token');
 
         expect($response['status'])->toBeUnauthorized();
     });
 
     it('rejects requests with expired token', function (): void {
-        $response = apiGet('/api/customers/me/wishlist', expiredToken());
+        $response = apiGet('/api/rest/v2/customers/me/wishlist', expiredToken());
 
         expect($response['status'])->toBeUnauthorized();
     });
 
     it('rejects requests with invalid signature', function (): void {
-        $response = apiGet('/api/customers/me/wishlist', invalidToken());
+        $response = apiGet('/api/rest/v2/customers/me/wishlist', invalidToken());
 
         expect($response['status'])->toBeUnauthorized();
     });
@@ -57,13 +57,13 @@ describe('API v2 Wishlist - Authentication', function (): void {
 describe('API v2 Wishlist - Listing', function (): void {
 
     it('returns 200 with valid customer token', function (): void {
-        $response = apiGet('/api/customers/me/wishlist', customerToken());
+        $response = apiGet('/api/rest/v2/customers/me/wishlist', customerToken());
 
         expect($response['status'])->toBe(200);
     });
 
     it('returns a valid collection response', function (): void {
-        $response = apiGet('/api/customers/me/wishlist', customerToken());
+        $response = apiGet('/api/rest/v2/customers/me/wishlist', customerToken());
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toHaveKey('@type');
@@ -79,7 +79,7 @@ describe('API v2 Wishlist - Listing', function (): void {
      * even when wishlist items existed in the database.
      */
     it('returns totalItems matching actual member count (regression: hardcoded totalItems=0)', function (): void {
-        $response = apiGet('/api/customers/me/wishlist', customerToken());
+        $response = apiGet('/api/rest/v2/customers/me/wishlist', customerToken());
 
         expect($response['status'])->toBe(200);
         $totalItems = $response['json']['totalItems'] ?? -1;

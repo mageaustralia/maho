@@ -192,13 +192,13 @@ describe('GraphQL Cart - Update Item Quantity', function (): void {
 
     it('updates item quantity in cart', function (): void {
         // Create cart and add item via REST (more reliable for getting item ID)
-        $createResponse = apiPost('/api/guest-carts', []);
+        $createResponse = apiPost('/api/rest/v2/guest-carts', []);
         expect($createResponse['status'])->toBe(201);
         trackCreated('quote', (int) $createResponse['json']['id']);
 
         $maskedId = $createResponse['json']['maskedId'];
         $sku = fixtures('write_test_sku');
-        $addResponse = apiPost("/api/guest-carts/{$maskedId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$maskedId}/items", [
             'sku' => $sku,
             'qty' => 1,
         ]);
@@ -232,13 +232,13 @@ describe('GraphQL Cart - Update Item Quantity', function (): void {
 describe('GraphQL Cart - Remove Item', function (): void {
 
     it('removes item from cart', function (): void {
-        $createResponse = apiPost('/api/guest-carts', []);
+        $createResponse = apiPost('/api/rest/v2/guest-carts', []);
         expect($createResponse['status'])->toBe(201);
         trackCreated('quote', (int) $createResponse['json']['id']);
 
         $maskedId = $createResponse['json']['maskedId'];
         $sku = fixtures('write_test_sku');
-        $addResponse = apiPost("/api/guest-carts/{$maskedId}/items", [
+        $addResponse = apiPost("/api/rest/v2/guest-carts/{$maskedId}/items", [
             'sku' => $sku,
             'qty' => 1,
         ]);

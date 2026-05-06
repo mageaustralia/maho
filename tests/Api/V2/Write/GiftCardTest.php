@@ -33,10 +33,10 @@ afterAll(function (): void {
     }
 });
 
-describe('POST /api/giftcards', function (): void {
+describe('POST /api/rest/v2/giftcards', function (): void {
 
     it('requires authentication', function (): void {
-        $response = apiPost('/api/giftcards', [
+        $response = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => 50.0,
         ]);
 
@@ -44,7 +44,7 @@ describe('POST /api/giftcards', function (): void {
     });
 
     it('creates a gift card with auto-generated code', function (): void {
-        $response = apiPost('/api/giftcards', [
+        $response = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => 25.0,
         ], adminToken());
 
@@ -67,7 +67,7 @@ describe('POST /api/giftcards', function (): void {
     it('creates a gift card with custom code', function (): void {
         $code = 'TEST-API-' . time();
 
-        $response = apiPost('/api/giftcards', [
+        $response = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => 100.0,
             'code' => $code,
             'recipientName' => 'Test Recipient',
@@ -86,7 +86,7 @@ describe('POST /api/giftcards', function (): void {
     });
 
     it('rejects zero balance', function (): void {
-        $response = apiPost('/api/giftcards', [
+        $response = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => 0,
         ], adminToken());
 
@@ -94,7 +94,7 @@ describe('POST /api/giftcards', function (): void {
     });
 
     it('rejects negative balance', function (): void {
-        $response = apiPost('/api/giftcards', [
+        $response = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => -50.0,
         ], adminToken());
 
@@ -102,7 +102,7 @@ describe('POST /api/giftcards', function (): void {
     });
 
     it('rejects balance over 10000', function (): void {
-        $response = apiPost('/api/giftcards', [
+        $response = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => 10001.0,
         ], adminToken());
 
@@ -113,7 +113,7 @@ describe('POST /api/giftcards', function (): void {
         $code = 'TEST-DUP-' . time();
 
         // Create first
-        $response1 = apiPost('/api/giftcards', [
+        $response1 = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => 10.0,
             'code' => $code,
         ], adminToken());
@@ -122,7 +122,7 @@ describe('POST /api/giftcards', function (): void {
         registerGiftCardCode($code);
 
         // Try duplicate
-        $response2 = apiPost('/api/giftcards', [
+        $response2 = apiPost('/api/rest/v2/giftcards', [
             'initialBalance' => 10.0,
             'code' => $code,
         ], adminToken());

@@ -88,7 +88,7 @@ describe('GraphQL Single Category Query', function (): void {
 
     it('returns a single category by IRI', function (): void {
         $categoryId = fixtures('category_id');
-        $iri = "/api/categories/{$categoryId}";
+        $iri = "/api/rest/v2/categories/{$categoryId}";
 
         $query = <<<GRAPHQL
         {
@@ -117,7 +117,7 @@ describe('GraphQL Single Category Query', function (): void {
     });
 
     it('returns null for non-existent category', function (): void {
-        $iri = '/api/categories/999999';
+        $iri = '/api/rest/v2/categories/999999';
 
         $query = <<<GRAPHQL
         {

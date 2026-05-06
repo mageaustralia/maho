@@ -24,7 +24,7 @@ describe('Product Media Gallery — Read', function (): void {
 
     it('lists gallery images for existing product', function (): void {
         // Product 421 should have images
-        $read = apiGet('/api/products/421/media');
+        $read = apiGet('/api/rest/v2/products/421/media');
         expect($read['status'])->toBe(200);
         $images = getItems($read);
         // May or may not have images — just verify format
@@ -46,7 +46,7 @@ describe('Product Media Gallery — Upload & Manage', function (): void {
         $suffix = substr(uniqid(), -6);
 
         // Create a test product
-        $product = apiPost('/api/products', [
+        $product = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-MEDIA-{$suffix}",
             'name' => 'Media Test Product',
             'price' => 10,
@@ -66,7 +66,7 @@ describe('Product Media Gallery — Upload & Manage', function (): void {
         $base64 = base64_encode($pngData);
 
         // Upload image
-        $upload = apiPost("/api/products/{$productId}/media", [
+        $upload = apiPost("/api/rest/v2/products/{$productId}/media", [
             'base64' => $base64,
             'filename' => 'test-image.png',
             'label' => 'Test Image',
@@ -78,14 +78,14 @@ describe('Product Media Gallery — Upload & Manage', function (): void {
         expect($imageId)->toBeGreaterThan(0);
 
         // Read back gallery
-        $read = apiGet("/api/products/{$productId}/media");
+        $read = apiGet("/api/rest/v2/products/{$productId}/media");
         expect($read['status'])->toBe(200);
         $images = getItems($read);
         expect(count($images))->toBe(1);
         expect($images[0]['types'])->toContain('image');
 
         // Update label
-        $update = apiPut("/api/products/{$productId}/media", [
+        $update = apiPut("/api/rest/v2/products/{$productId}/media", [
             'valueId' => $imageId,
             'label' => 'Updated Label',
             'position' => 5,
@@ -93,11 +93,11 @@ describe('Product Media Gallery — Upload & Manage', function (): void {
         expect($update['status'])->toBe(200);
 
         // Delete image
-        $delete = apiDelete("/api/products/{$productId}/media?valueId={$imageId}", $token);
+        $delete = apiDelete("/api/rest/v2/products/{$productId}/media?valueId={$imageId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Verify empty
-        $empty = apiGet("/api/products/{$productId}/media");
+        $empty = apiGet("/api/rest/v2/products/{$productId}/media");
         expect($empty['status'])->toBe(200);
         $emptyImages = getItems($empty);
         expect(count($emptyImages))->toBe(0);

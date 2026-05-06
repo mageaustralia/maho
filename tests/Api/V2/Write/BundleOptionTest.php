@@ -27,7 +27,7 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
         $suffix = substr(uniqid(), -6);
 
         // Create bundle product
-        $bundle = apiPost('/api/products', [
+        $bundle = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-BUNDLE-{$suffix}",
             'name' => 'Pest Bundle Product',
             'type' => 'bundle',
@@ -38,7 +38,7 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
         trackCreated('product', $bundleId);
 
         // Create two simple products for selections
-        $child1 = apiPost('/api/products', [
+        $child1 = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-BSEL1-{$suffix}",
             'name' => 'Bundle Selection 1',
             'price' => 15,
@@ -47,7 +47,7 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
         $child1Id = $child1['json']['id'];
         trackCreated('product', $child1Id);
 
-        $child2 = apiPost('/api/products', [
+        $child2 = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-BSEL2-{$suffix}",
             'name' => 'Bundle Selection 2',
             'price' => 25,
@@ -57,7 +57,7 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
         trackCreated('product', $child2Id);
 
         // Add bundle option with selections
-        $addOption = apiPost("/api/products/{$bundleId}/bundle-options", [
+        $addOption = apiPost("/api/rest/v2/products/{$bundleId}/bundle-options", [
             'title' => 'Choose Color',
             'type' => 'radio',
             'required' => true,
@@ -72,7 +72,7 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
         expect($optionId)->not->toBeNull();
 
         // Read back options
-        $read = apiGet("/api/products/{$bundleId}/bundle-options");
+        $read = apiGet("/api/rest/v2/products/{$bundleId}/bundle-options");
         expect($read['status'])->toBe(200);
         $options = getItems($read);
         expect(count($options))->toBeGreaterThanOrEqual(1);
@@ -82,11 +82,11 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
         expect(count($option['selections']))->toBe(2);
 
         // Delete the option
-        $delete = apiDelete("/api/products/{$bundleId}/bundle-options?optionId={$optionId}", $token);
+        $delete = apiDelete("/api/rest/v2/products/{$bundleId}/bundle-options?optionId={$optionId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // Verify empty
-        $empty = apiGet("/api/products/{$bundleId}/bundle-options");
+        $empty = apiGet("/api/rest/v2/products/{$bundleId}/bundle-options");
         expect($empty['status'])->toBe(200);
         $emptyOptions = getItems($empty);
         expect(count($emptyOptions))->toBe(0);
@@ -95,7 +95,7 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
     it('rejects bundle operations on a simple product', function (): void {
         $token = serviceToken(['products/write', 'products/delete']);
         $suffix = substr(uniqid(), -6);
-        $simple = apiPost('/api/products', [
+        $simple = apiPost('/api/rest/v2/products', [
             'sku' => "PEST-SIMPLE-BDL-{$suffix}",
             'name' => 'Simple For Bundle Test',
             'price' => 10,
@@ -104,7 +104,7 @@ describe('Bundle Options — CRUD Lifecycle', function (): void {
         $simpleId = $simple['json']['id'];
         trackCreated('product', $simpleId);
 
-        $response = apiGet("/api/products/{$simpleId}/bundle-options");
+        $response = apiGet("/api/rest/v2/products/{$simpleId}/bundle-options");
         expect($response['status'])->toBeIn([400, 422]);
     });
 

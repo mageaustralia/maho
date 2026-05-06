@@ -81,8 +81,8 @@ describe('GraphQL Products Collection Query', function (): void {
         expect($edges)->not->toBeEmpty();
 
         $product = $edges[0]['node'];
-        // GraphQL `id` should be IRI format: /api/products/{id}
-        expect($product['id'])->toContain('/api/products/');
+        // GraphQL `id` should be IRI format: /api/rest/v2/products/{id}
+        expect($product['id'])->toContain('/api/rest/v2/products/');
         // `_id` should be the numeric ID
         expect($product['_id'])->toBeInt();
     });
@@ -165,7 +165,7 @@ describe('GraphQL Single Product Query', function (): void {
 
     it('returns a single product by IRI', function (): void {
         $productId = fixtures('product_id');
-        $iri = "/api/products/{$productId}";
+        $iri = "/api/rest/v2/products/{$productId}";
 
         $query = <<<GRAPHQL
         {
@@ -196,7 +196,7 @@ describe('GraphQL Single Product Query', function (): void {
 
     it('returns null for non-existent product', function (): void {
         $invalidId = fixtures('invalid_product_id');
-        $iri = "/api/products/{$invalidId}";
+        $iri = "/api/rest/v2/products/{$invalidId}";
 
         $query = <<<GRAPHQL
         {

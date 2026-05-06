@@ -22,18 +22,18 @@ declare(strict_types=1);
 
 describe('API v2 Invoices', function (): void {
 
-    describe('GET /api/orders/{orderId}/invoices - without authentication', function (): void {
+    describe('GET /api/rest/v2/orders/{orderId}/invoices - without authentication', function (): void {
 
         it('rejects listing invoices without token', function (): void {
             $orderId = fixtures('order_id') ?? 1;
-            $response = apiGet("/api/orders/{$orderId}/invoices");
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices");
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('returns 401 error for unauthenticated request', function (): void {
             $orderId = fixtures('order_id') ?? 1;
-            $response = apiGet("/api/orders/{$orderId}/invoices");
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices");
 
             expect($response['status'])->toBe(401);
             expect($response['json'])->toHaveKey('error');
@@ -42,25 +42,25 @@ describe('API v2 Invoices', function (): void {
 
     });
 
-    describe('GET /api/orders/{orderId}/invoices - with invalid token', function (): void {
+    describe('GET /api/rest/v2/orders/{orderId}/invoices - with invalid token', function (): void {
 
         it('rejects invoice list with malformed token', function (): void {
             $orderId = fixtures('order_id') ?? 1;
-            $response = apiGet("/api/orders/{$orderId}/invoices", 'invalid-token');
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices", 'invalid-token');
 
             expect($response['status'])->toBeUnauthorized();
         });
 
         it('rejects invoice list with expired token', function (): void {
             $orderId = fixtures('order_id') ?? 1;
-            $response = apiGet("/api/orders/{$orderId}/invoices", expiredToken());
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices", expiredToken());
 
             expect($response['status'])->toBeUnauthorized();
         });
 
     });
 
-    describe('GET /api/orders/{orderId}/invoices - with valid token', function (): void {
+    describe('GET /api/rest/v2/orders/{orderId}/invoices - with valid token', function (): void {
 
         it('allows listing invoices with valid customer token', function (): void {
             $orderId = fixtures('order_id');
@@ -69,7 +69,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No order_id configured in fixtures');
             }
 
-            $response = apiGet("/api/orders/{$orderId}/invoices", customerToken());
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices", customerToken());
 
             // Should return 200 with invoices, 403 if not customer's order, or 404 if order not found
             expect($response['status'])->toBeIn([200, 403, 404]);
@@ -82,7 +82,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No order_id configured in fixtures');
             }
 
-            $response = apiGet("/api/orders/{$orderId}/invoices", adminToken());
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices", adminToken());
 
             // Admin should have access
             expect($response['status'])->toBeIn([200, 404]);
@@ -95,7 +95,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No order_id configured in fixtures');
             }
 
-            $response = apiGet("/api/orders/{$orderId}/invoices", adminToken());
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices", adminToken());
 
             if ($response['status'] === 200) {
                 expect($response['json'])->toHaveKey('invoices');
@@ -106,18 +106,18 @@ describe('API v2 Invoices', function (): void {
 
         it('returns 404 for non-existent order', function (): void {
             $invalidId = fixtures('invalid_order_id') ?? 999999;
-            $response = apiGet("/api/orders/{$invalidId}/invoices", adminToken());
+            $response = apiGet("/api/rest/v2/orders/{$invalidId}/invoices", adminToken());
 
             expect($response['status'])->toBe(404);
         });
 
     });
 
-    describe('GET /api/customers/me/orders/{orderId}/invoices - customer access', function (): void {
+    describe('GET /api/rest/v2/customers/me/orders/{orderId}/invoices - customer access', function (): void {
 
         it('rejects without authentication', function (): void {
             $orderId = fixtures('order_id') ?? 1;
-            $response = apiGet("/api/customers/me/orders/{$orderId}/invoices");
+            $response = apiGet("/api/rest/v2/customers/me/orders/{$orderId}/invoices");
 
             expect($response['status'])->toBeUnauthorized();
         });
@@ -129,7 +129,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No customer_order_id configured in fixtures');
             }
 
-            $response = apiGet("/api/customers/me/orders/{$orderId}/invoices", customerToken());
+            $response = apiGet("/api/rest/v2/customers/me/orders/{$orderId}/invoices", customerToken());
 
             expect($response['status'])->toBeIn([200, 404]);
         });
@@ -142,7 +142,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No other_customer_order_id configured in fixtures');
             }
 
-            $response = apiGet("/api/customers/me/orders/{$orderId}/invoices", customerToken());
+            $response = apiGet("/api/rest/v2/customers/me/orders/{$orderId}/invoices", customerToken());
 
             // Should be 404 (order not found for this customer)
             expect($response['status'])->toBe(404);
@@ -150,13 +150,13 @@ describe('API v2 Invoices', function (): void {
 
     });
 
-    describe('GET /api/orders/{orderId}/invoices/{invoiceId}/pdf - PDF download', function (): void {
+    describe('GET /api/rest/v2/orders/{orderId}/invoices/{invoiceId}/pdf - PDF download', function (): void {
 
         it('rejects PDF download without authentication', function (): void {
             $orderId = fixtures('order_id') ?? 1;
             $invoiceId = fixtures('invoice_id') ?? 1;
 
-            $response = apiGet("/api/orders/{$orderId}/invoices/{$invoiceId}/pdf");
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices/{$invoiceId}/pdf");
 
             expect($response['status'])->toBeUnauthorized();
         });
@@ -165,7 +165,7 @@ describe('API v2 Invoices', function (): void {
             $orderId = fixtures('order_id') ?? 1;
             $invoiceId = fixtures('invoice_id') ?? 1;
 
-            $response = apiGet("/api/orders/{$orderId}/invoices/{$invoiceId}/pdf", 'invalid-token');
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices/{$invoiceId}/pdf", 'invalid-token');
 
             expect($response['status'])->toBeUnauthorized();
         });
@@ -178,7 +178,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No order_id or invoice_id configured in fixtures');
             }
 
-            $response = apiGetRaw("/api/orders/{$orderId}/invoices/{$invoiceId}/pdf", adminToken());
+            $response = apiGetRaw("/api/rest/v2/orders/{$orderId}/invoices/{$invoiceId}/pdf", adminToken());
 
             // Should return 200 with PDF content, or 404 if invoice not found
             expect($response['status'])->toBeIn([200, 404]);
@@ -192,20 +192,20 @@ describe('API v2 Invoices', function (): void {
             $orderId = fixtures('order_id') ?? 1;
             $invalidInvoiceId = 999999;
 
-            $response = apiGet("/api/orders/{$orderId}/invoices/{$invalidInvoiceId}/pdf", adminToken());
+            $response = apiGet("/api/rest/v2/orders/{$orderId}/invoices/{$invalidInvoiceId}/pdf", adminToken());
 
             expect($response['status'])->toBe(404);
         });
 
     });
 
-    describe('GET /api/customers/me/orders/{orderId}/invoices/{invoiceId}/pdf - customer PDF download', function (): void {
+    describe('GET /api/rest/v2/customers/me/orders/{orderId}/invoices/{invoiceId}/pdf - customer PDF download', function (): void {
 
         it('rejects without authentication', function (): void {
             $orderId = fixtures('order_id') ?? 1;
             $invoiceId = fixtures('invoice_id') ?? 1;
 
-            $response = apiGet("/api/customers/me/orders/{$orderId}/invoices/{$invoiceId}/pdf");
+            $response = apiGet("/api/rest/v2/customers/me/orders/{$orderId}/invoices/{$invoiceId}/pdf");
 
             expect($response['status'])->toBeUnauthorized();
         });
@@ -218,7 +218,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No customer_order_id or customer_invoice_id configured in fixtures');
             }
 
-            $response = apiGetRaw("/api/customers/me/orders/{$orderId}/invoices/{$invoiceId}/pdf", customerToken());
+            $response = apiGetRaw("/api/rest/v2/customers/me/orders/{$orderId}/invoices/{$invoiceId}/pdf", customerToken());
 
             expect($response['status'])->toBeIn([200, 404]);
 
@@ -235,7 +235,7 @@ describe('API v2 Invoices', function (): void {
                 $this->markTestSkipped('No other_customer_order_id or other_customer_invoice_id configured in fixtures');
             }
 
-            $response = apiGet("/api/customers/me/orders/{$orderId}/invoices/{$invoiceId}/pdf", customerToken());
+            $response = apiGet("/api/rest/v2/customers/me/orders/{$orderId}/invoices/{$invoiceId}/pdf", customerToken());
 
             expect($response['status'])->toBe(404);
         });

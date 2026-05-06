@@ -76,7 +76,7 @@ class Maho_ApiPlatform_Model_Observer
         // Warning header for human readers
         $response->setHeader(
             'Warning',
-            '299 - "This API is deprecated. Please migrate to /api/v2/. See documentation at /api/v2/docs"',
+            '299 - "This API is deprecated. Please migrate to /api/rest/v2/. See documentation at /api/docs"',
             true,
         );
     }
@@ -90,10 +90,10 @@ class Maho_ApiPlatform_Model_Observer
     private function getSuccessorPath(string $legacyPath): string
     {
         $mappings = [
-            '/api/rest/products' => 'api/v2/products',
-            '/api/rest/customers' => 'api/v2/customers',
-            '/api/rest/orders' => 'api/v2/orders',
-            '/api/rest/stockitems' => 'api/v2/stock-items',
+            '/api/rest/products' => 'api/rest/v2/products',
+            '/api/rest/customers' => 'api/rest/v2/customers',
+            '/api/rest/orders' => 'api/rest/v2/orders',
+            '/api/rest/stockitems' => 'api/rest/v2/stock-items',
         ];
 
         foreach ($mappings as $legacy => $new) {
@@ -103,7 +103,7 @@ class Maho_ApiPlatform_Model_Observer
         }
 
         // Default to API docs for unmapped endpoints
-        return 'api/v2/docs';
+        return 'api/docs';
     }
 
     /**

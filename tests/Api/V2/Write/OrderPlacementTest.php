@@ -16,10 +16,10 @@ declare(strict_types=1);
  * WARNING: These tests CREATE real orders in the database!
  * Only run with: ./vendor/bin/pest --group=write
  *
- * Tests POST /api/orders endpoints.
+ * Tests POST /api/rest/v2/orders endpoints.
  */
 
-describe('POST /api/orders', function (): void {
+describe('POST /api/rest/v2/orders', function (): void {
 
     it('places an order from a cart', function (): void {
         $sku = fixtures('write_test_sku');
@@ -30,7 +30,7 @@ describe('POST /api/orders', function (): void {
         }
 
         // 1. Create cart
-        $cartResponse = apiPost('/api/carts', [], customerToken());
+        $cartResponse = apiPost('/api/rest/v2/carts', [], customerToken());
         expect($cartResponse['status'])->toBeSuccessful();
         $cartId = $cartResponse['json']['id'];
 
@@ -39,7 +39,7 @@ describe('POST /api/orders', function (): void {
         // For now, we'll test the order endpoint exists and requires a cart
 
         // 3. Place order
-        $orderResponse = apiPost('/api/orders', [
+        $orderResponse = apiPost('/api/rest/v2/orders', [
             'cartId' => $cartId,
             'paymentMethod' => 'cashondelivery',
             'shippingMethod' => 'freeshipping_freeshipping',
@@ -51,7 +51,7 @@ describe('POST /api/orders', function (): void {
     })->skip('Depends on cart creation');
 
     it('requires authentication', function (): void {
-        $response = apiPost('/api/orders', [
+        $response = apiPost('/api/rest/v2/orders', [
             'cartId' => 1,
         ]);
 
@@ -59,7 +59,7 @@ describe('POST /api/orders', function (): void {
     });
 
     it('validates required fields', function (): void {
-        $response = apiPost('/api/orders', [], customerToken());
+        $response = apiPost('/api/rest/v2/orders', [], customerToken());
 
         // Should return validation error, not 500
         expect($response['status'])->toBeGreaterThanOrEqual(400);

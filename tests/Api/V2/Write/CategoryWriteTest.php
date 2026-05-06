@@ -25,7 +25,7 @@ afterAll(function (): void {
 describe('Category Permission Enforcement (REST)', function (): void {
 
     it('denies create without authentication', function (): void {
-        $response = apiPost('/api/categories', [
+        $response = apiPost('/api/rest/v2/categories', [
             'name' => 'Test Category No Auth',
         ]);
 
@@ -33,7 +33,7 @@ describe('Category Permission Enforcement (REST)', function (): void {
     });
 
     it('denies create with customer token (wrong role)', function (): void {
-        $response = apiPost('/api/categories', [
+        $response = apiPost('/api/rest/v2/categories', [
             'name' => 'Test Category Customer',
         ], customerToken());
 
@@ -42,7 +42,7 @@ describe('Category Permission Enforcement (REST)', function (): void {
 
     it('denies create without correct permission', function (): void {
         $token = serviceToken(['cms-pages/write']);
-        $response = apiPost('/api/categories', [
+        $response = apiPost('/api/rest/v2/categories', [
             'name' => 'Test Category No Permission',
         ], $token);
 
@@ -58,7 +58,7 @@ describe('Category CRUD Lifecycle (REST)', function (): void {
         $suffix = substr(uniqid(), -8);
 
         // 1. Create
-        $create = apiPost('/api/categories', [
+        $create = apiPost('/api/rest/v2/categories', [
             'name' => "Pest Test Category {$suffix}",
             'isActive' => true,
             'urlKey' => "pest-test-category-{$suffix}",
@@ -72,27 +72,27 @@ describe('Category CRUD Lifecycle (REST)', function (): void {
         trackCreated('category', $categoryId);
 
         // 2. Read (public)
-        $read = apiGet("/api/categories/{$categoryId}");
+        $read = apiGet("/api/rest/v2/categories/{$categoryId}");
         expect($read['status'])->toBe(200);
         expect($read['json']['name'])->toBe("Pest Test Category {$suffix}");
 
         // 3. Update
-        $update = apiPut("/api/categories/{$categoryId}", [
+        $update = apiPut("/api/rest/v2/categories/{$categoryId}", [
             'name' => "Pest Test Category Updated {$suffix}",
         ], $token);
         expect($update['status'])->toBe(200);
 
         // 4. Verify update
-        $verify = apiGet("/api/categories/{$categoryId}");
+        $verify = apiGet("/api/rest/v2/categories/{$categoryId}");
         expect($verify['status'])->toBe(200);
         expect($verify['json']['name'])->toBe("Pest Test Category Updated {$suffix}");
 
         // 5. Delete
-        $delete = apiDelete("/api/categories/{$categoryId}", $token);
+        $delete = apiDelete("/api/rest/v2/categories/{$categoryId}", $token);
         expect($delete['status'])->toBeIn([200, 204]);
 
         // 6. Confirm gone
-        $gone = apiGet("/api/categories/{$categoryId}");
+        $gone = apiGet("/api/rest/v2/categories/{$categoryId}");
         expect($gone['status'])->toBe(404);
     });
 
@@ -100,7 +100,7 @@ describe('Category CRUD Lifecycle (REST)', function (): void {
         $writeToken = serviceToken(['categories/write']);
 
         // Create
-        $create = apiPost('/api/categories', [
+        $create = apiPost('/api/rest/v2/categories', [
             'name' => 'Pest Delete Denied Category',
             'isActive' => true,
         ], $writeToken);
@@ -109,7 +109,7 @@ describe('Category CRUD Lifecycle (REST)', function (): void {
         trackCreated('category', $categoryId);
 
         // Delete with only write = denied
-        $deny = apiDelete("/api/categories/{$categoryId}", $writeToken);
+        $deny = apiDelete("/api/rest/v2/categories/{$categoryId}", $writeToken);
         expect($deny['status'])->toBeForbidden();
     });
 

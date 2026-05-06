@@ -31,9 +31,9 @@ class HttpCacheListener
 {
     /** Public endpoints that can be cached by CDN/proxies */
     private const PUBLIC_PATHS = [
-        '/api/store-config',
-        '/api/countries',
-        '/api/categories',
+        '/api/rest/v2/store-config',
+        '/api/rest/v2/countries',
+        '/api/rest/v2/categories',
     ];
 
     public function __invoke(ResponseEvent $event): void
@@ -111,7 +111,7 @@ class HttpCacheListener
     private function isCollectionPath(string $path): bool
     {
         // Collection endpoints typically don't end with a numeric ID
-        // e.g., /api/products is a collection, /api/products/123 is a single resource
+        // e.g., /api/rest/v2/products is a collection, /api/rest/v2/products/123 is a single resource
         return !preg_match('#/\d+$#', $path);
     }
 }
