@@ -64,9 +64,6 @@ class Maho_ApiPlatform_Model_Observer
         // RFC 8594 Deprecation header
         $response->setHeader('Deprecation', 'true', true);
 
-        // RFC 8594 Sunset header — legacy SOAP/REST APIs disabled on 2027-05-31
-        $response->setHeader('Sunset', 'Mon, 31 May 2027 00:00:00 GMT', true);
-
         // Link to successor version
         $successorPath = $this->getSuccessorPath($path);
         if ($successorPath) {
