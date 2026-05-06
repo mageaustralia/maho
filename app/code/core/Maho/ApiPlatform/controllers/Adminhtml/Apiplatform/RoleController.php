@@ -30,6 +30,7 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_RoleController extends Mage_Adminht
         return $this;
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_role/index')]
     public function indexAction(): void
     {
         $this->_title($this->__('System'))
@@ -38,17 +39,20 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_RoleController extends Mage_Adminht
         $this->renderLayout();
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_role/grid')]
     public function gridAction(): void
     {
         $this->loadLayout();
         $this->renderLayout();
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_role/new')]
     public function newAction(): void
     {
         $this->_forward('edit');
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_role/edit')]
     public function editAction(): void
     {
         $this->_title($this->__('System'))
@@ -104,6 +108,7 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_RoleController extends Mage_Adminht
         $this->renderLayout();
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_role/save', methods: ['POST'])]
     public function saveAction(): void
     {
         if (!$this->getRequest()->isPost()) {
@@ -199,6 +204,7 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_RoleController extends Mage_Adminht
         }
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_role/delete', methods: ['POST'])]
     public function deleteAction(): void
     {
         $id = (int) $this->getRequest()->getParam('role_id');

@@ -47,9 +47,4 @@ class TokenBlacklist
 
         return $data !== false;
     }
-
-    public function cleanup(): void
-    {
-        \Mage::app()->getCache()->clean([self::CACHE_TAG]);
-    }
 }

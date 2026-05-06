@@ -15,7 +15,6 @@ namespace Maho\ApiPlatform\EventListener;
 
 use Maho\ApiPlatform\Security\ApiUser;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -33,9 +32,9 @@ class IdempotencyListener
 {
     private const HEADER_KEY = 'X-Idempotency-Key';
     private const HEADER_REPLAYED = 'X-Idempotency-Replayed';
-    private const TABLE = 'maho_api_idempotency_keys';
+    public const TABLE = 'maho_api_idempotency_keys';
     private const MAX_KEY_LENGTH = 255;
-    private const TTL_HOURS = 24;
+    public const TTL_HOURS = 24;
 
     public function __construct(
         private readonly TokenStorageInterface $tokenStorage,
@@ -110,11 +109,6 @@ class IdempotencyListener
         // Store key info on request for the response listener
         $request->attributes->set('_idempotency_key', $idempotencyKey);
         $request->attributes->set('_idempotency_scope', $scope);
-
-        // Probabilistic cleanup: 1 in 100 requests
-        if (random_int(1, 100) === 1) {
-            $this->cleanup($resource);
-        }
     }
 
     #[AsEventListener(event: KernelEvents::RESPONSE, priority: -100)]
@@ -191,18 +185,5 @@ class IdempotencyListener
         }
 
         return 'anonymous';
-    }
-
-    private function cleanup(\Mage_Core_Model_Resource $resource): void
-    {
-        try {
-            $write = $resource->getConnection('core_write');
-            $table = $resource->getTableName(self::TABLE);
-            $cutoff = \Mage::app()->getLocale()->formatDateForDb('-' . self::TTL_HOURS . ' hours');
-            $write->delete($table, $write->quoteInto('created_at < ?', $cutoff));
-        } catch (\Exception $e) {
-            // Cleanup failure is non-critical
-            \Mage::logException($e);
-        }
     }
 }

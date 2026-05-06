@@ -32,6 +32,7 @@ class Maho_ApiPlatform_Model_Observer
      *
      * @param \Maho\Event\Observer $_observer Observer instance (required by framework)
      */
+    #[Maho\Config\Observer('controller_front_send_response_before')]
     public function addDeprecationHeaders(\Maho\Event\Observer $_observer): void
     {
         $app = Mage::app();
@@ -106,8 +107,10 @@ class Maho_ApiPlatform_Model_Observer
     }
 
     /**
-     * Invalidate API cache when a product is saved
+     * Invalidate API cache when a product is saved or deleted
      */
+    #[Maho\Config\Observer('catalog_product_save_after')]
+    #[Maho\Config\Observer('catalog_product_delete_after')]
     public function invalidateProductCache(\Maho\Event\Observer $observer): void
     {
         $this->cleanApiCache(['API_PRODUCTS']);
@@ -121,6 +124,7 @@ class Maho_ApiPlatform_Model_Observer
     /**
      * Invalidate API cache when a category is saved
      */
+    #[Maho\Config\Observer('catalog_category_save_after')]
     public function invalidateCategoryCache(\Maho\Event\Observer $_observer): void
     {
         $this->cleanApiCache(['API_PRODUCTS']);
@@ -129,6 +133,7 @@ class Maho_ApiPlatform_Model_Observer
     /**
      * Invalidate API cache when stock is updated
      */
+    #[Maho\Config\Observer('cataloginventory_stock_item_save_after')]
     public function invalidateStockCache(\Maho\Event\Observer $_observer): void
     {
         $this->cleanApiCache(['API_PRODUCTS']);
@@ -137,6 +142,7 @@ class Maho_ApiPlatform_Model_Observer
     /**
      * Invalidate API cache when prices are updated (catalog rules, etc.)
      */
+    #[Maho\Config\Observer('catalogrule_after_apply')]
     public function invalidatePriceCache(\Maho\Event\Observer $_observer): void
     {
         $this->cleanApiCache(['API_PRODUCTS']);
@@ -145,9 +151,32 @@ class Maho_ApiPlatform_Model_Observer
     /**
      * Invalidate API reviews cache when a review is saved/approved
      */
+    #[Maho\Config\Observer('review_save_after')]
     public function invalidateReviewCache(\Maho\Event\Observer $_observer): void
     {
         $this->cleanApiCache(['API_REVIEWS']);
+    }
+
+    /**
+     * Purge idempotency-key rows older than the listener's TTL window.
+     *
+     * The IdempotencyListener stores response replays for 24 hours; rows beyond
+     * that are useless. Runs daily so the table doesn't grow unbounded.
+     */
+    #[Maho\Config\CronJob('apiplatform_idempotency_cleanup', schedule: '0 3 * * *')]
+    public function cleanupIdempotencyKeys(): void
+    {
+        try {
+            $resource = Mage::getSingleton('core/resource');
+            $write = $resource->getConnection('core_write');
+            $table = $resource->getTableName(\Maho\ApiPlatform\EventListener\IdempotencyListener::TABLE);
+            $cutoff = Mage::app()->getLocale()->formatDateForDb(
+                '-' . \Maho\ApiPlatform\EventListener\IdempotencyListener::TTL_HOURS . ' hours',
+            );
+            $write->delete($table, $write->quoteInto('created_at < ?', $cutoff));
+        } catch (\Throwable $e) {
+            Mage::logException($e);
+        }
     }
 
     /**

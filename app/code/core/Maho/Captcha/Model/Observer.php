@@ -36,6 +36,7 @@ class Maho_Captcha_Model_Observer
         $this->failedVerification($controller, $isAjax);
     }
 
+    #[Maho\Config\Observer('api_verify_captcha', area: 'api')]
     public function verifyApi(\Maho\Event\Observer $observer): void
     {
         $helper = Mage::helper('captcha');
@@ -55,6 +56,7 @@ class Maho_Captcha_Model_Observer
         }
     }
 
+    #[Maho\Config\Observer('api_captcha_config', area: 'api')]
     public function getCaptchaConfig(\Maho\Event\Observer $observer): void
     {
         $helper = Mage::helper('captcha');

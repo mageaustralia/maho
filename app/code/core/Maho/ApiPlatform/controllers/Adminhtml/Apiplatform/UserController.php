@@ -30,6 +30,7 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_UserController extends Mage_Adminht
         return $this;
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_user/index')]
     public function indexAction(): void
     {
         $this->_title($this->__('System'))
@@ -38,17 +39,20 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_UserController extends Mage_Adminht
         $this->renderLayout();
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_user/grid')]
     public function gridAction(): void
     {
         $this->loadLayout();
         $this->renderLayout();
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_user/new')]
     public function newAction(): void
     {
         $this->_forward('edit');
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_user/edit')]
     public function editAction(): void
     {
         $this->_title($this->__('System'))
@@ -84,6 +88,7 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_UserController extends Mage_Adminht
         $this->renderLayout();
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_user/save', methods: ['POST'])]
     public function saveAction(): void
     {
         if (!$this->getRequest()->isPost()) {
@@ -176,6 +181,7 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_UserController extends Mage_Adminht
         }
     }
 
+    #[Maho\Config\Route('/admin/apiplatform_user/delete', methods: ['POST'])]
     public function deleteAction(): void
     {
         $id = (int) $this->getRequest()->getParam('user_id');
