@@ -18,6 +18,7 @@ declare(strict_types=1);
  */
 class Maho_ApiPlatform_DocsController extends Maho_ApiPlatform_IndexController
 {
+    #[\Override]
     public function indexAction(): void
     {
         parent::indexAction();

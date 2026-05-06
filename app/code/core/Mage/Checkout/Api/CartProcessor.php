@@ -64,7 +64,9 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
         $req = $context['request'] ?? null;
         if (!isset($uriVariables['itemId']) && $req instanceof \Symfony\Component\HttpFoundation\Request) {
             $rp = $req->attributes->get('_route_params') ?? [];
-            if (isset($rp['itemId'])) $uriVariables['itemId'] = $rp['itemId'];
+            if (isset($rp['itemId'])) {
+                $uriVariables['itemId'] = $rp['itemId'];
+            }
         }
         // Map uriVariables for sub-resource params
         if (isset($uriVariables['itemId']) && !isset($context['args']['input']['itemId'])) {
@@ -181,7 +183,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
     private function updateCartItem(array $context, array $uriVariables): Cart
     {
         $args = $context['args']['input'] ?? [];
-        $itemId = $args["itemId"] ?? $uriVariables["itemId"] ?? null;
+        $itemId = $args['itemId'] ?? $uriVariables['itemId'] ?? null;
         $qty = (float) ($args['qty'] ?? 1);
 
         if (!$itemId) {
@@ -200,7 +202,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
     private function removeItemFromCart(array $context, array $uriVariables): Cart
     {
         $args = $context['args']['input'] ?? [];
-        $itemId = $args["itemId"] ?? $uriVariables["itemId"] ?? null;
+        $itemId = $args['itemId'] ?? $uriVariables['itemId'] ?? null;
 
         if (!$itemId) {
             throw new \RuntimeException('Item ID is required');
@@ -218,7 +220,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
     private function setCartItemFulfillment(array $context, array $uriVariables): Cart
     {
         $args = $context['args']['input'] ?? [];
-        $itemId = $args["itemId"] ?? $uriVariables["itemId"] ?? null;
+        $itemId = $args['itemId'] ?? $uriVariables['itemId'] ?? null;
         $fulfillmentType = $args['fulfillmentType'] ?? 'SHIP';
 
         if (!$itemId) {

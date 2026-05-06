@@ -20,6 +20,7 @@ declare(strict_types=1);
  */
 class Maho_ApiPlatform_GraphqlController extends Maho_ApiPlatform_IndexController
 {
+    #[\Override]
     public function indexAction(): void
     {
         parent::indexAction();
