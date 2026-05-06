@@ -169,7 +169,7 @@ final class WishlistProcessor extends \Maho\ApiPlatform\Processor
             if ($description !== null) {
                 $item->setDescription($description);
             }
-            $item->setAddedAt(\Mage_Core_Model_Locale::now());
+            $item->setAddedAt(\Mage_Core_Model_Locale::nowUtc());
             $item->save();
         }
 
