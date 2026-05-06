@@ -148,6 +148,22 @@ function getItems(array $response): array
 uses()
     ->beforeEach(function (): void {
         static $apiAvailable = null;
+        static $protocolsEnabled = false;
+
+        // API protocols default to disabled (opt-in security model). Tests
+        // need them on, so flip every flag once at suite start. Writes to
+        // core_config_data persist for the test run; the suite assumes an
+        // ephemeral test database anyway.
+        if (!$protocolsEnabled) {
+            $protocols = ['rest_v2', 'graphql', 'admin_graphql', 'legacy_rest', 'soap', 'v2_soap', 'xmlrpc', 'jsonrpc'];
+            $config = \Mage::getModel('core/config');
+            foreach ($protocols as $protocol) {
+                $config->saveConfig('apiplatform/protocols/' . $protocol, '1', 'default', 0);
+            }
+            \Mage::app()->getCache()->cleanType('config');
+            $protocolsEnabled = true;
+        }
+
         if ($apiAvailable === null) {
             try {
                 $baseUrl = ApiV2Helper::getBaseUrlPublic();

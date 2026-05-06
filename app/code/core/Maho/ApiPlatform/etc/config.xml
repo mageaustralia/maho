@@ -80,9 +80,16 @@
     </adminhtml>
     <default>
         <apiplatform>
-            <general>
-                <enabled>1</enabled>
-            </general>
+            <protocols>
+                <rest_v2>0</rest_v2>
+                <graphql>0</graphql>
+                <admin_graphql>0</admin_graphql>
+                <legacy_rest>0</legacy_rest>
+                <soap>0</soap>
+                <v2_soap>0</v2_soap>
+                <xmlrpc>0</xmlrpc>
+                <jsonrpc>0</jsonrpc>
+            </protocols>
             <cache>
                 <ttl>300</ttl>
             </cache>
