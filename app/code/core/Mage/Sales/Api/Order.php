@@ -28,10 +28,8 @@ use Mage\Customer\Api\Address;
 #[ApiResource(
     mahoOperations: ['read' => 'View', 'create' => 'Place', 'write' => 'Manage'],
     mahoCustomerScoped: true,
-    mahoDescription: 'View order history, place orders at checkout',
-
     shortName: 'Order',
-    description: 'Order resource',
+    description: 'View order history, place orders at checkout',
     provider: OrderProvider::class,
     processor: OrderProcessor::class,
     operations: [

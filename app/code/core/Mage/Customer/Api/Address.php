@@ -31,10 +31,9 @@ use Maho\ApiPlatform\CrudResource;
     mahoSection: 'Customers',
     mahoOperations: ['read' => 'View', 'write' => 'Manage'],
     mahoCustomerScoped: true,
-    mahoDescription: 'View, create, update, and delete saved addresses',
 
     shortName: 'Address',
-    description: 'Customer address resource',
+    description: 'View, create, update, and delete saved addresses',
     provider: AddressProvider::class,
     processor: AddressProcessor::class,
     operations: [

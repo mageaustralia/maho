@@ -1305,7 +1305,8 @@ Most permission-registry fields are derived from the API Platform metadata on th
 | `mahoGraphQlFields`| Each camelCase `name:` from `graphQlOperations[]`. Snake_case names (`item_query`, `add_cart_item`) are skipped — those are API Platform's internal operation identifiers, not schema fields. Augmented by your override for handler-defined fields (e.g. mutations declared in `*MutationHandler` classes the compiler can't see) |
 | `mahoPublicRead`   | No equivalent — must be explicit when you want unauthenticated `GET` |
 | `mahoCustomerScoped` | No equivalent — must be explicit for resources bound to a logged-in customer (carts, wishlists, addresses, etc.) |
-| `mahoDescription`  | No equivalent — admin-UI prose for customer-scoped resources       |
+
+For customer-scoped resources, the parent's `description:` doubles as admin-UI prose — the compiler reads it via `getDescription()` and surfaces it in the role editor. Write it as action-oriented prose ("View cart, add/remove items, apply coupons, set shipping & payment") so it's useful for both API docs and admins.
 
 ### Forward-looking resources (no DTO yet)
 

@@ -28,10 +28,8 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
     mahoSection: 'Other',
     mahoOperations: ['read' => 'View Status', 'write' => 'Subscribe/Unsubscribe'],
     mahoCustomerScoped: true,
-    mahoDescription: 'View subscription status, subscribe/unsubscribe',
-
     shortName: 'NewsletterSubscription',
-    description: 'Newsletter subscription management',
+    description: 'View subscription status, subscribe/unsubscribe',
     provider: NewsletterProvider::class,
     processor: NewsletterProcessor::class,
     operations: [

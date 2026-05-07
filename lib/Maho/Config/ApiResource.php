@@ -40,9 +40,9 @@ use Attribute;
  *   - `mahoRestSegments`  ← unique first segments of each `uriTemplate`
  *   - `mahoGraphQlFields` ← every `name` from `graphQlOperations`
  *
- * Set them explicitly only when defaults are wrong. `mahoPublicRead`,
- * `mahoCustomerScoped`, and `mahoDescription` have no API Platform equivalent
- * and must be set explicitly when needed.
+ * Set them explicitly only when defaults are wrong. `mahoPublicRead` and
+ * `mahoCustomerScoped` have no API Platform equivalent and must be set
+ * explicitly when needed.
  *
  * For forward-looking resources without a real DTO, declare on a stub class
  * with `operations: []` (explicit empty — *not* null) so API Platform sees
@@ -88,7 +88,6 @@ class ApiResource extends BaseApiResource
         public bool $mahoCustomerScoped = false,
         public ?array $mahoRestSegments = null,
         public ?array $mahoGraphQlFields = null,
-        public ?string $mahoDescription = null,
         // ---- Mirror of ApiPlatform\Metadata\ApiResource constructor ----
         ?string $uriTemplate = null,
         ?string $shortName = null,

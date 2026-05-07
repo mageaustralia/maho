@@ -28,10 +28,8 @@ use Maho\ApiPlatform\CrudResource;
     mahoSection: 'Customers',
     mahoOperations: ['read' => 'View', 'write' => 'Submit'],
     mahoCustomerScoped: true,
-    mahoDescription: 'View and submit product reviews',
-
     shortName: 'Review',
-    description: 'Product review',
+    description: 'View and submit product reviews',
     provider: ReviewProvider::class,
     processor: ReviewProcessor::class,
     operations: [
