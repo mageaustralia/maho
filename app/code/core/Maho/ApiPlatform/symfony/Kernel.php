@@ -106,22 +106,14 @@ class Kernel extends BaseKernel
             new \Nelmio\CorsBundle\NelmioCorsBundle(),
         ];
 
-        if ($this->isTwigAvailable()) {
+        // symfony/twig-bundle is a `suggest`-only dependency. Inlining the
+        // class_exists guard (rather than hiding it behind a helper) lets
+        // PHPStan narrow the type and accept the `new` below.
+        if (class_exists(\Symfony\Bundle\TwigBundle\TwigBundle::class)) {
             $bundles[] = new \Symfony\Bundle\TwigBundle\TwigBundle();
         }
 
         return $bundles;
-    }
-
-    /**
-     * symfony/twig-bundle is an optional (`suggest`) dependency. It's only
-     * needed to render the human-browsable Swagger UI, ReDoc, and GraphiQL
-     * pages. The JSON API and the OpenAPI JSON output (/api/docs.json) work
-     * without it.
-     */
-    private function isTwigAvailable(): bool
-    {
-        return class_exists(\Symfony\Bundle\TwigBundle\TwigBundle::class);
     }
 
     protected function configureContainer(ContainerConfigurator $container): void
@@ -140,7 +132,8 @@ class Kernel extends BaseKernel
         // The Swagger UI / ReDoc / GraphiQL HTML pages are rendered by Twig.
         // GraphiQL specifically hard-throws at container compile time when
         // enabled without TwigBundle, so this flag must reflect availability.
-        $twigAvailable = $this->isTwigAvailable();
+        // symfony/twig-bundle is a `suggest`-only dependency; check directly.
+        $twigAvailable = class_exists(\Symfony\Bundle\TwigBundle\TwigBundle::class);
 
         $docsFormats = [
             'jsonld' => ['application/ld+json'],
