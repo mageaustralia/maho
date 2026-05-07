@@ -82,13 +82,29 @@ class Kernel extends BaseKernel
     #[\Override]
     public function registerBundles(): iterable
     {
-        return [
+        $bundles = [
             new \Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
             new \Symfony\Bundle\SecurityBundle\SecurityBundle(),
-            new \Symfony\Bundle\TwigBundle\TwigBundle(),
             new \ApiPlatform\Symfony\Bundle\ApiPlatformBundle(),
             new \Nelmio\CorsBundle\NelmioCorsBundle(),
         ];
+
+        if ($this->isTwigAvailable()) {
+            $bundles[] = new \Symfony\Bundle\TwigBundle\TwigBundle();
+        }
+
+        return $bundles;
+    }
+
+    /**
+     * symfony/twig-bundle is an optional (`suggest`) dependency. It's only
+     * needed to render the human-browsable Swagger UI, ReDoc, and GraphiQL
+     * pages. The JSON API and the OpenAPI JSON output (/api/docs.json) work
+     * without it.
+     */
+    private function isTwigAvailable(): bool
+    {
+        return class_exists(\Symfony\Bundle\TwigBundle\TwigBundle::class);
     }
 
     protected function configureContainer(ContainerConfigurator $container): void
@@ -104,23 +120,32 @@ class Kernel extends BaseKernel
             'validation' => ['enabled' => true],
         ]);
 
+        // The Swagger UI / ReDoc / GraphiQL HTML pages are rendered by Twig.
+        // GraphiQL specifically hard-throws at container compile time when
+        // enabled without TwigBundle, so this flag must reflect availability.
+        $twigAvailable = $this->isTwigAvailable();
+
+        $docsFormats = [
+            'jsonld' => ['application/ld+json'],
+            'json' => ['application/json'],
+        ];
+        if ($twigAvailable) {
+            $docsFormats['html'] = ['text/html'];
+        }
+
         $container->extension('api_platform', [
             'title' => 'Maho Commerce API',
             'version' => '2.0.0',
             'description' => 'Modern REST and GraphQL API for Maho Commerce',
-            'enable_swagger_ui' => true,
-            'enable_re_doc' => true,
+            'enable_swagger_ui' => $twigAvailable,
+            'enable_re_doc' => $twigAvailable,
             'enable_entrypoint' => true,
             'enable_docs' => true,
             'formats' => [
                 'jsonld' => ['application/ld+json'],
                 'json' => ['application/json'],
             ],
-            'docs_formats' => [
-                'jsonld' => ['application/ld+json'],
-                'json' => ['application/json'],
-                'html' => ['text/html'],
-            ],
+            'docs_formats' => $docsFormats,
             'defaults' => [
                 'route_prefix' => '/rest/v2',
                 'pagination_enabled' => true,
@@ -132,7 +157,7 @@ class Kernel extends BaseKernel
             ],
             'graphql' => [
                 'enabled' => true,
-                'graphiql' => ['enabled' => true],
+                'graphiql' => ['enabled' => $twigAvailable],
                 'introspection' => ['enabled' => true],
                 'max_query_depth' => 12,
                 'max_query_complexity' => 500,

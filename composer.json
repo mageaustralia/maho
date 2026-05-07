@@ -67,10 +67,8 @@
         "symfony/routing": "^7.4",
         "api-platform/core": "^4.3",
         "nelmio/cors-bundle": "^2.6",
-        "symfony/expression-language": "^7.4",
         "symfony/framework-bundle": "^7.4",
         "symfony/security-bundle": "^7.4",
-        "symfony/twig-bundle": "^7.4",
         "webonyx/graphql-php": "^15.31",
         "lcobucci/jwt": "^5.6"
     },
@@ -107,7 +105,8 @@
         "laminas/laminas-soap": "Install this package if you need SOAP web services functionality",
         "laminas/laminas-xmlrpc": "Install this package if you need XML-RPC web services functionality",
         "mahocommerce/module-braintree": "Braintree payment gateway integration",
-        "picqer/php-barcode-generator": "Required for gift card barcode generation"
+        "picqer/php-barcode-generator": "Required for gift card barcode generation",
+        "symfony/twig-bundle": "Required to render the API Platform Swagger UI, ReDoc, and GraphiQL explorer pages. Without it, the JSON API still works but the human-browsable docs at /api/docs do not."
     },
     "conflict": {
         "colinmollenhour/cache-backend-redis": "*",
