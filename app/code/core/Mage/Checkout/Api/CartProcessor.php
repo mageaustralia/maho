@@ -78,6 +78,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
 
         return match ($operationName) {
             'createCart', 'create_guest_cart' => $this->createEmptyCart($context),
+            'create_authenticated_cart' => $this->createAuthenticatedCart($context),
             'addToCart', 'add_guest_item', 'add_cart_item' => $this->addItemToCart($context, $uriVariables),
             'updateCartItemQty', 'update_guest_item', 'update_cart_item' => $this->updateCartItem($context, $uriVariables),
             'removeCartItem', 'remove_guest_item', 'remove_cart_item' => $this->removeItemFromCart($context, $uriVariables),
@@ -118,11 +119,32 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
     }
 
     /**
-     * Create an empty cart
+     * Create an empty cart (GraphQL mutation / guest-cart REST endpoint).
+     * customerId is whatever the GraphQL caller passed in context; null
+     * yields a guest quote with a masked ID.
      */
     private function createEmptyCart(array $context): Cart
     {
         $customerId = $context['customer_id'] ?? null;
+        $storeId = $context['args']['input']['storeId'] ?? null;
+
+        $result = $this->cartService->createEmptyCart($customerId, $storeId);
+
+        return $this->cartMapper->mapQuoteToCart($result['quote'], false);
+    }
+
+    /**
+     * Create a cart for the authenticated REST caller.
+     *
+     * The /carts POST operation can only be reached when the firewall has
+     * already established a ROLE_USER, ROLE_ADMIN, or ROLE_API_USER token
+     * (see security expression on the Cart resource). We resolve the customer
+     * id from the auth context rather than from the request body so a
+     * customer can't try to provision a cart against someone else's account.
+     */
+    private function createAuthenticatedCart(array $context): Cart
+    {
+        $customerId = $this->getAuthenticatedCustomerId();
         $storeId = $context['args']['input']['storeId'] ?? null;
 
         $result = $this->cartService->createEmptyCart($customerId, $storeId);

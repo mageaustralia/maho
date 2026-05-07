@@ -34,32 +34,33 @@ use Mage\Customer\Api\Address;
     operations: [
         new Get(
             uriTemplate: '/carts/{id}',
-            security: 'true',
-            description: 'Get a cart by ID',
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
+            description: 'Get a cart by numeric ID. CartProvider enforces per-customer ownership via verifyCartAccess(); guest masked-ID lookups go through /guest-carts/{id}.',
         ),
         new Post(
             uriTemplate: '/carts',
-            security: 'true',
-            description: 'Create a new cart',
+            name: 'create_authenticated_cart',
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
+            description: 'Create a new cart for the authenticated customer',
         ),
         new Post(
             uriTemplate: '/carts/{id}/items',
             name: 'add_cart_item',
-            security: 'true',
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
             description: 'Add item to cart by numeric ID',
         ),
         new Put(
             uriTemplate: '/carts/{id}/items/{itemId}',
             name: 'update_cart_item',
             output: false,
-            security: 'true',
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
             description: 'Update item quantity in cart',
         ),
         new Delete(
             uriTemplate: '/carts/{id}/items/{itemId}',
             name: 'remove_cart_item',
             output: false,
-            security: 'true',
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
             description: 'Remove item from cart',
         ),
         new Post(

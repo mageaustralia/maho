@@ -31,7 +31,11 @@ describe('POST /api/rest/v2/carts', function (): void {
         expect($response['status'])->toBeSuccessful();
         expect($response['json'])->toBeArray();
         expect($response['json'])->toHaveKey('id');
-    })->skip('Cart POST processor not yet implemented');
+
+        if (!empty($response['json']['id'])) {
+            trackCreated('quote', (int) $response['json']['id']);
+        }
+    });
 
     it('returns cart with expected fields', function (): void {
         $response = apiPost('/api/rest/v2/carts', [], customerToken());
@@ -40,7 +44,11 @@ describe('POST /api/rest/v2/carts', function (): void {
 
         $cart = $response['json'];
         expect($cart)->toHaveKey('id');
-    })->skip('Cart POST processor not yet implemented');
+
+        if (!empty($cart['id'])) {
+            trackCreated('quote', (int) $cart['id']);
+        }
+    });
 
     it('requires authentication', function (): void {
         $response = apiPost('/api/rest/v2/carts', []);
@@ -58,12 +66,13 @@ describe('GET /api/rest/v2/carts/{id}', function (): void {
 
         $cartId = $createResponse['json']['id'] ?? null;
         expect($cartId)->not->toBeNull();
+        trackCreated('quote', (int) $cartId);
 
         $response = apiGet("/api/rest/v2/carts/{$cartId}", customerToken());
 
         expect($response['status'])->toBe(200);
         expect($response['json'])->toHaveKey('id');
-    })->skip('Depends on cart creation');
+    });
 
     it('returns 404 for non-existent cart', function (): void {
         $response = apiGet('/api/rest/v2/carts/999999999', customerToken());

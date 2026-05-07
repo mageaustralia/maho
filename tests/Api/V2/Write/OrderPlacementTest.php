@@ -33,22 +33,24 @@ describe('POST /api/rest/v2/orders', function (): void {
         $cartResponse = apiPost('/api/rest/v2/carts', [], customerToken());
         expect($cartResponse['status'])->toBeSuccessful();
         $cartId = $cartResponse['json']['id'];
+        trackCreated('quote', (int) $cartId);
 
-        // 2. Add item (this would need a dedicated endpoint or be part of cart creation)
-        // Note: Depends on your API implementation
-        // For now, we'll test the order endpoint exists and requires a cart
+        // We deliberately skip adding items here — this test asserts the
+        // order endpoint exists and exits cleanly, not that an empty cart
+        // produces a real order. Adding items would need a configured SKU,
+        // shipping method, address, etc., which belongs in a dedicated
+        // happy-path checkout test.
 
-        // 3. Place order
         $orderResponse = apiPost('/api/rest/v2/orders', [
             'cartId' => $cartId,
             'paymentMethod' => 'cashondelivery',
             'shippingMethod' => 'freeshipping_freeshipping',
         ], customerToken());
 
-        // The order might fail if cart is empty, but endpoint should respond
+        // Empty/incomplete carts should produce a 4xx, never a 5xx.
         expect($orderResponse['status'])->toBeGreaterThanOrEqual(200);
         expect($orderResponse['status'])->toBeLessThan(500);
-    })->skip('Depends on cart creation');
+    });
 
     it('requires authentication', function (): void {
         $response = apiPost('/api/rest/v2/orders', [
