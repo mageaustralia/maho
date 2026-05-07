@@ -31,9 +31,14 @@ class TokenBlacklist
             return;
         }
 
+        $key = self::cacheKey($jti);
+        if ($key === null) {
+            return;
+        }
+
         \Mage::app()->getCache()->save(
             (string) $expiresAt,
-            self::CACHE_PREFIX . preg_replace('/[^a-f0-9]/', '', $jti),
+            $key,
             [self::CACHE_TAG],
             $ttl,
         );
@@ -41,10 +46,26 @@ class TokenBlacklist
 
     public function isRevoked(string $jti): bool
     {
-        $data = \Mage::app()->getCache()->load(
-            self::CACHE_PREFIX . preg_replace('/[^a-f0-9]/', '', $jti),
-        );
+        $key = self::cacheKey($jti);
+        if ($key === null) {
+            // Reject malformed JTIs by treating them as revoked rather than
+            // collapsing non-hex characters into a shared bucket where
+            // 'aaa@bbb' and 'aaabbb' would share blacklist state.
+            return true;
+        }
+        return \Mage::app()->getCache()->load($key) !== false;
+    }
 
-        return $data !== false;
+    /**
+     * Build the cache key for a JTI, or null when the JTI is malformed.
+     * JwtService issues hex JTIs (`bin2hex(random_bytes(16))`), so anything
+     * else is suspicious and rejected rather than silently normalized.
+     */
+    private static function cacheKey(string $jti): ?string
+    {
+        if ($jti === '' || !preg_match('/^[a-f0-9]+$/i', $jti)) {
+            return null;
+        }
+        return self::CACHE_PREFIX . strtolower($jti);
     }
 }

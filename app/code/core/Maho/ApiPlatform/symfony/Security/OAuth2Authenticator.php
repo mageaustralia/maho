@@ -38,6 +38,8 @@ class OAuth2Authenticator extends AbstractAuthenticator
     public function __construct(
         private JwtService $jwtService,
         private TokenBlacklist $tokenBlacklist,
+        private CustomerUserProvider $customerUserProvider,
+        private AdminUserProvider $adminUserProvider,
     ) {}
 
     /**
@@ -90,12 +92,11 @@ class OAuth2Authenticator extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException('Token has been revoked');
         }
 
-        // Build user badge with loader callback
+        // Build user badge with loader callback. The identifier param is unused
+        // because the JWT payload carries everything needed to recreate the user.
         $userBadge = new UserBadge(
             (string) $payload->sub,
-            function (string $userIdentifier) use ($payload): ApiUser {
-                return $this->createUserFromPayload($payload);
-            },
+            fn(): ApiUser => $this->createUserFromPayload($payload),
         );
 
         return new SelfValidatingPassport($userBadge);
@@ -126,68 +127,72 @@ class OAuth2Authenticator extends AbstractAuthenticator
     }
 
     /**
-     * Create ApiUser from JWT payload
+     * Create ApiUser from JWT payload.
+     *
+     * Customer/admin tokens are re-validated against the DB on every request via
+     * the matching UserProvider, so deactivation takes effect immediately rather
+     * than waiting for the JWT to expire. API-user tokens are also re-validated
+     * (see the api_user branch below).
      */
     private function createUserFromPayload(object $payload): ApiUser
     {
-        $roles = $this->extractRoles($payload);
-        $customerId = null;
-        $adminId = null;
-        $apiUserId = null;
-        $permissions = [];
+        $type = $payload->type ?? 'customer';
         $allowedStoreIds = null;
-
-        if (isset($payload->customer_id)) {
-            $customerId = (int) $payload->customer_id;
+        if (isset($payload->allowed_store_ids) && is_array($payload->allowed_store_ids)) {
+            $allowedStoreIds = array_map('intval', $payload->allowed_store_ids);
         }
 
-        if (isset($payload->admin_id)) {
+        if ($type === 'admin' && isset($payload->admin_id)) {
             $adminId = (int) $payload->admin_id;
+            try {
+                /** @var ApiUser $base */
+                $base = $this->adminUserProvider->loadUserByIdentifier('admin_' . $adminId);
+            } catch (\Symfony\Component\Security\Core\Exception\UserNotFoundException) {
+                throw new CustomUserMessageAuthenticationException('Admin account is inactive or not found');
+            }
+            return new ApiUser(
+                identifier: (string) $payload->sub,
+                roles: $base->getRoles(),
+                adminId: $adminId,
+                allowedStoreIds: $allowedStoreIds,
+            );
         }
 
-        if (isset($payload->api_user_id)) {
+        if ($type === 'api_user' && isset($payload->api_user_id)) {
             $apiUserId = (int) $payload->api_user_id;
-
-            // Re-validate API user permissions from database instead of trusting JWT
             $apiUser = \Mage::getModel('api/user')->load($apiUserId);
             if (!$apiUser->getId() || !(int) $apiUser->getIsActive()) {
                 throw new CustomUserMessageAuthenticationException('API user account is inactive or not found');
             }
-            $permissions = $this->jwtService->loadApiUserPermissions($apiUser);
-        } elseif (isset($payload->permissions) && is_array($payload->permissions)) {
-            $permissions = $payload->permissions;
+            return new ApiUser(
+                identifier: (string) $payload->sub,
+                roles: ['ROLE_API_USER'],
+                apiUserId: $apiUserId,
+                permissions: $this->jwtService->loadApiUserPermissions($apiUser),
+                allowedStoreIds: $allowedStoreIds,
+            );
         }
 
-        if (isset($payload->allowed_store_ids) && is_array($payload->allowed_store_ids)) {
-            $allowedStoreIds = array_map('intval', $payload->allowed_store_ids);
+        // Default: customer token (or 'pos' which still maps to a customer record)
+        if (!isset($payload->customer_id)) {
+            throw new CustomUserMessageAuthenticationException('Invalid token: missing customer subject');
         }
+        $customerId = (int) $payload->customer_id;
+        try {
+            /** @var ApiUser $base */
+            $base = $this->customerUserProvider->loadUserByIdentifier('customer_' . $customerId);
+        } catch (\Symfony\Component\Security\Core\Exception\UserNotFoundException) {
+            throw new CustomUserMessageAuthenticationException('Customer account is inactive or not found');
+        }
+
+        $roles = $type === 'pos' ? ['ROLE_POS'] : $base->getRoles();
 
         return new ApiUser(
             identifier: (string) $payload->sub,
             roles: $roles,
             customerId: $customerId,
-            adminId: $adminId,
-            apiUserId: $apiUserId,
-            permissions: $permissions,
             allowedStoreIds: $allowedStoreIds,
         );
     }
 
-    /**
-     * Extract roles from JWT payload
-     *
-     * @return array<string>
-     */
-    private function extractRoles(object $payload): array
-    {
-        // Derive roles exclusively from the validated type claim.
-        // Never trust a roles array from the JWT payload — a tampered
-        // or mis-issued token could escalate privileges.
-        return match ($payload->type ?? 'customer') {
-            'admin' => ['ROLE_ADMIN'],
-            'pos' => ['ROLE_POS'],
-            'api_user' => ['ROLE_API_USER'],
-            default => ['ROLE_USER'],
-        };
-    }
 }

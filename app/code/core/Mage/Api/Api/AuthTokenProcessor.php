@@ -90,17 +90,7 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
         $this->checkRateLimit('auth_token:email:' . strtolower($email), 'customer_login', 60);
 
         try {
-            $customer = \Mage::getModel('customer/customer')
-                ->setWebsiteId(\Mage::app()->getStore()->getWebsiteId());
-
-            try {
-                $customer->authenticate($email, $password);
-            } catch (\Mage_Core_Exception $e) {
-                if ($e->getCode() === \Mage_Customer_Model_Customer::EXCEPTION_EMAIL_NOT_CONFIRMED) {
-                    throw new HttpException(403, 'This account is not confirmed. Please check your email for the confirmation link.');
-                }
-                throw new UnauthorizedHttpException('Bearer', 'Invalid email or password');
-            }
+            $customer = $this->authenticateCustomerAcrossWebsites($email, $password);
 
             $token = $this->jwtService->generateCustomerToken($customer);
 
@@ -186,6 +176,55 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
             \Mage::logException($e);
             throw new HttpException(500, 'An error occurred during authentication');
         }
+    }
+
+    /**
+     * Authenticate a customer in a way that works in single- and multi-website
+     * setups without requiring the client to send X-Store-Code.
+     *
+     * - When customer accounts are GLOBAL: walk every website and try the
+     *   credentials. The customer exists on exactly one (the email is unique
+     *   within a sharing scope), so at most one website yields a match. We
+     *   surface the same "Invalid email or password" message for misses to
+     *   keep responses indistinguishable.
+     * - When customer accounts are PER-WEBSITE: try the request store's
+     *   resolved website first; on a miss with EMAIL_NOT_CONFIRMED, propagate
+     *   the confirmation error. On any other miss we still try other websites
+     *   (the email is unique per website, so trying the rest is cheap and
+     *   covers clients that didn't send X-Store-Code).
+     *
+     * @throws UnauthorizedHttpException for invalid credentials
+     * @throws HttpException 403 when the matched account isn't confirmed
+     */
+    private function authenticateCustomerAcrossWebsites(string $email, string $password): \Mage_Customer_Model_Customer
+    {
+        $primaryWebsiteId = (int) \Mage::app()->getStore()->getWebsiteId();
+        $websiteIds = [$primaryWebsiteId];
+        foreach (\Mage::app()->getWebsites() as $website) {
+            $wid = (int) $website->getId();
+            if ($wid !== $primaryWebsiteId) {
+                $websiteIds[] = $wid;
+            }
+        }
+
+        $confirmation = null;
+        foreach ($websiteIds as $websiteId) {
+            $customer = \Mage::getModel('customer/customer')->setWebsiteId($websiteId);
+            try {
+                $customer->authenticate($email, $password);
+                return $customer;
+            } catch (\Mage_Core_Exception $e) {
+                if ($e->getCode() === \Mage_Customer_Model_Customer::EXCEPTION_EMAIL_NOT_CONFIRMED) {
+                    // Save and keep trying — another website may have a confirmed account.
+                    $confirmation ??= $e;
+                }
+            }
+        }
+
+        if ($confirmation !== null) {
+            throw new HttpException(403, 'This account is not confirmed. Please check your email for the confirmation link.');
+        }
+        throw new UnauthorizedHttpException('Bearer', 'Invalid email or password');
     }
 
     private function handleClientCredentialsGrant(array $data): AuthToken
@@ -353,7 +392,7 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
                 if (isset($payload->jti)) {
                     $this->tokenBlacklist->revoke($payload->jti, (int) ($payload->exp ?? time() + 86400));
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // Token is already invalid/expired, consider it logged out
             }
         }

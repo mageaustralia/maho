@@ -36,6 +36,15 @@ class IdempotencyListener
     private const MAX_KEY_LENGTH = 255;
     public const TTL_HOURS = 24;
 
+    /**
+     * Cap stored response bodies to keep `maho_api_idempotency_keys` from
+     * growing unboundedly. Above the cap we skip storage entirely — a duplicate
+     * request will re-run the operation rather than replay; given idempotency
+     * keys are advisory and the underlying writes are themselves idempotent
+     * (same payload + caller scope), that's the safe failure mode.
+     */
+    private const MAX_STORED_BODY_BYTES = 65536;
+
     public function __construct(
         private readonly TokenStorageInterface $tokenStorage,
     ) {}
@@ -152,6 +161,12 @@ class IdempotencyListener
             return;
         }
 
+        // Skip storage for oversized bodies — see MAX_STORED_BODY_BYTES.
+        $responseBody = (string) $response->getContent();
+        if (strlen($responseBody) > self::MAX_STORED_BODY_BYTES) {
+            return;
+        }
+
         $resource = \Mage::getSingleton('core/resource');
         $write = $resource->getConnection('core_write');
         $table = $resource->getTableName(self::TABLE);
@@ -171,13 +186,12 @@ class IdempotencyListener
                 'request_path' => $request->getPathInfo(),
                 'request_method' => $request->getMethod(),
                 'response_code' => $response->getStatusCode(),
-                'response_body' => $response->getContent(),
+                'response_body' => $responseBody,
                 'response_headers' => json_encode($headersToStore),
                 'created_at' => \Mage::app()->getLocale()->formatDateForDb('now'),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException) {
             // Duplicate key — another concurrent request stored it first, that's fine
-            \Mage::logException($e);
         }
     }
 

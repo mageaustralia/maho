@@ -84,6 +84,12 @@ class Kernel extends BaseKernel
         return __DIR__;
     }
 
+    /**
+     * Symfony writes its compiled container/route/metadata cache here on first
+     * request. The directory must be writable by the web user; deployment
+     * scripts should pre-warm it (see docs/API.md → Deployment Notes) so the
+     * first /api/* request after a release doesn't pay container-compile cost.
+     */
     #[\Override]
     public function getCacheDir(): string
     {
@@ -399,6 +405,12 @@ class Kernel extends BaseKernel
                     require_once $filePath;
                 } catch (\Throwable $e) {
                     \Mage::log('ApiPlatform: failed to load ' . $filePath . ': ' . $e->getMessage(), \Mage::LOG_ERROR);
+                    if ($this->isDebug()) {
+                        // In debug, surface module load failures instead of
+                        // silently dropping them — a broken Api class would
+                        // otherwise yield "no resources found" with no clue.
+                        throw $e;
+                    }
                     continue;
                 }
             }

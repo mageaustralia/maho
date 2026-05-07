@@ -1470,3 +1470,29 @@ class Vendor_SimpleBundles_Model_Api_Observer
 - **Keep it lightweight** — avoid loading heavy collections in listing mode (check `for_listing`)
 - **Return serializable data** — arrays and scalars only, no objects
 - **Extensions are read-only** — the `extensions` field is populated during read operations; for write operations, use standard Maho model events or custom API processors
+
+## Deployment Notes
+
+### Filesystem permissions
+
+The Symfony kernel writes its compiled container, route table, and metadata cache to `var/cache/api_platform/{env}/` (where `{env}` is `prod` or `dev`). The directory must be writable by the PHP-FPM/Apache user that handles `/api/*` requests. On a fresh deploy:
+
+```bash
+mkdir -p var/cache/api_platform
+chown -R www-data:www-data var/cache var/log
+```
+
+### Cache pre-warm
+
+The first request after a deploy pays a one-time container compilation cost (~hundreds of ms). To keep that out of the critical path, warm the cache during deployment:
+
+```bash
+# As the web user, after `composer install` and before flipping the load balancer:
+php -r 'require "vendor/autoload.php"; Mage::app(); $k = new Maho\ApiPlatform\Kernel("prod", false); $k->boot();'
+```
+
+Run this whenever module API resources change (new/modified `#[ApiResource]` classes), in addition to `composer dump-autoload` which refreshes the permission registry compiled file.
+
+### Cache invalidation
+
+The container cache is keyed by class file mtimes; a normal deploy that overwrites files invalidates it automatically. If you ever need to force a rebuild manually, delete `var/cache/api_platform/{env}/` — the next request will recompile.

@@ -136,45 +136,47 @@ class JwtService
     }
 
     /**
-     * Load permissions for an API user from api_role + api_rule tables
+     * Load permissions for an API user from the api/rule table.
      *
-     * @return array<string> e.g. ['orders/read', 'shipments/write', 'products/all']
+     * The role editor (Maho_ApiPlatform_Adminhtml_Apiplatform_RoleController::saveAction)
+     * stores `resource/operation` strings (e.g. `products/read`) directly in
+     * `api/rule.resource_id`, validated against ApiPermissionRegistry. We read
+     * those rows here so the permissions emitted match the format ApiUserVoter
+     * checks (`resource/operation`, with `all` and `resource/all` shortcuts).
+     *
+     * The legacy `Mage::getSingleton('api/config')->getResources()` XML tree is
+     * a different (resource-only) namespace and never matched the voter's
+     * checks — using it here would mean api_user grants authorize nothing.
+     *
+     * @return array<string> e.g. ['orders/read', 'shipments/write', 'all']
      */
     public function loadApiUserPermissions(\Mage_Api_Model_User $apiUser): array
     {
         $roleIds = $apiUser->getRoles();
-
         if (empty($roleIds)) {
             return [];
         }
 
-        /** @var \Mage_Api_Model_Acl $acl */
-        $acl = \Mage::getResourceModel('api/acl')->loadAcl();
-        $userRoleId = \Mage_Api_Model_Acl::ROLE_TYPE_USER . $apiUser->getId();
+        $resource = \Mage::getSingleton('core/resource');
+        $read = $resource->getConnection('core_read');
+        $ruleTable = $resource->getTableName('api/rule');
 
-        if (!$acl->hasRole($userRoleId)) {
-            return [];
-        }
+        $rows = $read->fetchCol(
+            $read->select()
+                ->from($ruleTable, ['resource_id'])
+                ->where('role_id IN (?)', $roleIds)
+                ->where('role_type = ?', 'G')
+                ->where('api_permission = ?', 'allow'),
+        );
 
-        // Check if user has 'all' access
-        if ($acl->isAllowed($userRoleId, 'all')) {
+        if (in_array('all', $rows, true)) {
             return ['all'];
         }
 
-        // Iterate known API resources and check each
-        $permissions = [];
-        $resources = \Mage::getSingleton('api/config')->getResources();
-        foreach ($resources->children() as $resourceName => $resource) {
-            try {
-                if ($acl->isAllowed($userRoleId, $resourceName)) {
-                    $permissions[] = $resourceName;
-                }
-            } catch (\Exception) {
-                // Resource not in ACL tree, skip
-            }
-        }
-
-        return array_unique($permissions);
+        return array_values(array_unique(array_filter(
+            $rows,
+            static fn(string $r): bool => $r !== '',
+        )));
     }
 
     /**
@@ -253,7 +255,7 @@ class JwtService
         try {
             $payload = $this->decodeToken($token);
             return isset($payload->customer_id) ? (int) $payload->customer_id : null;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return null;
         }
     }
@@ -269,7 +271,7 @@ class JwtService
         try {
             $payload = $this->decodeToken($token);
             return isset($payload->admin_id) ? (int) $payload->admin_id : null;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return null;
         }
     }
@@ -321,10 +323,18 @@ class JwtService
     }
 
     /**
-     * Get the issuer URL for tokens
+     * Get the issuer URL for tokens.
+     *
+     * Prefer the secure base URL — issuer is a public claim and tokens are
+     * meant to be served over HTTPS in production. Fall back to the unsecure
+     * URL only when secure isn't configured (dev installs without TLS).
      */
     public function getIssuer(): string
     {
-        return rtrim((string) \Mage::getStoreConfig('web/unsecure/base_url'), '/') . '/';
+        $base = (string) \Mage::getStoreConfig('web/secure/base_url');
+        if ($base === '') {
+            $base = (string) \Mage::getStoreConfig('web/unsecure/base_url');
+        }
+        return rtrim($base, '/') . '/';
     }
 }

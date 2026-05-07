@@ -21,6 +21,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\InsufficientAuthenticationException;
 
 /**
  * API Exception Listener
@@ -121,7 +122,12 @@ class ApiExceptionListener implements EventSubscriberInterface
             // Check for Bearer token specifically (Basic auth is site-level, not API auth)
             $hasBearerToken = $request !== null
                 && str_starts_with($request->headers->get('Authorization', ''), 'Bearer ');
-            $isNotAuthenticated = str_contains($exception->getMessage(), 'not appropriately authenticated')
+            // Use the exception class to recognize "not authenticated" rather
+            // than matching on the message string (Symfony has rephrased it
+            // before; a security-component upgrade silently flips 401 ↔ 403).
+            // For AccessDeniedException, Symfony chains the original
+            // InsufficientAuthenticationException as the `previous`.
+            $isNotAuthenticated = $exception->getPrevious() instanceof InsufficientAuthenticationException
                 || !$hasBearerToken;
             $statusCode = $isNotAuthenticated ? 401 : 403;
             $error = $isNotAuthenticated ? 'unauthorized' : 'forbidden';

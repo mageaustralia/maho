@@ -221,7 +221,7 @@ class CartService
             throw new \RuntimeException("Product with SKU '{$sku}' not found");
         }
 
-        \Mage::log("Adding product {$sku} (ID: {$productId}) to quote {$quote->getId()}, quote store_id: {$quote->getStoreId()}");
+        $this->logDebug("Adding product {$sku} (ID: {$productId}) to quote {$quote->getId()}, quote store_id: {$quote->getStoreId()}");
 
         // Load product in the quote's store context to get correct prices
         $product = \Mage::getModel('catalog/product')
@@ -230,6 +230,23 @@ class CartService
 
         if (!$product->getId()) {
             throw new \RuntimeException("Product with SKU '{$sku}' not found");
+        }
+
+        // Status gate — addProduct does not check this itself, so without an
+        // explicit guard a disabled SKU is addable through the public API.
+        if ((int) $product->getStatus() !== \Mage_Catalog_Model_Product_Status::STATUS_ENABLED) {
+            throw new \RuntimeException("Product '{$sku}' is not available");
+        }
+
+        // Visibility gate: refuse 'not_visible_individually' simples that
+        // aren't part of a configurable. Variants of a configurable are
+        // legitimately not-visible-individually and are auto-promoted to the
+        // configurable parent below.
+        $visibility = (int) $product->getVisibility();
+        if ($visibility === \Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
+            && $product->getTypeId() !== \Mage_Catalog_Model_Product_Type::TYPE_SIMPLE
+        ) {
+            throw new \RuntimeException("Product '{$sku}' is not available");
         }
 
         // Check if this simple product is a child of a configurable
@@ -264,14 +281,20 @@ class CartService
             }
         }
 
-        // Only auto-detect configurable parent for simple products (not grouped/bundle)
-        if ($product->getTypeId() === \Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
+        // Only auto-promote a simple to its configurable parent when the simple
+        // is not individually visible. A simple that *is* visible on its own
+        // (e.g. POS adding a specific variant SKU) is sold as-is; otherwise we
+        // resolve to the parent so the cart shows the configurable, matching
+        // storefront behaviour.
+        if ($product->getTypeId() === \Mage_Catalog_Model_Product_Type::TYPE_SIMPLE
+            && (int) $product->getVisibility() === \Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE
+        ) {
             $parentIds = \Mage::getModel('catalog/product_type_configurable')
                 ->getParentIdsByChild((int) $productId);
 
             if (!empty($parentIds)) {
                 $parentId = $parentIds[0];
-                \Mage::log("Simple product {$productId} has configurable parent {$parentId}, adding as configurable");
+                $this->logDebug("Simple product {$productId} has configurable parent {$parentId}, adding as configurable");
 
                 // Load the configurable parent
                 $configurableProduct = \Mage::getModel('catalog/product')
@@ -289,13 +312,13 @@ class CartService
 
                         // Use the configurable product instead
                         $product = $configurableProduct;
-                        \Mage::log("Using configurable product {$parentId} with super_attributes: " . json_encode($superAttributes));
+                        $this->logDebug("Using configurable product {$parentId} with super_attributes: " . json_encode($superAttributes));
                     }
                 }
             }
         }
 
-        \Mage::log("Product loaded: ID={$product->getId()}, StoreId={$product->getStoreId()}, Price={$product->getPrice()}, FinalPrice={$product->getFinalPrice()}");
+        $this->logDebug("Product loaded: ID={$product->getId()}, StoreId={$product->getStoreId()}, Price={$product->getPrice()}, FinalPrice={$product->getFinalPrice()}");
         // Convert flat date/datetime values to the array format Magento expects
         $currentOptions = $buyRequest->getData('options') ?: [];
         if (!empty($currentOptions)) {
@@ -350,7 +373,7 @@ class CartService
 
         // addProduct returns a string error message on failure
         if (is_string($result)) {
-            \Mage::log("Failed to add product: {$result}");
+            $this->logDebug("Failed to add product: {$result}");
             throw new \RuntimeException("Failed to add product: {$result}");
         }
 
@@ -796,7 +819,10 @@ class CartService
     public function mergeCarts(string $guestMaskedId, int $customerId): \Mage_Sales_Model_Quote
     {
         $guestCartId = $this->getCartIdFromMaskedId($guestMaskedId);
-        $guestCart = \Mage::getModel('sales/quote')->load($guestCartId);
+        // Use loadByIdWithoutStore — admin context may sit on a different store
+        // than the guest cart, and store-scoped load() would return an empty
+        // quote even though the masked-ID lookup just resolved successfully.
+        $guestCart = \Mage::getModel('sales/quote')->loadByIdWithoutStore($guestCartId);
 
         if (!$guestCart->getId()) {
             throw new \RuntimeException('Guest cart not found');
@@ -909,7 +935,7 @@ class CartService
 
             if ($optionValue !== null) {
                 $superAttributes[$attributeId] = $optionValue;
-                \Mage::log("Super attribute: {$attributeCode} (ID: {$attributeId}) = {$optionValue}");
+                $this->logDebug("Super attribute: {$attributeCode} (ID: {$attributeId}) = {$optionValue}");
             }
         }
 
@@ -948,5 +974,15 @@ class CartService
 
     }
 
-
+    /**
+     * Log per-add cart trace lines only when developer mode is on. Without the
+     * gate, busy storefronts fill system.log with one line per product add.
+     */
+    private function logDebug(string $message): void
+    {
+        if (!\Mage::getIsDeveloperMode()) {
+            return;
+        }
+        \Mage::log($message, \Mage::LOG_DEBUG);
+    }
 }

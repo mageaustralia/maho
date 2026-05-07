@@ -97,7 +97,7 @@ class AdminSessionAuthenticator extends AbstractAuthenticator
         try {
             $adminSession = \Mage::getSingleton('admin/session');
             return $adminSession->isLoggedIn();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }
@@ -119,12 +119,16 @@ class AdminSessionAuthenticator extends AbstractAuthenticator
 
     /**
      * Generate HMAC bridge token for admin context verification.
-     * Ensures $_SERVER vars were set by our authenticator, not injected externally.
+     *
+     * Ensures $_SERVER vars were set by our authenticator, not injected
+     * externally. Binds the HMAC to the current PHP session id so a captured
+     * (adminId, token) pair stops working as soon as the admin logs out — the
+     * crypt key alone is not enough to forge a token.
      */
     public static function generateBridgeToken(string $adminId): string
     {
         $key = (string) \Mage::getConfig()->getNode('global/crypt/key');
-        return hash_hmac('sha256', $adminId, $key);
+        return hash_hmac('sha256', $adminId . '|' . self::sessionFingerprint(), $key);
     }
 
     /**
@@ -137,6 +141,20 @@ class AdminSessionAuthenticator extends AbstractAuthenticator
         }
         $expected = self::generateBridgeToken($adminId);
         return hash_equals($expected, $token);
+    }
+
+    /**
+     * Session fingerprint used as additional HMAC input. Returns the live PHP
+     * session id when one is active; otherwise an empty string, which still
+     * yields a deterministic HMAC for sessionless flows (rare in admin) without
+     * leaking session identifiers cross-request.
+     */
+    private static function sessionFingerprint(): string
+    {
+        if (PHP_SESSION_ACTIVE !== session_status()) {
+            return '';
+        }
+        return (string) session_id();
     }
 
     /**

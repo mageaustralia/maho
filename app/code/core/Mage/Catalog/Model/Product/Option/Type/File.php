@@ -964,7 +964,10 @@ class Mage_Catalog_Model_Product_Option_Type_File extends Mage_Catalog_Model_Pro
             $io->mkdir($tmpDir, 0777, true);
         }
 
-        $tmpFileName = uniqid('api_opt_', true) . '.' . $fileExtension;
+        // Cryptographically random temp name — even though $tmpDir is non-web-
+        // executable, predictable names invite cross-tenant collisions or
+        // race-condition attacks if the dir is ever made reachable.
+        $tmpFileName = 'api_opt_' . bin2hex(random_bytes(16)) . '.' . $fileExtension;
         $tmpFilePath = $tmpDir . DS . $tmpFileName;
         if (file_put_contents($tmpFilePath, $decodedData) === false) {
             Mage::throwException(Mage::helper('catalog')->__('Failed to write temporary file.'));

@@ -21,10 +21,12 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * Honors the `store` query parameter or `X-Store-Code` header by pointing
  * Maho's app at the matching store before any controller or authenticator runs.
  *
- * Priority is set above the security firewall so providers/processors that
- * resolve store-scoped models see the right store from the start.
+ * Priority 110 deliberately sits above AdminBridgeListener (105) and
+ * IdempotencyListener (100): the store must be resolved before admin context
+ * is bridged in (admin store-id resolution depends on it) and before the
+ * idempotency key scope is computed.
  */
-#[AsEventListener(event: KernelEvents::REQUEST, priority: 100)]
+#[AsEventListener(event: KernelEvents::REQUEST, priority: 110)]
 class StoreContextListener
 {
     public function __invoke(RequestEvent $event): void
