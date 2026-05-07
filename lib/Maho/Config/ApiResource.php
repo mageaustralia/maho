@@ -129,6 +129,8 @@ class ApiResource extends BaseApiResource
      *   classes outside the DTO.
      *
      * @param mixed $operations
+     *
+     * @phpstan-param mixed $rules
      */
     public function __construct(
         // ---- Maho permission-registry fields (named-arg first; positional usage of the
