@@ -46,21 +46,13 @@ class AdminBridgeListener
         );
 
         $input = json_decode($request->getContent(), true) ?? [];
-        $formKey = $input['form_key'] ?? null;
 
         $adminSession = \Mage::getSingleton('admin/session');
-        $adminUser = null;
-
-        if ($adminSession->isLoggedIn()) {
-            $adminUser = $adminSession->getUser();
-        } elseif ($formKey) {
-            $sessionFormKey = \Mage::getSingleton('core/session')->getData('_form_key');
-            $adminhtmlFormKey = \Mage::getSingleton('adminhtml/session')->getData('_form_key');
-            if (($sessionFormKey === $formKey || $adminhtmlFormKey === $formKey) && $adminSession->getUser()) {
-                $adminUser = $adminSession->getUser();
-            }
+        if (!$adminSession->isLoggedIn()) {
+            return;
         }
 
+        $adminUser = $adminSession->getUser();
         if ($adminUser === null) {
             return;
         }
