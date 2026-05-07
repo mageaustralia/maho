@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Cms\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -26,6 +26,11 @@ use Maho\ApiPlatform\CrudResource;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
+    mahoLabel: 'CMS Blocks',
+    mahoSection: 'Content',
+    mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
+    mahoPublicRead: true,
+
     shortName: 'CmsBlock',
     description: 'CMS Block resource',
     provider: CmsBlockProvider::class,

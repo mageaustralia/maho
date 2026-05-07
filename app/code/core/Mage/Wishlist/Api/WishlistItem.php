@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Wishlist\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -25,6 +25,13 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoId: 'wishlists',
+    mahoSection: 'Customers',
+    mahoOperations: ['read' => 'View', 'write' => 'Add/Remove'],
+    mahoCustomerScoped: true,
+    mahoDescription: 'View wishlist, add/remove items, move to cart',
+    mahoRestSegments: ['wishlist'],
+
     shortName: 'WishlistItem',
     description: 'Customer wishlist item',
     provider: WishlistProvider::class,

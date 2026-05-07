@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Maho\Blog\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -26,6 +26,10 @@ use Maho\ApiPlatform\CrudProcessor;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoSection: 'Content',
+    mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
+    mahoPublicRead: true,
+
     shortName: 'BlogPost',
     description: 'Blog post resource',
     provider: BlogPostProvider::class,

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Maho\Blog\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
@@ -22,6 +22,10 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoSection: 'Content',
+    mahoOperations: ['read' => 'View'],
+    mahoPublicRead: true,
+
     shortName: 'BlogCategory',
     description: 'Blog category resource',
     provider: BlogCategoryProvider::class,

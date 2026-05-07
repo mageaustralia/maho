@@ -13,12 +13,18 @@ declare(strict_types=1);
 
 namespace Mage\Core\Api;
 
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
+    mahoId: 'url-resolver',
+    mahoLabel: 'URL Resolver',
+    mahoSection: 'System',
+    mahoOperations: ['read' => 'Resolve'],
+    mahoPublicRead: true,
+
     shortName: 'UrlResolveResult',
     description: 'URL resolution result - maps URLs to their targets',
     provider: UrlResolverProvider::class,

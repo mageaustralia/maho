@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Mage\Sales\Api;
 
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -26,6 +26,10 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 use Mage\Customer\Api\Address;
 
 #[ApiResource(
+    mahoOperations: ['read' => 'View', 'create' => 'Place', 'write' => 'Manage'],
+    mahoCustomerScoped: true,
+    mahoDescription: 'View order history, place orders at checkout',
+
     shortName: 'Order',
     description: 'Order resource',
     provider: OrderProvider::class,

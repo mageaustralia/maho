@@ -14,13 +14,16 @@ declare(strict_types=1);
 namespace Mage\Catalog\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Put;
 
 #[ApiResource(
+    mahoId: 'tier-prices',
+    mahoOperations: ['read' => 'View', 'write' => 'Manage'],
+
     shortName: 'ProductTierPrice',
     description: 'Product tier prices (quantity-based pricing)',
     provider: ProductTierPriceProvider::class,

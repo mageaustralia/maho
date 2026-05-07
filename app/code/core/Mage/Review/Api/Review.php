@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Review\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Mutation;
@@ -25,6 +25,11 @@ use ApiPlatform\Metadata\Post;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoSection: 'Customers',
+    mahoOperations: ['read' => 'View', 'write' => 'Submit'],
+    mahoCustomerScoped: true,
+    mahoDescription: 'View and submit product reviews',
+
     shortName: 'Review',
     description: 'Product review',
     provider: ReviewProvider::class,

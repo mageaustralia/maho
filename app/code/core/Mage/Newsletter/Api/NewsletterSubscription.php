@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Newsletter\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use ApiPlatform\Metadata\GraphQl\Query;
@@ -24,6 +24,12 @@ use Maho\ApiPlatform\CrudResource;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
+    mahoId: 'newsletter',
+    mahoSection: 'Other',
+    mahoOperations: ['read' => 'View Status', 'write' => 'Subscribe/Unsubscribe'],
+    mahoCustomerScoped: true,
+    mahoDescription: 'View subscription status, subscribe/unsubscribe',
+
     shortName: 'NewsletterSubscription',
     description: 'Newsletter subscription management',
     provider: NewsletterProvider::class,

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c281eeca42062e666849623bfb0a2784",
+    "content-hash": "d8cbe8af4aea1594ff0139fbfeacaef6",
     "packages": [
         {
             "name": "altcha-org/altcha",
@@ -1687,16 +1687,16 @@
         },
         {
             "name": "mahocommerce/maho-composer-plugin",
-            "version": "v4.0.20",
+            "version": "v4.0.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MahoCommerce/maho-composer-plugin.git",
-                "reference": "e31550057d339315af472e332842ece97638874b"
+                "reference": "35f9b2be19733ca1684748e2cbd306e76564428f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MahoCommerce/maho-composer-plugin/zipball/e31550057d339315af472e332842ece97638874b",
-                "reference": "e31550057d339315af472e332842ece97638874b",
+                "url": "https://api.github.com/repos/MahoCommerce/maho-composer-plugin/zipball/35f9b2be19733ca1684748e2cbd306e76564428f",
+                "reference": "35f9b2be19733ca1684748e2cbd306e76564428f",
                 "shasum": ""
             },
             "require": {
@@ -1705,6 +1705,7 @@
                 "symfony/routing": "^7.4"
             },
             "require-dev": {
+                "api-platform/core": "^4.0",
                 "composer/composer": "^2.9.3",
                 "phpstan/phpstan": "^2.0",
                 "phpstan/phpstan-deprecation-rules": "^2.0",
@@ -1730,9 +1731,9 @@
             "description": "Extension for Composer to copy assets and enable autoloading for Maho projects.",
             "support": {
                 "issues": "https://github.com/MahoCommerce/maho-composer-plugin/issues",
-                "source": "https://github.com/MahoCommerce/maho-composer-plugin/tree/v4.0.20"
+                "source": "https://github.com/MahoCommerce/maho-composer-plugin/tree/v4.0.21"
             },
-            "time": "2026-04-18T18:54:34+00:00"
+            "time": "2026-05-07T18:06:42+00:00"
         },
         {
             "name": "masterminds/html5",

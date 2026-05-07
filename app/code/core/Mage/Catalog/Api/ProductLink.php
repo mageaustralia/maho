@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Catalog\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -22,6 +22,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 
 #[ApiResource(
+    mahoOperations: ['read' => 'View', 'write' => 'Manage'],
+
     shortName: 'ProductLink',
     description: 'Product links (related, cross-sell, up-sell)',
     provider: ProductLinkProvider::class,

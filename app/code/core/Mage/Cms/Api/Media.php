@@ -13,14 +13,18 @@ declare(strict_types=1);
 
 namespace Mage\Cms\Api;
 
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 
+// First-of-two repeated ApiResource attributes on Media — handles `/media` and
+// `/media/{path}` separately because the post/list flow and the delete flow
+// have different uriTemplates. Both share the same maho permission identity.
 #[ApiResource(
+    mahoId: 'media',
     uriTemplate: '/media',
     shortName: 'Media',
     operations: [
@@ -60,6 +64,10 @@ use ApiPlatform\OpenApi\Model\RequestBody;
     ],
 )]
 #[ApiResource(
+    mahoId: 'media',
+    mahoSection: 'Content',
+    mahoOperations: ['read' => 'List', 'write' => 'Upload', 'delete' => 'Delete'],
+
     uriTemplate: '/media/{path}',
     shortName: 'Media',
     operations: [

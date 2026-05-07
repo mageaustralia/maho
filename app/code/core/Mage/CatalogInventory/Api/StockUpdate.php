@@ -14,12 +14,16 @@ declare(strict_types=1);
 namespace Mage\CatalogInventory\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\GraphQl\Mutation;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoId: 'inventory',
+    mahoSection: 'Catalog',
+    mahoOperations: ['read' => 'View Stock', 'write' => 'Update Stock'],
+
     shortName: 'StockUpdate',
     description: 'Fast inventory / stock update resource',
     processor: StockUpdateProcessor::class,

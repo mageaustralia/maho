@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Mage\Catalog\Api;
 
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -26,6 +26,9 @@ use Maho\ApiPlatform\CrudResource;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
+    mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
+    mahoPublicRead: true,
+
     shortName: 'Category',
     description: 'Product category resource',
     provider: CategoryProvider::class,

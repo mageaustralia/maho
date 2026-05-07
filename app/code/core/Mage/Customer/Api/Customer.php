@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Mage\Customer\Api;
 
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -26,6 +26,9 @@ use Maho\ApiPlatform\CrudResource;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
+    mahoSection: 'Customers',
+    mahoOperations: ['read' => 'View', 'create' => 'Register', 'write' => 'Update'],
+
     shortName: 'Customer',
     description: 'Customer resource',
     provider: CustomerProvider::class,

@@ -13,12 +13,18 @@ declare(strict_types=1);
 namespace Mage\Core\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoLabel: 'Stores & Store Views',
+    mahoSection: 'System',
+    mahoOperations: ['read' => 'View', 'write' => 'Manage'],
+    mahoPublicRead: true,
+    mahoRestSegments: ['store-config'],
+
     shortName: 'Store',
     description: 'Store and website listing',
     operations: [

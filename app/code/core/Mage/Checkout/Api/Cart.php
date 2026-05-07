@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Checkout\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Get;
@@ -27,6 +27,12 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 use Mage\Customer\Api\Address;
 
 #[ApiResource(
+    mahoSection: 'Customers',
+    mahoOperations: ['read' => 'View', 'write' => 'Create & Modify'],
+    mahoCustomerScoped: true,
+    mahoDescription: 'View cart, add/remove items, apply coupons, set shipping & payment',
+    mahoRestSegments: ['guest-carts'],
+
     shortName: 'Cart',
     description: 'Shopping cart resource',
     provider: CartProvider::class,

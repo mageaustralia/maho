@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Catalog\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -23,6 +23,10 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 
 #[ApiResource(
+    mahoId: 'product-options',
+    mahoLabel: 'Custom Options',
+    mahoOperations: ['read' => 'View', 'write' => 'Manage', 'delete' => 'Delete'],
+
     shortName: 'ProductCustomOption',
     description: 'Product custom options (personalization, add-ons)',
     provider: ProductCustomOptionProvider::class,

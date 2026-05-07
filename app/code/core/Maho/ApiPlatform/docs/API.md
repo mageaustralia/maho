@@ -40,6 +40,7 @@
 - [Opt-in Traits](#opt-in-traits)
 - [Shared Services](#shared-services)
 - [Web Server Configuration](#web-server-configuration)
+- [Adding a New API Resource](#adding-a-new-api-resource)
 - [Extending the API (Third-Party Modules)](#extending-the-api-third-party-modules)
 
 ---
@@ -1262,6 +1263,74 @@ maho.example.com {
 ```
 
 ---
+
+## Adding a New API Resource
+
+Resources are declared with **one** attribute: `#[\Maho\Config\ApiResource]`, a drop-in subclass of `\ApiPlatform\Metadata\ApiResource` that adds Maho's permission-registry metadata alongside API Platform's HTTP/GraphQL configuration. Use it instead of `\ApiPlatform\Metadata\ApiResource` on every DTO.
+
+```php
+namespace MyVendor\MyModule\Api;
+
+use Maho\Config\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+
+#[ApiResource(
+    shortName: 'WidgetType',
+    operations: [
+        new Get(uriTemplate: '/widget-types/{id}', security: 'true'),
+        new GetCollection(uriTemplate: '/widget-types', security: 'true'),
+    ],
+    mahoPublicRead: true,                                    // optional override
+    mahoSection: 'Widgets',                                  // optional override
+    mahoOperations: ['read' => 'View Widget Types'],         // optional override
+)]
+final class WidgetType { /* ApiProperty fields */ }
+```
+
+After adding or modifying the attribute, run `composer dump-autoload`. The compiler walks every class carrying `#[Maho\Config\ApiResource]` (anywhere in `app/code/` or installed packages) and emits `vendor/composer/maho_api_permissions.php`, which `Maho\ApiPlatform\Security\ApiPermissionRegistry` reads at runtime to drive `ApiUserVoter` (REST permission checks), `GraphQlPermissionListener` (GraphQL checks), and the admin role editor UI.
+
+### Auto-derivation
+
+Most permission-registry fields are derived from the API Platform metadata on the same attribute — set them explicitly only when defaults are wrong:
+
+| Maho field         | Derived from when omitted                                          |
+|--------------------|--------------------------------------------------------------------|
+| `mahoId`           | `shortName` → kebab-case + plural (`Cart` → `carts`, `CmsPage` → `cms-pages`) |
+| `mahoLabel`        | Title-cased `mahoId` (`cms-pages` → `CMS Pages`; ≤3-char segments are upper-cased as acronyms) |
+| `mahoGroup`        | Defaults to `'Storefront'`                                         |
+| `mahoSection`      | Module segment of the namespace (`Mage\Catalog\Api\Foo` → `'Catalog'`) |
+| `mahoOperations`   | One entry per operation type present in `operations: [...]`. Default labels: `read`/`create`/`write`/`delete` → `View`/`Create`/`Update`/`Delete` |
+| `mahoRestSegments` | The resource id itself. Augmented (not replaced) by your override — declare only the *additional* segments (e.g. Cart adds `'guest-carts'`) |
+| `mahoGraphQlFields`| Each camelCase `name:` from `graphQlOperations[]`. Snake_case names (`item_query`, `add_cart_item`) are skipped — those are API Platform's internal operation identifiers, not schema fields. Augmented by your override for handler-defined fields (e.g. mutations declared in `*MutationHandler` classes the compiler can't see) |
+| `mahoPublicRead`   | No equivalent — must be explicit when you want unauthenticated `GET` |
+| `mahoCustomerScoped` | No equivalent — must be explicit for resources bound to a logged-in customer (carts, wishlists, addresses, etc.) |
+| `mahoDescription`  | No equivalent — admin-UI prose for customer-scoped resources       |
+
+### Forward-looking resources (no DTO yet)
+
+Permissions for endpoints you plan to build but haven't shipped go on a stub class with `operations: []` (explicit empty — *not* `null`, which would trigger API Platform's CRUD defaults). API Platform sees the resource but registers zero routes; only the maho fields populate the permission registry. Delete the stub when the real DTO ships.
+
+```php
+namespace MyVendor\MyModule\PermissionStubs;
+
+use Maho\Config\ApiResource;
+
+#[ApiResource(
+    operations: [],
+    mahoId: 'widget-attributes',
+    mahoLabel: 'Widget Attributes',
+    mahoSection: 'Widgets',
+    mahoOperations: ['read' => 'View', 'write' => 'Edit'],
+)]
+final class WidgetAttributes {}
+```
+
+See `app/code/core/Maho/ApiPlatform/PermissionStubs/` for examples (`ProductAttributes`, `OrderComments`, `Payments`).
+
+### Multiple `#[ApiResource]` on one class
+
+The attribute is repeatable — a single class can carry several declarations with different `uriTemplate` / `operations` sets that share one permission identity (the Cms `Media` DTO uses this pattern for `/media` and `/media/{path}`). Just give each attribute the same `mahoId` and the compiler unions their segments and GraphQL fields under one registry entry.
 
 ## Extending the API (Third-Party Modules)
 

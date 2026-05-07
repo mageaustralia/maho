@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Maho\Giftcard\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\GraphQl\Query;
@@ -24,6 +24,11 @@ use Maho\ApiPlatform\CrudResource;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
+    mahoId: 'giftcards',
+    mahoLabel: 'Gift Cards',
+    mahoSection: 'Other',
+    mahoOperations: ['read' => 'Check Balance', 'create' => 'Create', 'write' => 'Adjust Balance'],
+
     shortName: 'GiftCard',
     description: 'Gift Card resource',
     provider: GiftCardProvider::class,

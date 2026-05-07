@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Catalog\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -22,6 +22,9 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 
 #[ApiResource(
+    mahoId: 'product-images',
+    mahoOperations: ['read' => 'View', 'write' => 'Upload & Update', 'delete' => 'Delete'],
+
     shortName: 'ProductMedia',
     description: 'Product media gallery images',
     provider: ProductMediaProvider::class,

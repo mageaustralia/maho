@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Mage\Customer\Api;
 
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -28,6 +28,11 @@ use ApiPlatform\Metadata\GraphQl\DeleteMutation;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoSection: 'Customers',
+    mahoOperations: ['read' => 'View', 'write' => 'Manage'],
+    mahoCustomerScoped: true,
+    mahoDescription: 'View, create, update, and delete saved addresses',
+
     shortName: 'Address',
     description: 'Customer address resource',
     provider: AddressProvider::class,

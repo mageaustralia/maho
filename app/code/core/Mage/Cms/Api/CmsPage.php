@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mage\Cms\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
+use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -25,6 +25,11 @@ use ApiPlatform\Metadata\Put;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
+    mahoLabel: 'CMS Pages',
+    mahoSection: 'Content',
+    mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
+    mahoPublicRead: true,
+
     shortName: 'CmsPage',
     description: 'CMS Page resource',
     provider: CmsPageProvider::class,

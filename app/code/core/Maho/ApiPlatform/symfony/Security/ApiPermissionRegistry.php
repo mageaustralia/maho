@@ -27,237 +27,83 @@ use GraphQL\Language\Parser;
  * Single source of truth for resource definitions, REST path mappings,
  * and GraphQL field-to-resource resolution. Used by ApiUserVoter (REST),
  * GraphQlPermissionListener (GraphQL), and the admin role editor UI.
+ *
+ * Backed by `vendor/composer/maho_api_permissions.php`, compiled at
+ * `composer dump-autoload` from `#[Maho\Config\ApiResource]` attributes
+ * (subclass of API Platform's `ApiResource`) on resource DTO classes.
+ *
+ * Run `composer dump-autoload` after adding/modifying an attribute.
  */
 class ApiPermissionRegistry
 {
     /**
-     * Resource definitions with available operations and labels.
-     * Format: 'resource' => ['label' => string, 'group' => string, 'operations' => ['op' => 'Label', ...]]
+     * Path to the compiled permissions file, relative to the Maho project root.
      */
-    private const RESOURCES = [
-        // ── Catalog ──
-        'products'           => ['label' => 'Products', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete']],
-        'product-attributes' => ['label' => 'Product Attributes', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete']],
-        'product-images'     => ['label' => 'Product Images', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View', 'write' => 'Upload & Update', 'delete' => 'Delete']],
-        'product-links'      => ['label' => 'Product Links', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View', 'write' => 'Manage']],
-        'product-options'    => ['label' => 'Custom Options', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View', 'write' => 'Manage', 'delete' => 'Delete']],
-        'tier-prices'        => ['label' => 'Tier Prices', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View', 'write' => 'Manage']],
-        'categories'         => ['label' => 'Categories', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete']],
-        'inventory'          => ['label' => 'Inventory', 'group' => 'Storefront', 'section' => 'Catalog', 'operations' => ['read' => 'View Stock', 'write' => 'Update Stock']],
-
-        // ── Orders & Fulfillment ──
-        'orders'          => ['label' => 'Orders', 'group' => 'Storefront', 'section' => 'Sales', 'operations' => ['read' => 'View', 'create' => 'Place', 'write' => 'Manage']],
-        'order-comments'  => ['label' => 'Order Comments', 'group' => 'Storefront', 'section' => 'Sales', 'operations' => ['read' => 'View', 'write' => 'Add']],
-        'invoices'        => ['label' => 'Invoices', 'group' => 'Storefront', 'section' => 'Sales', 'operations' => ['read' => 'View', 'create' => 'Create']],
-        'shipments'       => ['label' => 'Shipments', 'group' => 'Storefront', 'section' => 'Sales', 'operations' => ['read' => 'View', 'create' => 'Create']],
-        'credit-memos'    => ['label' => 'Credit Memos', 'group' => 'Storefront', 'section' => 'Sales', 'operations' => ['read' => 'View', 'create' => 'Create']],
-        'payments'        => ['label' => 'Payments', 'group' => 'Storefront', 'section' => 'Sales', 'operations' => ['read' => 'View', 'write' => 'Record']],
-
-        // ── Customers ──
-        'customers' => ['label' => 'Customers', 'group' => 'Storefront', 'section' => 'Customers', 'operations' => ['read' => 'View', 'create' => 'Register', 'write' => 'Update']],
-        'addresses' => ['label' => 'Addresses', 'group' => 'Storefront', 'section' => 'Customers', 'operations' => ['read' => 'View', 'write' => 'Manage']],
-        'carts'     => ['label' => 'Carts', 'group' => 'Storefront', 'section' => 'Customers', 'operations' => ['read' => 'View', 'write' => 'Create & Modify']],
-        'wishlists' => ['label' => 'Wishlists', 'group' => 'Storefront', 'section' => 'Customers', 'operations' => ['read' => 'View', 'write' => 'Add/Remove']],
-        'reviews'   => ['label' => 'Reviews', 'group' => 'Storefront', 'section' => 'Customers', 'operations' => ['read' => 'View', 'write' => 'Submit']],
-
-        // ── Store & Config ──
-        'stores'    => ['label' => 'Stores & Store Views', 'group' => 'Storefront', 'section' => 'System', 'operations' => ['read' => 'View', 'write' => 'Manage']],
-        'countries' => ['label' => 'Countries', 'group' => 'Storefront', 'section' => 'System', 'operations' => ['read' => 'View']],
-
-        // ── Other ──
-        'giftcards'    => ['label' => 'Gift Cards', 'group' => 'Storefront', 'section' => 'Other', 'operations' => ['read' => 'Check Balance', 'create' => 'Create', 'write' => 'Adjust Balance']],
-        'newsletter'   => ['label' => 'Newsletter', 'group' => 'Storefront', 'section' => 'Other', 'operations' => ['read' => 'View Status', 'write' => 'Subscribe/Unsubscribe']],
-
-        'url-resolver' => ['label' => 'URL Resolver', 'group' => 'Storefront', 'section' => 'System', 'operations' => ['read' => 'Resolve']],
-
-        // ── Content ──
-        'cms-pages'  => ['label' => 'CMS Pages', 'group' => 'Storefront', 'section' => 'Content', 'operations' => ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete']],
-        'cms-blocks' => ['label' => 'CMS Blocks', 'group' => 'Storefront', 'section' => 'Content', 'operations' => ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete']],
-        'blog-posts'       => ['label' => 'Blog Posts', 'group' => 'Storefront', 'section' => 'Content', 'operations' => ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete']],
-        'blog-categories'  => ['label' => 'Blog Categories', 'group' => 'Storefront', 'section' => 'Content', 'operations' => ['read' => 'View']],
-        'media'      => ['label' => 'Media', 'group' => 'Storefront', 'section' => 'Content', 'operations' => ['read' => 'List', 'write' => 'Upload', 'delete' => 'Delete']],
-    ];
+    private const COMPILED_FILE = '/vendor/composer/maho_api_permissions.php';
 
     /**
-     * Resources with public read access (no auth required for GET).
-     * These are listed in security.yaml as PUBLIC_ACCESS for GET.
+     * Cached compiled data. `null` until first `load()`.
+     *
+     * @var array{
+     *     resources: array<string, array{label: string, group: string, section: string, operations: array<string, string>}>,
+     *     publicRead: list<string>,
+     *     customerScoped: array<string, string>,
+     *     segmentMap: array<string, string>,
+     *     graphQlFieldMap: array<string, string>,
+     * }|null
      */
-    private const PUBLIC_READ_RESOURCES = [
-        'products', 'categories', 'cms-pages', 'cms-blocks', 'blog-posts', 'blog-categories', 'stores',
-        'countries', 'url-resolver',
-    ];
+    private static ?array $compiled = null;
 
     /**
-     * Resources that use customer JWT tokens (session-bound to logged-in customer).
-     * These are accessible to authenticated customers, not API service accounts.
+     * Lazy-load the compiled permissions file. Returns an empty registry and logs
+     * a warning if the file is missing — the API is then effectively closed (most
+     * non-public endpoints deny), which is the safer failure mode than open-by-default.
+     *
+     * @return array{
+     *     resources: array<string, array{label: string, group: string, section: string, operations: array<string, string>}>,
+     *     publicRead: list<string>,
+     *     customerScoped: array<string, string>,
+     *     segmentMap: array<string, string>,
+     *     graphQlFieldMap: array<string, string>,
+     * }
      */
-    private const CUSTOMER_RESOURCES = [
-        'carts'     => 'View cart, add/remove items, apply coupons, set shipping & payment',
-        'addresses' => 'View, create, update, and delete saved addresses',
-        'wishlists' => 'View wishlist, add/remove items, move to cart',
-        'orders'    => 'View order history, place orders at checkout',
-        'reviews'   => 'View and submit product reviews',
-        'newsletter' => 'View subscription status, subscribe/unsubscribe',
-    ];
+    private static function load(): array
+    {
+        if (self::$compiled !== null) {
+            return self::$compiled;
+        }
+
+        $path = (defined('BP') ? BP : dirname(__DIR__, 7)) . self::COMPILED_FILE;
+
+        if (!is_file($path)) {
+            \Mage::log(
+                'ApiPermissionRegistry: ' . $path . ' is missing — run `composer dump-autoload`. '
+                . 'Falling back to empty registry; API permission checks will deny most requests.',
+                \Mage::LOG_WARNING,
+            );
+            return self::$compiled = [
+                'resources' => [],
+                'publicRead' => [],
+                'customerScoped' => [],
+                'segmentMap' => [],
+                'graphQlFieldMap' => [],
+            ];
+        }
+
+        /** @var array{
+         *     resources: array<string, array{label: string, group: string, section: string, operations: array<string, string>}>,
+         *     publicRead: list<string>,
+         *     customerScoped: array<string, string>,
+         *     segmentMap: array<string, string>,
+         *     graphQlFieldMap: array<string, string>,
+         * } $data */
+        $data = require $path;
+        return self::$compiled = $data;
+    }
 
     /**
-     * URL path segment → resource name.
-     * The resolver finds the last matching segment in the URL path.
-     */
-    private const SEGMENT_MAP = [
-        'products'           => 'products',
-        'product-attributes' => 'product-attributes',
-        'product-images'     => 'product-images',
-        'product-links'      => 'product-links',
-        'product-options'    => 'product-options',
-        'tier-prices'        => 'tier-prices',
-        'categories'         => 'categories',
-        'inventory'          => 'inventory',
-        'orders'             => 'orders',
-        'order-comments'     => 'order-comments',
-        'credit-memos'       => 'credit-memos',
-        'payments'           => 'payments',
-        'customers'          => 'customers',
-        'carts'              => 'carts',
-        'guest-carts'        => 'carts',
-        'addresses'          => 'addresses',
-        'wishlists'          => 'wishlists',
-        'wishlist'           => 'wishlists',
-        'reviews'            => 'reviews',
-        'giftcards'          => 'giftcards',
-        'newsletter'         => 'newsletter',
-        'cms-pages'          => 'cms-pages',
-        'cms-blocks'         => 'cms-blocks',
-        'blog-posts'         => 'blog-posts',
-        'blog-categories'    => 'blog-categories',
-        'media'              => 'media',
-        'stores'             => 'stores',
-        'store-config'       => 'stores',
-        'countries'          => 'countries',
-        'url-resolver'       => 'url-resolver',
-        'shipments'          => 'shipments',
-        'invoices'           => 'invoices',
-        'items'              => null, // sub-resource, fall through to parent
-    ];
-
-    /**
-     * GraphQL field name → resource name.
-     * Built from the API Platform shortName and operation names.
-     */
-    private const GRAPHQL_FIELD_MAP = [
-        // Products
-        'product'            => 'products',
-        'products'           => 'products',
-        'productBySku'       => 'products',
-        'productByBarcode'   => 'products',
-        'categoryProducts'   => 'products',
-        // Categories
-        'category'           => 'categories',
-        'categories'         => 'categories',
-        'categoryByUrlKey'   => 'categories',
-        // Orders
-        'order'              => 'orders',
-        'orders'             => 'orders',
-        'guestOrder'         => 'orders',
-        'customerOrders'     => 'orders',
-        'placeOrder'         => 'orders',
-        'cancelOrder'        => 'orders',
-        'placeOrderWithSplitPayments' => 'orders',
-        'recordPayment'      => 'orders',
-        'orderPayments'      => 'orders',
-        'orderPaymentSummary' => 'orders',
-        // Customers
-        'customer'           => 'customers',
-        'customers'          => 'customers',
-        'me'                 => 'customers',
-        'customerLogin'      => 'customers',
-        'customerLogout'     => 'customers',
-        'createCustomerQuick' => 'customers',
-        'updateCustomer'     => 'customers',
-        'changePassword'     => 'customers',
-        'forgotPassword'     => 'customers',
-        'resetPassword'      => 'customers',
-        // Carts
-        'cart'               => 'carts',
-        'carts'              => 'carts',
-        'customerCart'       => 'carts',
-        'getCartByMaskedId'  => 'carts',
-        'createCart'         => 'carts',
-        'addToCart'          => 'carts',
-        'updateCartItemQty'  => 'carts',
-        'setCartItemFulfillment' => 'carts',
-        'removeCartItem'     => 'carts',
-        'applyCouponToCart'  => 'carts',
-        'removeCouponFromCart' => 'carts',
-        'setShippingAddressOnCart' => 'carts',
-        'setBillingAddressOnCart'  => 'carts',
-        'setShippingMethodOnCart'  => 'carts',
-        'setPaymentMethodOnCart'   => 'carts',
-        'assignCustomerToCart'     => 'carts',
-        'applyGiftcardToCart'      => 'carts',
-        'removeGiftcardFromCart'   => 'carts',
-        // Addresses
-        'address'            => 'addresses',
-        'addresses'          => 'addresses',
-        'myAddresses'        => 'addresses',
-        'createAddress'      => 'addresses',
-        'updateAddress'      => 'addresses',
-        'deleteAddress'      => 'addresses',
-        // Wishlists
-        'wishlistItem'       => 'wishlists',
-        'wishlistItems'      => 'wishlists',
-        'myWishlist'         => 'wishlists',
-        'addToWishlist'      => 'wishlists',
-        'removeFromWishlist' => 'wishlists',
-        'moveWishlistItemToCart' => 'wishlists',
-        'syncWishlist'       => 'wishlists',
-        // Reviews
-        'review'             => 'reviews',
-        'reviews'            => 'reviews',
-        'productReviews'     => 'reviews',
-        'myReviews'          => 'reviews',
-        'submitReview'       => 'reviews',
-        // Shipments
-        'shipment'           => 'shipments',
-        'shipments'          => 'shipments',
-        'orderShipments'     => 'shipments',
-        'createShipment'     => 'shipments',
-        // Gift Cards
-        'giftCard'           => 'giftcards',
-        'giftCards'          => 'giftcards',
-        'checkGiftcardBalance' => 'giftcards',
-        'createGiftcard'     => 'giftcards',
-        'adjustGiftcardBalance' => 'giftcards',
-        // Newsletter
-        'newsletterSubscription' => 'newsletter',
-        'newsletterSubscriptions' => 'newsletter',
-        'newsletterStatus'   => 'newsletter',
-        'subscribeNewsletter'   => 'newsletter',
-        'unsubscribeNewsletter' => 'newsletter',
-        // CMS
-        'cmsPage'            => 'cms-pages',
-        'cmsPages'           => 'cms-pages',
-        'cmsBlock'           => 'cms-blocks',
-        'cmsBlocks'          => 'cms-blocks',
-        'cmsBlockByIdentifier' => 'cms-blocks',
-        // Blog
-        'blogPost'           => 'blog-posts',
-        'blogPosts'          => 'blog-posts',
-        // Blog Categories
-        'blogCategory'       => 'blog-categories',
-        'blogCategories'     => 'blog-categories',
-        // Stores
-        'storeConfig'        => 'stores',
-        // Countries
-        'country'            => 'countries',
-        'countries'          => 'countries',
-        // URL Resolver
-        'urlResolveResult'   => 'url-resolver',
-        'resolveUrl'         => 'url-resolver',
-    ];
-
-    /**
-     * Mutation field name prefixes that map to the 'create' operation
+     * Mutation field name prefixes that map to the 'create' operation.
+     * Heuristic — not data — so it stays in the class, not in the attribute.
      */
     private const CREATE_PREFIXES = ['place', 'create', 'register', 'submit', 'subscribe'];
 
@@ -268,7 +114,7 @@ class ApiPermissionRegistry
      */
     public function getResources(): array
     {
-        return self::RESOURCES;
+        return self::load()['resources'];
     }
 
     /**
@@ -279,7 +125,7 @@ class ApiPermissionRegistry
     public function getResourcesByGroup(): array
     {
         $grouped = [];
-        foreach (self::RESOURCES as $resourceId => $config) {
+        foreach (self::load()['resources'] as $resourceId => $config) {
             $group = $config['group'];
             $grouped[$group][$resourceId] = $config;
         }
@@ -293,10 +139,11 @@ class ApiPermissionRegistry
      */
     public function getPublicReadResources(): array
     {
+        $data = self::load();
         $result = [];
-        foreach (self::PUBLIC_READ_RESOURCES as $resourceId) {
-            if (array_key_exists($resourceId, self::RESOURCES)) {
-                $result[$resourceId] = self::RESOURCES[$resourceId]['label'];
+        foreach ($data['publicRead'] as $resourceId) {
+            if (array_key_exists($resourceId, $data['resources'])) {
+                $result[$resourceId] = $data['resources'][$resourceId]['label'];
             }
         }
         return $result;
@@ -309,7 +156,7 @@ class ApiPermissionRegistry
      */
     public function getCustomerResources(): array
     {
-        return self::CUSTOMER_RESOURCES;
+        return self::load()['customerScoped'];
     }
 
     /**
@@ -317,7 +164,7 @@ class ApiPermissionRegistry
      */
     public function isPublicRead(string $resourceId): bool
     {
-        return in_array($resourceId, self::PUBLIC_READ_RESOURCES, true);
+        return in_array($resourceId, self::load()['publicRead'], true);
     }
 
     /**
@@ -336,13 +183,14 @@ class ApiPermissionRegistry
             'Storefront' => 'Storefront Operations',
         ];
 
+        $data = self::load();
         /** @var array<string, array<string, array<string, array{label: string, operations: array<string, string>}>>> $grouped */
         $grouped = [];
-        foreach (self::RESOURCES as $resourceId => $config) {
+        foreach ($data['resources'] as $resourceId => $config) {
             $operations = $config['operations'];
 
             // Skip resources that are entirely public read-only (all resources have 'read')
-            $isPublicRead = in_array($resourceId, self::PUBLIC_READ_RESOURCES, true);
+            $isPublicRead = in_array($resourceId, $data['publicRead'], true);
             if ($isPublicRead && count($operations) === 1) {
                 continue;
             }
@@ -376,16 +224,17 @@ class ApiPermissionRegistry
      */
     public function resolveRestResource(string $path): ?string
     {
+        $segmentMap = self::load()['segmentMap'];
         $segments = explode('/', trim($path, '/'));
         $resolved = null;
 
         foreach ($segments as $segment) {
-            if (array_key_exists($segment, self::SEGMENT_MAP)) {
-                $mapped = self::SEGMENT_MAP[$segment];
-                if ($mapped !== null) {
-                    $resolved = $mapped;
-                }
-                // null entries (like 'items') are skipped, keeping the parent
+            // Unmapped segments (e.g. nested 'items') are silently skipped,
+            // keeping the parent resource resolution. The compiler omits the
+            // legacy `'items' => null` sentinel because the loop already does
+            // the right thing.
+            if (isset($segmentMap[$segment])) {
+                $resolved = $segmentMap[$segment];
             }
         }
 
@@ -397,7 +246,7 @@ class ApiPermissionRegistry
      */
     public function resourceHasOperation(string $resource, string $operation): bool
     {
-        return isset(self::RESOURCES[$resource]['operations'][$operation]);
+        return isset(self::load()['resources'][$resource]['operations'][$operation]);
     }
 
     /**
@@ -415,6 +264,8 @@ class ApiPermissionRegistry
         } catch (\Exception) {
             return [];
         }
+
+        $fieldMap = self::load()['graphQlFieldMap'];
 
         // Build fragment map for resolving FragmentSpreadNode references
         $fragments = [];
@@ -440,7 +291,7 @@ class ApiPermissionRegistry
                     continue;
                 }
 
-                $resource = self::GRAPHQL_FIELD_MAP[$fieldName] ?? null;
+                $resource = $fieldMap[$fieldName] ?? null;
                 if ($resource === null) {
                     continue;
                 }
