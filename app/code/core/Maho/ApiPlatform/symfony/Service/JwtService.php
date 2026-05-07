@@ -294,14 +294,11 @@ class JwtService
             $secret = \Mage::getStoreConfig(self::CONFIG_PATH_LEGACY);
         }
 
-        // Fall back to deriving a secret from the Maho crypt key
-        if (empty($secret)) {
-            $cryptKey = (string) \Mage::getConfig()->getNode('global/crypt/key');
-            if (!empty($cryptKey)) {
-                $secret = hash('sha256', $cryptKey . ':maho_api_jwt');
-            }
-        }
-
+        // No fallback to the crypt key: that key encrypts data at rest in the
+        // DB, so deriving the JWT signing key from it would let anyone with
+        // local.xml access forge admin tokens. The kernel auto-generates and
+        // persists a random secret on first boot, so reaching this point in a
+        // long-running app is a misconfiguration.
         if (empty($secret)) {
             throw new \RuntimeException('JWT secret not configured. Please set apiplatform/oauth2/secret in configuration.');
         }
