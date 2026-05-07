@@ -35,7 +35,6 @@
   - [Directory](#directory)
   - [Wishlist](#wishlist)
   - [URL Resolver](#url-resolver)
-  - [POS Payments](#pos-payments)
 - [CAPTCHA](#captcha)
 - [Base Classes](#base-classes)
 - [Opt-in Traits](#opt-in-traits)
@@ -814,16 +813,6 @@ The `honeypotField` value is **deterministic per install** (derived from the enc
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/url-resolver?path=/some-page` | None | Resolve URL to entity |
-
----
-
-### POS Payments
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| GET | `/pos-payments` | Admin/API | List POS payments |
-| GET | `/pos-payments/{id}` | Admin/API | Get POS payment |
-| POST | `/pos-payments` | Admin/API | Create POS payment |
 
 ---
 
