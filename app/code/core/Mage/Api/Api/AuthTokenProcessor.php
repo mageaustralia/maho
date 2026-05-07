@@ -197,6 +197,12 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('client_id and client_secret are required');
         }
 
+        // Per-client cap mirrors the customer/api_user grants so an attacker
+        // who's identified or guessed a client_id can't brute-force the
+        // matching secret faster than the per-client bucket allows, even when
+        // rotating IPs to dodge the IP-level limit applied in handleGetToken().
+        $this->checkRateLimit('auth_token:client:' . $clientId, 'customer_login', 60);
+
         try {
             $resource = \Mage::getSingleton('core/resource');
             $read = $resource->getConnection('core_read');
