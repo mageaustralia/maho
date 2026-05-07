@@ -470,7 +470,7 @@ class ApiV2Helper
     /**
      * Ensure Maho is bootstrapped for DB lookups and config access
      */
-    private static function ensureMahoBootstrapped(): void
+    public static function ensureMahoBootstrapped(): void
     {
         static $bootstrapped = false;
         if (!$bootstrapped) {

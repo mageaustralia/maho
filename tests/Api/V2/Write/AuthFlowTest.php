@@ -22,9 +22,107 @@ declare(strict_types=1);
  * @group write
  */
 
-// Test API user credentials
+// Test API user credentials. The matching user is seeded in beforeAll() below
+// (and torn down in afterAll()) so the suite is self-contained — there is no
+// fixture file or install script that creates it.
 const TEST_CLIENT_ID = 'maho_5293a399b1369914b84a9958466e026e';
 const TEST_CLIENT_SECRET = 'pest_test_secret_12345';
+const TEST_API_USERNAME = 'pest_auth_flow_user';
+const TEST_API_ROLE_NAME = 'Pest Auth Flow Role';
+
+beforeAll(function (): void {
+    Tests\Helpers\ApiV2Helper::ensureMahoBootstrapped();
+
+    $resource = Mage::getSingleton('core/resource');
+    $write = $resource->getConnection('core_write');
+    $userTable = $resource->getTableName('api/user');
+    $roleTable = $resource->getTableName('api/role');
+    $ruleTable = $resource->getTableName('api/rule');
+
+    // Wipe any leftovers from a prior aborted run before re-seeding.
+    $existingUser = Mage::getModel('api/user')->loadByUsername(TEST_API_USERNAME);
+    if ($existingUser->getId()) {
+        $write->delete($roleTable, ['user_id = ?' => $existingUser->getId(), 'role_type = ?' => 'U']);
+        $existingUser->delete();
+    }
+    $existingRoleId = $write->fetchOne(
+        $write->select()->from($roleTable, 'role_id')
+            ->where('role_name = ?', TEST_API_ROLE_NAME)
+            ->where('role_type = ?', 'G'),
+    );
+    if ($existingRoleId) {
+        $write->delete($ruleTable, ['role_id = ?' => $existingRoleId, 'role_type = ?' => 'G']);
+        $write->delete($roleTable, ['role_id = ?' => $existingRoleId, 'role_type = ?' => 'G']);
+    }
+
+    // Group role with 'all' permission.
+    $write->insert($roleTable, [
+        'parent_id'  => 0,
+        'tree_level' => 1,
+        'sort_order' => 0,
+        'role_type'  => 'G',
+        'user_id'    => 0,
+        'role_name'  => TEST_API_ROLE_NAME,
+    ]);
+    $roleId = (int) $write->lastInsertId();
+    $write->insert($ruleTable, [
+        'role_id'        => $roleId,
+        'role_type'      => 'G',
+        'resource_id'    => 'all',
+        'api_permission' => 'allow',
+    ]);
+
+    // API user.
+    $user = Mage::getModel('api/user');
+    $user->setUsername(TEST_API_USERNAME)
+        ->setFirstname('Pest')
+        ->setLastname('Test')
+        ->setEmail('pest-auth-flow@test.local')
+        ->setIsActive(1)
+        ->setApiKey(bin2hex(random_bytes(16)))
+        ->save();
+
+    // client_id / client_secret aren't on the model — write directly.
+    $write->update($userTable, [
+        'client_id'     => TEST_CLIENT_ID,
+        'client_secret' => password_hash(TEST_CLIENT_SECRET, PASSWORD_BCRYPT),
+    ], ['user_id = ?' => (int) $user->getId()]);
+
+    // Bind user to the role.
+    $write->insert($roleTable, [
+        'parent_id'  => $roleId,
+        'tree_level' => 2,
+        'sort_order' => 0,
+        'role_type'  => 'U',
+        'user_id'    => (int) $user->getId(),
+        'role_name'  => TEST_API_USERNAME,
+    ]);
+});
+
+afterAll(function (): void {
+    Tests\Helpers\ApiV2Helper::ensureMahoBootstrapped();
+
+    $resource = Mage::getSingleton('core/resource');
+    $write = $resource->getConnection('core_write');
+    $roleTable = $resource->getTableName('api/role');
+    $ruleTable = $resource->getTableName('api/rule');
+
+    $user = Mage::getModel('api/user')->loadByUsername(TEST_API_USERNAME);
+    if ($user->getId()) {
+        $write->delete($roleTable, ['user_id = ?' => $user->getId(), 'role_type = ?' => 'U']);
+        $user->delete();
+    }
+
+    $roleId = $write->fetchOne(
+        $write->select()->from($roleTable, 'role_id')
+            ->where('role_name = ?', TEST_API_ROLE_NAME)
+            ->where('role_type = ?', 'G'),
+    );
+    if ($roleId) {
+        $write->delete($ruleTable, ['role_id = ?' => $roleId, 'role_type = ?' => 'G']);
+        $write->delete($roleTable, ['role_id = ?' => $roleId, 'role_type = ?' => 'G']);
+    }
+});
 
 describe('OAuth2 Client Credentials Flow', function (): void {
 
