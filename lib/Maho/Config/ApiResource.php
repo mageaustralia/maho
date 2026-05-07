@@ -71,16 +71,12 @@ class ApiResource extends BaseApiResource
      * (Laravel — not a Maho dependency). Both are pure pass-through values; we
      * accept them as `mixed` and forward verbatim.
      *
-     * @param mixed $operations
-     * @param mixed $rules
-     *
      * @param ?string $mahoId
      *   Canonical permission identifier — the slug used in role grants
      *   (`carts/read`), in REST URL routing, and as the GraphQL field key.
      *   Defaults to the kebab-cased + pluralised `shortName` (`Cart` → `carts`,
      *   `CmsPage` → `cms-pages`). Set explicitly only for irregular plurals
      *   or when the auto-derivation collides with another resource.
-     *
      * @param ?string $mahoLabel
      *   Human-readable label shown in the admin role editor and OpenAPI docs.
      *   Defaults to title-cased `mahoId` (`cms-pages` → `Cms Pages`). Override
@@ -131,6 +127,10 @@ class ApiResource extends BaseApiResource
      *   `add_cart_item`). Augmenting — declare only fields the compiler can't
      *   see, e.g. handler-defined fields in `*MutationHandler` / `*QueryHandler`
      *   classes outside the DTO.
+     *
+     * @param mixed $operations
+     *
+     * @param mixed $rules
      */
     public function __construct(
         // ---- Maho permission-registry fields (named-arg first; positional usage of the

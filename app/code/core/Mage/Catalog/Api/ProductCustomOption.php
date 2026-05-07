@@ -26,7 +26,6 @@ use ApiPlatform\Metadata\Put;
     mahoId: 'product-options',
     mahoLabel: 'Custom Options',
     mahoOperations: ['read' => 'View', 'write' => 'Manage', 'delete' => 'Delete'],
-
     shortName: 'ProductCustomOption',
     description: 'Product custom options (personalization, add-ons)',
     provider: ProductCustomOptionProvider::class,

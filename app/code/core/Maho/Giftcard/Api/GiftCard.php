@@ -28,7 +28,6 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
     mahoLabel: 'Gift Cards',
     mahoSection: 'Other',
     mahoOperations: ['read' => 'Check Balance', 'create' => 'Create', 'write' => 'Adjust Balance'],
-
     shortName: 'GiftCard',
     description: 'Gift Card resource',
     provider: GiftCardProvider::class,

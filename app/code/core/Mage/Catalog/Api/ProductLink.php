@@ -23,7 +23,6 @@ use ApiPlatform\Metadata\Put;
 
 #[ApiResource(
     mahoOperations: ['read' => 'View', 'write' => 'Manage'],
-
     shortName: 'ProductLink',
     description: 'Product links (related, cross-sell, up-sell)',
     provider: ProductLinkProvider::class,

@@ -22,7 +22,6 @@ use Maho\Config\ApiResource;
     mahoId: 'order-comments',
     mahoSection: 'Sales',
     mahoOperations: ['read' => 'View', 'write' => 'Add'],
-
     operations: [],
 )]
 final class OrderComments {}

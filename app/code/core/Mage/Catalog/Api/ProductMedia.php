@@ -24,7 +24,6 @@ use ApiPlatform\Metadata\Put;
 #[ApiResource(
     mahoId: 'product-images',
     mahoOperations: ['read' => 'View', 'write' => 'Upload & Update', 'delete' => 'Delete'],
-
     shortName: 'ProductMedia',
     description: 'Product media gallery images',
     provider: ProductMediaProvider::class,

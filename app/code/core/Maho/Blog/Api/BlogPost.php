@@ -28,7 +28,6 @@ use Maho\ApiPlatform\CrudResource;
 #[ApiResource(
     mahoSection: 'Content',
     mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
-
     shortName: 'BlogPost',
     description: 'Blog post resource',
     provider: BlogPostProvider::class,

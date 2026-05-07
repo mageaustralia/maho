@@ -28,7 +28,6 @@ use Maho\Config\ApiResource;
     mahoId: 'product-attributes',
     mahoSection: 'Catalog',
     mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
-
     operations: [],
 )]
 final class ProductAttributes {}

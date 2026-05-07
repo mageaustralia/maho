@@ -23,7 +23,6 @@ use Maho\ApiPlatform\CrudResource;
     mahoSection: 'System',
     mahoOperations: ['read' => 'View', 'write' => 'Manage'],
     mahoRestSegments: ['store-config'],
-
     shortName: 'Store',
     description: 'Store and website listing',
     operations: [

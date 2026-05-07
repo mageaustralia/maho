@@ -23,7 +23,6 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
     mahoLabel: 'URL Resolver',
     mahoSection: 'System',
     mahoOperations: ['read' => 'Resolve'],
-
     shortName: 'UrlResolveResult',
     description: 'URL resolution result - maps URLs to their targets',
     provider: UrlResolverProvider::class,

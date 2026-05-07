@@ -28,7 +28,6 @@ use Maho\ApiPlatform\CrudResource;
     mahoLabel: 'CMS Pages',
     mahoSection: 'Content',
     mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
-
     shortName: 'CmsPage',
     description: 'CMS Page resource',
     provider: CmsPageProvider::class,

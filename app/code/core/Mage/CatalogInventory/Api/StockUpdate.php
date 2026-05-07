@@ -23,7 +23,6 @@ use Maho\ApiPlatform\CrudResource;
     mahoId: 'inventory',
     mahoSection: 'Catalog',
     mahoOperations: ['read' => 'View Stock', 'write' => 'Update Stock'],
-
     shortName: 'StockUpdate',
     description: 'Fast inventory / stock update resource',
     processor: StockUpdateProcessor::class,

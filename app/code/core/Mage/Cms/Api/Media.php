@@ -67,7 +67,6 @@ use ApiPlatform\OpenApi\Model\RequestBody;
     mahoId: 'media',
     mahoSection: 'Content',
     mahoOperations: ['read' => 'List', 'write' => 'Upload', 'delete' => 'Delete'],
-
     uriTemplate: '/media/{path}',
     shortName: 'Media',
     operations: [

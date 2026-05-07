@@ -23,7 +23,6 @@ use ApiPlatform\Metadata\Put;
 #[ApiResource(
     mahoId: 'tier-prices',
     mahoOperations: ['read' => 'View', 'write' => 'Manage'],
-
     shortName: 'ProductTierPrice',
     description: 'Product tier prices (quantity-based pricing)',
     provider: ProductTierPriceProvider::class,

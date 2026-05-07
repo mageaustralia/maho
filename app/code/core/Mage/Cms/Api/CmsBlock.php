@@ -29,7 +29,6 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
     mahoLabel: 'CMS Blocks',
     mahoSection: 'Content',
     mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
-
     shortName: 'CmsBlock',
     description: 'CMS Block resource',
     provider: CmsBlockProvider::class,

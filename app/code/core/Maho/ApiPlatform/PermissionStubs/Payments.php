@@ -22,7 +22,6 @@ use Maho\Config\ApiResource;
     mahoId: 'payments',
     mahoSection: 'Sales',
     mahoOperations: ['read' => 'View', 'write' => 'Record'],
-
     operations: [],
 )]
 final class Payments {}

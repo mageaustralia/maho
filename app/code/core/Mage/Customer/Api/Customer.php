@@ -28,7 +28,6 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 #[ApiResource(
     mahoSection: 'Customers',
     mahoOperations: ['read' => 'View', 'create' => 'Register', 'write' => 'Update'],
-
     shortName: 'Customer',
     description: 'Customer resource',
     provider: CustomerProvider::class,

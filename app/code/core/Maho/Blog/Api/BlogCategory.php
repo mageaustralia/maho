@@ -24,7 +24,6 @@ use Maho\ApiPlatform\CrudResource;
 #[ApiResource(
     mahoSection: 'Content',
     mahoOperations: ['read' => 'View'],
-
     shortName: 'BlogCategory',
     description: 'Blog category resource',
     provider: BlogCategoryProvider::class,
