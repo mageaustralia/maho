@@ -48,7 +48,7 @@ class ContactFormProcessor extends \Maho\ApiPlatform\Processor
         }
 
         // Silently accept honeypot submissions to not reveal the trap
-        if ($this->isHoneypotTriggered($body, self::CONFIG_HONEYPOT)) {
+        if (\Mage::helper('core')->isHoneypotTriggered($body, self::CONFIG_HONEYPOT)) {
             return $this->successResponse();
         }
 

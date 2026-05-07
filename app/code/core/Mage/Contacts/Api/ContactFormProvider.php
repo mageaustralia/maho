@@ -37,7 +37,7 @@ class ContactFormProvider extends \Maho\ApiPlatform\Provider
             ? \Mage::getStoreConfig(self::CONFIG_CAPTCHA_SITE_KEY, $storeId)
             : null;
         $dto->honeypotField = \Mage::getStoreConfigFlag(self::CONFIG_HONEYPOT, $storeId)
-            ? 'company'
+            ? \Mage::helper('core')->getHoneypotFieldName()
             : null;
 
         return $dto;

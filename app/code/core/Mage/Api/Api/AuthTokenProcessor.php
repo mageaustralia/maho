@@ -60,7 +60,7 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
         $request = $context['request'] ?? null;
         $body = $request ? (json_decode($request->getContent(), true) ?? []) : [];
 
-        $this->checkRateLimit ByIp('auth_token', 'auth_token_ip', 60);
+        $this->checkRateLimitByIp('auth_token', 'auth_token_ip', 60);
 
         $grantType = $body['grant_type'] ?? 'customer';
 

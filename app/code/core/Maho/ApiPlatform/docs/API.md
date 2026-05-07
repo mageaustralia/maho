@@ -777,11 +777,13 @@ mutation {
     "provider": "altcha",
     "challengeUrl": "https://example.com/captcha/index/challenge"
   },
-  "honeypotField": "company"
+  "honeypotField": "_h_a4b2c1d3"
 }
 ```
 
 The `captcha` object is populated by the active captcha module (see [CAPTCHA](#captcha) below). When no module is active, it returns `{"enabled": false}`.
+
+The `honeypotField` value is **deterministic per install** (derived from the encryption key) and **opaque** to the frontend — render it as a hidden input and don't expose its value, e.g. `<input type="text" name="{honeypotField}" style="display:none" tabindex="-1" autocomplete="off" />`. If a request body arrives with a non-empty value in that field, the API silently treats it as spam (returns success without sending the email). When honeypot is disabled in admin, `honeypotField` is `null` and the frontend can skip it.
 
 ---
 

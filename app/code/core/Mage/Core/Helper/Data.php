@@ -944,6 +944,45 @@ XML;
     }
 
     /**
+     * Per-install hidden trap field name for honeypot anti-spam.
+     *
+     * Derived deterministically from the encryption key, so the same
+     * install always returns the same name (frontend can cache it),
+     * and different installs return different names (so a bot that
+     * scrapes one Maho install can't blanket-target all of them).
+     *
+     * Defeats random spambot armies. For targeted attackers (who can
+     * scrape the rendered form), pair with captcha — that's what the
+     * `api_captcha_config` / `api_verify_captcha` events are for.
+     */
+    public function getHoneypotFieldName(): string
+    {
+        return '_h_' . substr(hash('sha256', Mage::getEncryptionKeyAsHex() . 'honeypot'), 0, 8);
+    }
+
+    /**
+     * Honeypot check: returns true when the request body contains a
+     * non-empty value in the install-specific trap field returned by
+     * `getHoneypotFieldName()`. Reads the on/off toggle from the
+     * supplied config path so each module owns its own setting (e.g.
+     * `contacts/api/honeypot_enabled`); off means the check is skipped
+     * entirely.
+     *
+     * Works for any request shape that exposes form data as an array,
+     * so it's usable from web controllers (`$request->getPost()`) and
+     * API processors (decoded JSON body) alike.
+     */
+    public function isHoneypotTriggered(array $body, string $configPath): bool
+    {
+        if (!Mage::getStoreConfigFlag($configPath)) {
+            return false;
+        }
+        $field = $this->getHoneypotFieldName();
+        $value = $body[$field] ?? null;
+        return $value !== null && $value !== '';
+    }
+
+    /**
      * Filter value using specified filter type
      */
     public function filter(mixed $value, string $filter, mixed ...$args): mixed
