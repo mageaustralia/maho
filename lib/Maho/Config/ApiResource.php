@@ -129,7 +129,6 @@ class ApiResource extends BaseApiResource
      *   classes outside the DTO.
      *
      * @param mixed $operations
-     *
      * @param mixed $rules
      */
     public function __construct(
