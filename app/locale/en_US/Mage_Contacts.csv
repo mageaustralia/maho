@@ -1,4 +1,6 @@
 "* Required Fields","* Required Fields"
+"Adds a hidden field that bots fill in — zero dependency, works everywhere.","Adds a hidden field that bots fill in — zero dependency, works everywhere."
+"Allow headless frontends to submit contact forms via the API.","Allow headless frontends to submit contact forms via the API."
 "Auto Reply","Auto Reply"
 "Comment","Comment"
 "Contact Form","Contact Form"
