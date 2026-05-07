@@ -1298,12 +1298,11 @@ Most permission-registry fields are derived from the API Platform metadata on th
 |--------------------|--------------------------------------------------------------------|
 | `mahoId`           | `shortName` → kebab-case + plural (`Cart` → `carts`, `CmsPage` → `cms-pages`) |
 | `mahoLabel`        | Title-cased `mahoId` (`cms-pages` → `CMS Pages`; ≤3-char segments are upper-cased as acronyms) |
-| `mahoGroup`        | Defaults to `'Storefront'`                                         |
 | `mahoSection`      | Module segment of the namespace (`Mage\Catalog\Api\Foo` → `'Catalog'`) |
 | `mahoOperations`   | One entry per operation type present in `operations: [...]`. Default labels: `read`/`create`/`write`/`delete` → `View`/`Create`/`Update`/`Delete` |
 | `mahoRestSegments` | The resource id itself. Augmented (not replaced) by your override — declare only the *additional* segments (e.g. Cart adds `'guest-carts'`) |
 | `mahoGraphQlFields`| Each camelCase `name:` from `graphQlOperations[]`. Snake_case names (`item_query`, `add_cart_item`) are skipped — those are API Platform's internal operation identifiers, not schema fields. Augmented by your override for handler-defined fields (e.g. mutations declared in `*MutationHandler` classes the compiler can't see) |
-| `mahoPublicRead`   | No equivalent — must be explicit when you want unauthenticated `GET` |
+| `mahoPublicRead`   | `true` when every read operation has `security: 'true'`. Override explicitly only if your read security expression doesn't use that literal form |
 | `mahoCustomerScoped` | No equivalent — must be explicit for resources bound to a logged-in customer (carts, wishlists, addresses, etc.) |
 
 For customer-scoped resources, the parent's `description:` doubles as admin-UI prose — the compiler reads it via `getDescription()` and surfaces it in the role editor. Write it as action-oriented prose ("View cart, add/remove items, apply coupons, set shipping & payment") so it's useful for both API docs and admins.

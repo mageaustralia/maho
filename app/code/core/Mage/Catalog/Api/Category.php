@@ -27,7 +27,6 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
     mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
-    mahoPublicRead: true,
 
     shortName: 'Category',
     description: 'Product category resource',

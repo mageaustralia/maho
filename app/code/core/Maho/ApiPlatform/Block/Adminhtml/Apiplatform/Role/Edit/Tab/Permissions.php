@@ -79,53 +79,43 @@ class Maho_ApiPlatform_Block_Adminhtml_Apiplatform_Role_Edit_Tab_Permissions ext
     public function getServiceTreeJson(): string
     {
         $registry = $this->getRegistry();
-        $serviceGroups = $registry->getServicePermissionsByGroup();
+        $sections = $registry->getServicePermissionsBySection();
         $currentPermissions = Mage::registry('api_role_permissions') ?: [];
 
         $tree = [];
 
-        foreach ($serviceGroups as $groupName => $sections) {
-            $groupNode = [
-                'text' => $groupName,
-                'id' => 'group_' . strtolower(str_replace(' ', '_', $groupName)),
+        foreach ($sections as $sectionName => $resources) {
+            $sectionNode = [
+                'text' => $sectionName,
+                'id' => 'section_' . strtolower(str_replace(' ', '_', $sectionName)),
                 'children' => [],
             ];
 
-            foreach ($sections as $sectionName => $resources) {
-                $sectionNode = [
-                    'text' => $sectionName,
-                    'id' => 'section_' . strtolower(str_replace(' ', '_', $sectionName)),
+            foreach ($resources as $resourceId => $config) {
+                $resourceNode = [
+                    'text' => $config['label'],
+                    'id' => 'resource_' . $resourceId,
                     'children' => [],
                 ];
 
-                foreach ($resources as $resourceId => $config) {
-                    $resourceNode = [
-                        'text' => $config['label'],
-                        'id' => 'resource_' . $resourceId,
-                        'children' => [],
+                foreach ($config['operations'] as $operation => $operationLabel) {
+                    $permValue = $resourceId . '/' . $operation;
+                    $operationNode = [
+                        'text' => $operationLabel,
+                        'id' => $permValue,
                     ];
 
-                    foreach ($config['operations'] as $operation => $operationLabel) {
-                        $permValue = $resourceId . '/' . $operation;
-                        $operationNode = [
-                            'text' => $operationLabel,
-                            'id' => $permValue,
-                        ];
-
-                        if (in_array($permValue, $currentPermissions, true)) {
-                            $operationNode['checked'] = true;
-                        }
-
-                        $resourceNode['children'][] = $operationNode;
+                    if (in_array($permValue, $currentPermissions, true)) {
+                        $operationNode['checked'] = true;
                     }
 
-                    $sectionNode['children'][] = $resourceNode;
+                    $resourceNode['children'][] = $operationNode;
                 }
 
-                $groupNode['children'][] = $sectionNode;
+                $sectionNode['children'][] = $resourceNode;
             }
 
-            $tree[] = $groupNode;
+            $tree[] = $sectionNode;
         }
 
         return Mage::helper('core')->jsonEncode($tree);

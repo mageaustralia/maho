@@ -28,7 +28,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
-    mahoPublicRead: true,
 
     shortName: 'Product',
     description: 'Product catalog resource',

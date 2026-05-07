@@ -94,8 +94,6 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_RoleController extends Mage_Adminht
 
         Mage::register('api_role_data', $roleData ?: []);
         Mage::register('api_role_permissions', $permissions);
-        $registry = new \Maho\ApiPlatform\Security\ApiPermissionRegistry();
-        Mage::register('api_resources', $registry->getResourcesByGroup());
 
         $this->_title($roleData ? $roleData['role_name'] : $this->__('New Role'));
 

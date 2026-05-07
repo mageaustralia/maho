@@ -45,7 +45,7 @@ class ApiPermissionRegistry
      * Cached compiled data. `null` until first `load()`.
      *
      * @var array{
-     *     resources: array<string, array{label: string, group: string, section: string, operations: array<string, string>}>,
+     *     resources: array<string, array{label: string, section: string, operations: array<string, string>}>,
      *     publicRead: list<string>,
      *     customerScoped: array<string, string>,
      *     segmentMap: array<string, string>,
@@ -60,7 +60,7 @@ class ApiPermissionRegistry
      * non-public endpoints deny), which is the safer failure mode than open-by-default.
      *
      * @return array{
-     *     resources: array<string, array{label: string, group: string, section: string, operations: array<string, string>}>,
+     *     resources: array<string, array{label: string, section: string, operations: array<string, string>}>,
      *     publicRead: list<string>,
      *     customerScoped: array<string, string>,
      *     segmentMap: array<string, string>,
@@ -91,7 +91,7 @@ class ApiPermissionRegistry
         }
 
         /** @var array{
-         *     resources: array<string, array{label: string, group: string, section: string, operations: array<string, string>}>,
+         *     resources: array<string, array{label: string, section: string, operations: array<string, string>}>,
          *     publicRead: list<string>,
          *     customerScoped: array<string, string>,
          *     segmentMap: array<string, string>,
@@ -110,26 +110,11 @@ class ApiPermissionRegistry
     /**
      * Get full resource definitions for admin UI
      *
-     * @return array<string, array{label: string, group: string, operations: array<string, string>}>
+     * @return array<string, array{label: string, section: string, operations: array<string, string>}>
      */
     public function getResources(): array
     {
         return self::load()['resources'];
-    }
-
-    /**
-     * Get resource definitions grouped by their group key
-     *
-     * @return array<string, array<string, array{label: string, group: string, operations: array<string, string>}>>
-     */
-    public function getResourcesByGroup(): array
-    {
-        $grouped = [];
-        foreach (self::load()['resources'] as $resourceId => $config) {
-            $group = $config['group'];
-            $grouped[$group][$resourceId] = $config;
-        }
-        return $grouped;
     }
 
     /**
@@ -168,23 +153,18 @@ class ApiPermissionRegistry
     }
 
     /**
-     * Get service-account permissions grouped for the admin role editor UI.
+     * Get service-account permissions grouped by section for the admin role editor UI.
      *
      * Returns only resources/operations relevant to API service accounts:
      * - Skips read-only public resources (no permissions needed)
      * - Skips read operations on publicly-readable resources
-     * - Groups as 'Storefront Operations' and 'Content Management'
      *
-     * @return array<string, array<string, array<string, array{label: string, operations: array<string, string>}>>>
+     * @return array<string, array<string, array{label: string, operations: array<string, string>}>>
      */
-    public function getServicePermissionsByGroup(): array
+    public function getServicePermissionsBySection(): array
     {
-        $groupLabels = [
-            'Storefront' => 'Storefront Operations',
-        ];
-
         $data = self::load();
-        /** @var array<string, array<string, array<string, array{label: string, operations: array<string, string>}>>> $grouped */
+        /** @var array<string, array<string, array{label: string, operations: array<string, string>}>> $grouped */
         $grouped = [];
         foreach ($data['resources'] as $resourceId => $config) {
             $operations = $config['operations'];
@@ -204,9 +184,8 @@ class ApiPermissionRegistry
                 continue;
             }
 
-            $groupKey = $groupLabels[$config['group']];
             $section = $config['section'];
-            $grouped[$groupKey][$section][$resourceId] = [
+            $grouped[$section][$resourceId] = [
                 'label' => $config['label'],
                 'operations' => $operations,
             ];

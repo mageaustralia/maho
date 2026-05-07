@@ -36,13 +36,16 @@ use Attribute;
  *   - `mahoId`            ← shortName, pluralized + kebab-cased ('Cart' → 'carts')
  *   - `mahoLabel`         ← title-cased mahoId
  *   - `mahoSection`       ← module segment of the namespace ('Mage\Catalog\Api\…' → 'Catalog')
- *   - `mahoOperations`    ← derived from the parent `operations` array (presence of Get/Post/Put/Delete)
- *   - `mahoRestSegments`  ← unique first segments of each `uriTemplate`
- *   - `mahoGraphQlFields` ← every `name` from `graphQlOperations`
+ *   - `mahoOperations`    ← per-verb default labels for verbs present in `operations: [...]`
+ *   - `mahoRestSegments`  ← `[$mahoId]` (augmented by your override)
+ *   - `mahoGraphQlFields` ← camelCase `name`s from `graphQlOperations` (augmented by your override)
+ *   - `mahoPublicRead`    ← `true` when every read operation has `security: 'true'`
  *
- * Set them explicitly only when defaults are wrong. `mahoPublicRead` and
- * `mahoCustomerScoped` have no API Platform equivalent and must be set
- * explicitly when needed.
+ * Set them explicitly only when defaults are wrong. `mahoCustomerScoped` has
+ * no API Platform equivalent and must be set explicitly when needed.
+ *
+ * See the per-field `@param` lines on the constructor below for the full
+ * semantics of each maho field.
  *
  * For forward-looking resources without a real DTO, declare on a stub class
  * with `operations: []` (explicit empty — *not* null) so API Platform sees
@@ -68,11 +71,66 @@ class ApiResource extends BaseApiResource
      * (Laravel — not a Maho dependency). Both are pure pass-through values; we
      * accept them as `mixed` and forward verbatim.
      *
-     * @param mixed                      $operations
-     * @param mixed                      $rules
-     * @param array<string, string>|null $mahoOperations  e.g. ['read' => 'View', 'write' => 'Manage']
-     * @param string[]|null              $mahoRestSegments
-     * @param string[]|null              $mahoGraphQlFields
+     * @param mixed $operations
+     * @param mixed $rules
+     *
+     * @param ?string $mahoId
+     *   Canonical permission identifier — the slug used in role grants
+     *   (`carts/read`), in REST URL routing, and as the GraphQL field key.
+     *   Defaults to the kebab-cased + pluralised `shortName` (`Cart` → `carts`,
+     *   `CmsPage` → `cms-pages`). Set explicitly only for irregular plurals
+     *   or when the auto-derivation collides with another resource.
+     *
+     * @param ?string $mahoLabel
+     *   Human-readable label shown in the admin role editor and OpenAPI docs.
+     *   Defaults to title-cased `mahoId` (`cms-pages` → `Cms Pages`). Override
+     *   for acronyms or branded casing (`CMS Pages`, `URL Resolver`).
+     *
+     * @param ?string $mahoSection
+     *   Section heading the resource is grouped under in the admin role-editor
+     *   tree (one level deep — `Catalog`, `Sales`, `Customers`, `Content`,
+     *   `System`, `Other`). Defaults to the module segment of the namespace
+     *   (`Mage\Catalog\Api\Foo` → `'Catalog'`). Override when the namespace
+     *   doesn't match the desired UI grouping (e.g. permission stubs).
+     *
+     * @param array<string, string>|null $mahoOperations
+     *   Per-verb permission labels rendered in the admin role-editor tree
+     *   (`['read' => 'View', 'write' => 'Manage']`). Verbs are
+     *   `read | create | write | delete`. Defaults are derived per-verb from
+     *   the operations actually present in `operations: [...]`:
+     *   `read → View`, `create → Create`, `write → Update`, `delete → Delete`.
+     *   Override the whole map to customise display strings (`'write' => 'Submit'`).
+     *
+     * @param ?bool $mahoPublicRead
+     *   Marks the resource as readable without authentication. Auto-derived to
+     *   `true` when every read operation (Get/GetCollection or any HttpOperation
+     *   with method GET/HEAD) carries `security: 'true'`. Set explicitly only
+     *   when the read security expression doesn't use that literal form
+     *   (e.g. a custom voter expression that's effectively public).
+     *
+     * @param bool $mahoCustomerScoped
+     *   Marks the resource as bound to a logged-in customer (Cart, Order,
+     *   Address, Wishlist, Review, NewsletterSubscription). Access is gated by
+     *   the customer JWT, not admin role grants — the admin role editor surfaces
+     *   these in a separate "Customer endpoints" informational panel rather than
+     *   the grant tree. The parent's `description:` doubles as the prose shown
+     *   for each entry, so write it action-oriented ("View cart, add/remove
+     *   items, …"). No equivalent in API Platform — must be set explicitly.
+     *
+     * @param string[]|null $mahoRestSegments
+     *   Additional top-level URL path segments that should resolve to this
+     *   resource for permission checks. The default is `[$mahoId]` itself —
+     *   `mahoRestSegments` is **augmenting**, so declare only the *extra*
+     *   segments (e.g. Cart adds `'guest-carts'` because both `/carts/*` and
+     *   `/guest-carts/*` map to the cart resource).
+     *
+     * @param string[]|null $mahoGraphQlFields
+     *   Additional GraphQL field names that should resolve to this resource for
+     *   permission checks. Auto-derived from `graphQlOperations[].name`,
+     *   filtering out internal snake_case identifiers (`item_query`,
+     *   `add_cart_item`). Augmenting — declare only fields the compiler can't
+     *   see, e.g. handler-defined fields in `*MutationHandler` / `*QueryHandler`
+     *   classes outside the DTO.
      */
     public function __construct(
         // ---- Maho permission-registry fields (named-arg first; positional usage of the
@@ -81,10 +139,9 @@ class ApiResource extends BaseApiResource
         //      surface first in IDE autocomplete and at the top of usage blocks).
         public ?string $mahoId = null,
         public ?string $mahoLabel = null,
-        public ?string $mahoGroup = null,
         public ?string $mahoSection = null,
         public ?array $mahoOperations = null,
-        public bool $mahoPublicRead = false,
+        public ?bool $mahoPublicRead = null,
         public bool $mahoCustomerScoped = false,
         public ?array $mahoRestSegments = null,
         public ?array $mahoGraphQlFields = null,

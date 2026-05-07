@@ -24,7 +24,6 @@ use Maho\ApiPlatform\CrudResource;
 #[ApiResource(
     mahoSection: 'System',
     mahoOperations: ['read' => 'View'],
-    mahoPublicRead: true,
 
     shortName: 'Country',
     description: 'Country and region resource for addresses',
