@@ -71,7 +71,7 @@ class HttpCacheListener
         if ($ifNoneMatch !== null && $ifNoneMatch === $etag) {
             $event->setResponse(new Response('', Response::HTTP_NOT_MODIFIED, [
                 'ETag' => $etag,
-                'Vary' => 'Authorization, Accept',
+                'Vary' => 'Authorization, Accept, X-Store-Code',
             ]));
             return;
         }
@@ -95,7 +95,7 @@ class HttpCacheListener
         }
 
         // Always add Vary header
-        $response->headers->set('Vary', 'Authorization, Accept');
+        $response->headers->set('Vary', 'Authorization, Accept, X-Store-Code');
     }
 
     private function isPublicPath(string $path): bool

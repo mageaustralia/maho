@@ -152,7 +152,7 @@ class Kernel extends BaseKernel
                 'pagination_items_per_page' => 20,
                 'pagination_maximum_items_per_page' => 100,
                 'cache_headers' => [
-                    'vary' => ['Accept', 'Authorization'],
+                    'vary' => ['Accept', 'Authorization', 'X-Store-Code'],
                 ],
             ],
             'graphql' => [
