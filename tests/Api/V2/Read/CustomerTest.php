@@ -70,9 +70,11 @@ describe('GET /api/rest/v2/customers/{id}', function (): void {
         $differentCustomerId = $customerId + 1;
         $response = apiGet("/api/rest/v2/customers/{$customerId}", customerToken($differentCustomerId));
 
-        // Should be forbidden (not your data) or not found
-        expect($response['status'])->toBeGreaterThanOrEqual(400);
-    })->skip('Customer access control not yet enforced in provider');
+        // CustomerProvider::provide() calls authorizeCustomerAccess(), which
+        // throws AccessDeniedHttpException unless the caller is the owner or
+        // an admin. Expect 403 (or 404 if the requested ID doesn't exist).
+        expect($response['status'])->toBeIn([403, 404]);
+    });
 
 });
 
@@ -88,9 +90,10 @@ describe('GET /api/rest/v2/customers', function (): void {
     it('prevents non-admin from listing all customers', function (): void {
         $response = apiGet('/api/rest/v2/customers', customerToken());
 
-        // Regular customer should not list all customers
-        expect($response['status'])->toBeGreaterThanOrEqual(400);
-    })->skip('Customer access control not yet enforced in provider');
+        // CustomerProvider's collection branch enforces admin-or-api-user via
+        // requireAdmin(); a ROLE_USER token gets 403.
+        expect($response['status'])->toBe(403);
+    });
 
     it('requires authentication', function (): void {
         $response = apiGet('/api/rest/v2/customers');
