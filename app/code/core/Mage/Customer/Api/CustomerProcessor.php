@@ -393,6 +393,9 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('Email is required');
         }
 
+        // Per-IP cap first so an attacker can't bypass the per-email bucket by
+        // rotating addresses to enumerate accounts or flood the mail relay.
+        $this->checkRateLimitByIp('forgot_password', 'forgot_password', 3600);
         $this->checkRateLimit('forgot_password:email:' . strtolower($email), 'forgot_password', 3600);
 
         $storeId = StoreContext::getStoreId();
