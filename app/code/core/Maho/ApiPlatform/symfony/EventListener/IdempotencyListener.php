@@ -70,7 +70,16 @@ class IdempotencyListener
             throw new BadRequestHttpException('X-Idempotency-Key may only contain alphanumeric characters, dashes, and underscores');
         }
 
+        // Without a stable caller identity we can't safely scope replays:
+        // every unauthenticated request would share the same bucket, so guest
+        // A's cached response (potentially containing their masked cart ID or
+        // order data) would replay for guest B reusing the same key. Skip
+        // idempotency entirely for unauthenticated callers.
         $scope = $this->getUserScope();
+        if ($scope === null) {
+            return;
+        }
+
         $path = $request->getPathInfo();
         $method = $request->getMethod();
 
@@ -127,7 +136,10 @@ class IdempotencyListener
             return;
         }
 
-        $scope = $request->attributes->get('_idempotency_scope', 'anonymous');
+        // _idempotency_scope is always set alongside _idempotency_key in
+        // onRequest for authenticated callers; anonymous requests never make
+        // it past that point.
+        $scope = $request->attributes->get('_idempotency_scope');
         $response = $event->getResponse();
 
         // Do not store server errors — transient failures should be retryable
@@ -164,11 +176,16 @@ class IdempotencyListener
         }
     }
 
-    private function getUserScope(): string
+    /**
+     * Returns the per-caller idempotency scope, or null when the request has
+     * no stable caller identity (so idempotency must be skipped to avoid
+     * leaking one anonymous caller's response to another).
+     */
+    private function getUserScope(): ?string
     {
         $token = $this->tokenStorage->getToken();
         if ($token === null) {
-            return 'anonymous';
+            return null;
         }
 
         $user = $token->getUser();
@@ -184,6 +201,6 @@ class IdempotencyListener
             }
         }
 
-        return 'anonymous';
+        return null;
     }
 }
