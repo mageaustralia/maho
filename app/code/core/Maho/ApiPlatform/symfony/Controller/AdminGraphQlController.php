@@ -120,9 +120,17 @@ class AdminGraphQlController
             return ['errors' => [['message' => 'Query exceeds maximum depth of ' . self::MAX_QUERY_DEPTH]]];
         }
 
-        // Handle introspection
+        // Introspection is intentionally unimplemented on the admin GraphQL
+        // endpoint: this controller hand-rolls operation dispatch via a match
+        // table rather than backing onto a real schema, so any introspection
+        // response would misrepresent the API surface. Return an explicit error
+        // so tooling fails loudly instead of silently treating the schema as
+        // empty.
         if (str_contains($query, '__schema') || str_contains($query, '__type')) {
-            return ['data' => $this->getIntrospectionSchema()];
+            return ['errors' => [[
+                'message' => 'Schema introspection is not supported on the admin GraphQL endpoint',
+                'extensions' => ['code' => 'INTROSPECTION_DISABLED'],
+            ]]];
         }
 
         // Use operationName from request if available (standard GraphQL protocol),
@@ -272,17 +280,4 @@ class AdminGraphQlController
         };
     }
 
-    /**
-     * Return minimal introspection schema
-     */
-    private function getIntrospectionSchema(): array
-    {
-        return [
-            '__schema' => [
-                'queryType' => ['name' => 'Query'],
-                'mutationType' => ['name' => 'Mutation'],
-                'types' => [],
-            ],
-        ];
-    }
 }
