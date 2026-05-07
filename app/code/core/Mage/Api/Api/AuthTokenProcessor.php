@@ -196,7 +196,9 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
      * @throws UnauthorizedHttpException for invalid credentials
      * @throws HttpException 403 when the matched account isn't confirmed
      */
-    private function authenticateCustomerAcrossWebsites(string $email, string $password): \Mage_Customer_Model_Customer
+    private function authenticateCustomerAcrossWebsites(#[\SensitiveParameter]
+        string $email, #[\SensitiveParameter]
+        string $password): \Mage_Customer_Model_Customer
     {
         $primaryWebsiteId = (int) \Mage::app()->getStore()->getWebsiteId();
         $websiteIds = [$primaryWebsiteId];
