@@ -30,24 +30,34 @@ use Tests\Helpers\ApiV2Helper;
 |
 */
 
-function apiGet(string $path, ?string $token = null): array
+function apiGet(string $path, ?string $token = null, array $extraHeaders = []): array
 {
-    return ApiV2Helper::get($path, $token);
+    return ApiV2Helper::get($path, $token, $extraHeaders);
 }
 
-function apiPost(string $path, array $data, ?string $token = null): array
+function apiPost(string $path, array $data, ?string $token = null, array $extraHeaders = []): array
 {
-    return ApiV2Helper::post($path, $data, $token);
+    return ApiV2Helper::post($path, $data, $token, $extraHeaders);
 }
 
-function apiPut(string $path, array $data, ?string $token = null): array
+function apiPut(string $path, array $data, ?string $token = null, array $extraHeaders = []): array
 {
-    return ApiV2Helper::put($path, $data, $token);
+    return ApiV2Helper::put($path, $data, $token, $extraHeaders);
 }
 
-function apiDelete(string $path, ?string $token = null): array
+function apiDelete(string $path, ?string $token = null, array $extraHeaders = []): array
 {
-    return ApiV2Helper::delete($path, $token);
+    return ApiV2Helper::delete($path, $token, $extraHeaders);
+}
+
+function apiOptions(string $path, array $extraHeaders = []): array
+{
+    return ApiV2Helper::options($path, $extraHeaders);
+}
+
+function apiHeader(array $response, string $name): ?string
+{
+    return ApiV2Helper::headerValue($response, $name);
 }
 
 function apiPostMultipart(string $path, array $fields, array $files, ?string $token = null): array

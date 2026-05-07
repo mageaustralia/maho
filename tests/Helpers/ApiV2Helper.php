@@ -192,41 +192,72 @@ class ApiV2Helper
     /**
      * HTTP GET request
      *
+     * @param array<string, string> $extraHeaders
      * @return array{status: int, json: array, raw: string, headers: array}
      */
-    public static function get(string $path, ?string $token = null): array
+    public static function get(string $path, ?string $token = null, array $extraHeaders = []): array
     {
-        return self::request('GET', $path, null, $token);
+        return self::request('GET', $path, null, $token, $extraHeaders);
     }
 
     /**
      * HTTP POST request
      *
+     * @param array<string, string> $extraHeaders
      * @return array{status: int, json: array, raw: string, headers: array}
      */
-    public static function post(string $path, array $data, ?string $token = null): array
+    public static function post(string $path, array $data, ?string $token = null, array $extraHeaders = []): array
     {
-        return self::request('POST', $path, $data, $token);
+        return self::request('POST', $path, $data, $token, $extraHeaders);
     }
 
     /**
      * HTTP PUT request
      *
+     * @param array<string, string> $extraHeaders
      * @return array{status: int, json: array, raw: string, headers: array}
      */
-    public static function put(string $path, array $data, ?string $token = null): array
+    public static function put(string $path, array $data, ?string $token = null, array $extraHeaders = []): array
     {
-        return self::request('PUT', $path, $data, $token);
+        return self::request('PUT', $path, $data, $token, $extraHeaders);
     }
 
     /**
      * HTTP DELETE request
      *
+     * @param array<string, string> $extraHeaders
      * @return array{status: int, json: array, raw: string, headers: array}
      */
-    public static function delete(string $path, ?string $token = null): array
+    public static function delete(string $path, ?string $token = null, array $extraHeaders = []): array
     {
-        return self::request('DELETE', $path, null, $token);
+        return self::request('DELETE', $path, null, $token, $extraHeaders);
+    }
+
+    /**
+     * HTTP OPTIONS request — primarily for CORS preflight.
+     *
+     * @param array<string, string> $extraHeaders
+     * @return array{status: int, json: array, raw: string, headers: array}
+     */
+    public static function options(string $path, array $extraHeaders = []): array
+    {
+        return self::request('OPTIONS', $path, null, null, $extraHeaders);
+    }
+
+    /**
+     * Find a single response header value (case-insensitive). Returns null if absent.
+     *
+     * @param array{status: int, json: array, raw: string, headers: array} $response
+     */
+    public static function headerValue(array $response, string $name): ?string
+    {
+        $needle = strtolower($name) . ':';
+        foreach ($response['headers'] as $line) {
+            if (stripos($line, $needle) === 0) {
+                return trim(substr($line, strlen($needle)));
+            }
+        }
+        return null;
     }
 
     /**
@@ -521,9 +552,10 @@ class ApiV2Helper
     /**
      * Make an HTTP request to the API
      *
+     * @param array<string, string> $extraHeaders
      * @return array{status: int, json: array, raw: string, headers: array}
      */
-    private static function request(string $method, string $path, ?array $data = null, ?string $token = null): array
+    private static function request(string $method, string $path, ?array $data = null, ?string $token = null, array $extraHeaders = []): array
     {
         $url = self::getBaseUrl() . $path;
 
@@ -536,6 +568,14 @@ class ApiV2Helper
         if ($token !== null) {
             $headers = array_filter($headers, fn($h) => !str_starts_with($h, 'Authorization:'));
             $headers[] = 'Authorization: Bearer ' . $token;
+        }
+
+        foreach ($extraHeaders as $name => $value) {
+            // If a caller explicitly overrides one of the defaults (Accept,
+            // Content-Type, Authorization), drop the default rather than
+            // sending two of the same header.
+            $headers = array_filter($headers, fn($h) => stripos($h, $name . ':') !== 0);
+            $headers[] = $name . ': ' . $value;
         }
 
         $options = [
