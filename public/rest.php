@@ -26,7 +26,12 @@ if (!Mage::isInstalled()) {
 
 // Initialize Maho (required for API Platform to access models/config)
 Mage::$headersSentThrowsException = false;
-Mage::setIsDeveloperMode(false); // Prevent PHP warnings/errors from corrupting JSON responses
+// Force developer mode off for the duration of the request: any warning emitted
+// by Mage::init() below would print before the Symfony kernel boots and would
+// corrupt the JSON response. Errors are still captured by Mage::log() and the
+// configured Monolog handlers, so debugging info isn't lost — just kept out of
+// the response body.
+Mage::setIsDeveloperMode(false);
 Mage::init('admin');
 Mage::app()->loadAreaPart(Mage_Core_Model_App_Area::AREA_GLOBAL, Mage_Core_Model_App_Area::PART_EVENTS);
 Mage::app()->loadAreaPart(Mage_Core_Model_App_Area::AREA_API, Mage_Core_Model_App_Area::PART_EVENTS);

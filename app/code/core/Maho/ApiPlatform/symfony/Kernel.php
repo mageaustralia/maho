@@ -59,14 +59,22 @@ class Kernel extends BaseKernel
         }
 
         if (!isset($_ENV['CORS_ALLOW_ORIGIN'])) {
-            $corsOrigins = \Mage::getStoreConfig('apiplatform/general/cors_origins');
-            if (!$corsOrigins) {
+            $corsOrigins = (string) \Mage::getStoreConfig('apiplatform/general/cors_origins');
+            if ($corsOrigins === '') {
                 $baseUrl = (string) \Mage::getStoreConfig('web/secure/base_url');
                 $parsed = parse_url($baseUrl);
                 $corsOrigins = ($parsed['scheme'] ?? 'https') . '://' . ($parsed['host'] ?? 'localhost')
                     . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
             }
-            $_ENV['CORS_ALLOW_ORIGIN'] = $corsOrigins;
+            // NelmioCors expects an array of origins. Encode as JSON so the
+            // env() resolver can split a comma-separated config value into
+            // multiple entries instead of treating the whole string as one
+            // (broken) origin literal.
+            $origins = array_values(array_filter(
+                array_map('trim', explode(',', $corsOrigins)),
+                static fn(string $o): bool => $o !== '',
+            ));
+            $_ENV['CORS_ALLOW_ORIGIN'] = json_encode($origins, JSON_THROW_ON_ERROR);
         }
     }
 
@@ -198,7 +206,7 @@ class Kernel extends BaseKernel
         $container->extension('nelmio_cors', [
             'defaults' => [
                 'origin_regex' => false,
-                'allow_origin' => ['%env(CORS_ALLOW_ORIGIN)%'],
+                'allow_origin' => '%env(json:CORS_ALLOW_ORIGIN)%',
                 'allow_methods' => ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'],
                 'allow_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],
                 'expose_headers' => ['Link', 'Deprecation', 'Sunset'],
@@ -206,7 +214,7 @@ class Kernel extends BaseKernel
             ],
             'paths' => [
                 '^/api/' => [
-                    'allow_origin' => ['%env(CORS_ALLOW_ORIGIN)%'],
+                    'allow_origin' => '%env(json:CORS_ALLOW_ORIGIN)%',
                     'allow_headers' => ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Store-Code'],
                     'allow_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
                     'max_age' => 3600,

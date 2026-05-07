@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Mage\Sales\Api;
 
+use Mage\Checkout\Api\CartService;
+
 /**
  * Order Service - Business logic for checkout and order operations
  */
@@ -74,10 +76,38 @@ class OrderService
             $quote->setData('employee_id', $employeeId);
         }
 
+        // Re-validate gift-card balances against the live DB before locking —
+        // a card spent elsewhere since apply time must not discount this order.
+        (new CartService())->revalidateGiftcards($quote);
+
         // Collect totals one final time
         $quote->collectTotals();
 
+        // Serialize concurrent placement attempts on the same quote. Without
+        // this, two simultaneous POSTs both pass the is_active check above and
+        // submit the same cart twice — duplicate orders, double inventory
+        // decrement. GET_LOCK gives us a per-quote critical section that
+        // releases on disconnect, so a crashed worker can't deadlock the cart.
+        $resource = \Mage::getSingleton('core/resource');
+        $write = $resource->getConnection('core_write');
+        $lockName = 'maho_quote_place_order:' . (int) $quote->getId();
+        $acquired = (int) $write->fetchOne('SELECT GET_LOCK(?, 5)', [$lockName]);
+        if ($acquired !== 1) {
+            throw new \RuntimeException('Order placement is already in progress for this cart');
+        }
+
         try {
+            // Re-read is_active under the lock — another request may have
+            // converted this quote while we were waiting.
+            $stillActive = (int) $write->fetchOne(
+                $write->select()
+                    ->from($resource->getTableName('sales/quote'), ['is_active'])
+                    ->where('entity_id = ?', (int) $quote->getId()),
+            );
+            if ($stillActive !== 1) {
+                throw new \RuntimeException('Cart is no longer active');
+            }
+
             // Convert quote to order
             $service = \Mage::getModel('sales/service_quote', $quote);
             $service->submitAll();
@@ -129,6 +159,8 @@ class OrderService
         } catch (\Exception $e) {
             \Mage::logException($e);
             throw new \RuntimeException('Failed to place order');
+        } finally {
+            $write->query('SELECT RELEASE_LOCK(?)', [$lockName]);
         }
     }
 

@@ -88,12 +88,17 @@ class IdempotencyListener
         $read = $resource->getConnection('core_read');
         $table = $resource->getTableName(self::TABLE);
 
+        // Only replay records inside the TTL window — older keys are treated as
+        // expired so callers can safely reuse them and the table can be pruned.
+        $cutoff = \Mage::app()->getLocale()->formatDateForDb('-' . self::TTL_HOURS . ' hours');
+
         $select = $read->select()
             ->from($table, ['response_code', 'response_body', 'response_headers'])
             ->where('idempotency_key = ?', $idempotencyKey)
             ->where('user_scope = ?', $scope)
             ->where('request_path = ?', $path)
-            ->where('request_method = ?', $method);
+            ->where('request_method = ?', $method)
+            ->where('created_at >= ?', $cutoff);
         $existing = $read->fetchRow($select);
 
         if ($existing) {

@@ -176,6 +176,28 @@ class ApiExceptionListener implements EventSubscriberInterface
             return new JsonResponse($data, $statusCode, $headers);
         }
 
+        // Mage_Core_Exception is the canonical user-facing validation/business
+        // rule signal in Maho models (Mage::throwException()). Treat it as a
+        // 422 Unprocessable Entity with the model's message instead of a 500;
+        // these are never internal errors.
+        if ($exception instanceof \Mage_Core_Exception) {
+            $statusCode = 422;
+            $data = [
+                'error' => 'unprocessable_entity',
+                'message' => $exception->getMessage(),
+                'code' => $statusCode,
+            ];
+
+            if ($this->showDebug()) {
+                $data['debug'] = [
+                    'class' => $exception::class,
+                    'trace' => $exception->getTraceAsString(),
+                ];
+            }
+
+            return new JsonResponse($data, $statusCode);
+        }
+
         // Handle generic exceptions
         $statusCode = 500;
         $data = [

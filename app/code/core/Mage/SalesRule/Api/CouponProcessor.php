@@ -321,13 +321,21 @@ final class CouponProcessor extends \Maho\ApiPlatform\Processor
             $quote = \Mage::getModel('sales/quote');
             $quote->load($cartId);
             if ($quote->getId()) {
-                $quote->setCouponCode($code);
-                $quote->collectTotals();
-                $discount = abs((float) $quote->getShippingAddress()->getDiscountAmount());
-                $dto->discountPreview = $discount;
-                $quote->setCouponCode('');
-                $quote->collectTotals();
-                $quote->save();
+                // Only the cart's owner (or a privileged caller) may preview a
+                // discount on someone else's cart — without this check, any
+                // authenticated client could probe arbitrary cart totals.
+                $this->assertCanPreviewQuote($quote);
+
+                // Run the discount preview on a transient copy so the
+                // persisted quote is never mutated and we don't have to roll
+                // back state. setCouponCode() + collectTotals() on a clone is
+                // enough to populate $shippingAddress->getDiscountAmount().
+                $previewQuote = clone $quote;
+                $previewQuote->setCouponCode($code);
+                $previewQuote->setTotalsCollectedFlag(false);
+                $previewQuote->collectTotals();
+
+                $dto->discountPreview = abs((float) $previewQuote->getShippingAddress()->getDiscountAmount());
             }
         }
 
@@ -346,6 +354,32 @@ final class CouponProcessor extends \Maho\ApiPlatform\Processor
         $dto->discountAmount = (float) $rule->getDiscountAmount();
 
         return $dto;
+    }
+
+    /**
+     * Reject coupon preview attempts against carts the caller doesn't own.
+     * Admins and API users with full coupon access bypass this check.
+     */
+    private function assertCanPreviewQuote(\Mage_Sales_Model_Quote $quote): void
+    {
+        if ($this->isAdmin() || $this->isApiUser()) {
+            return;
+        }
+
+        $cartCustomerId = $quote->getCustomerId() ? (int) $quote->getCustomerId() : null;
+        $authenticatedCustomerId = $this->getAuthenticatedCustomerId();
+
+        if ($cartCustomerId !== null) {
+            if ($authenticatedCustomerId === null || $cartCustomerId !== $authenticatedCustomerId) {
+                throw new BadRequestHttpException('Cart not accessible');
+            }
+            return;
+        }
+
+        // Guest carts can't be previewed via the numeric ID endpoint —
+        // mirrors CartService::verifyCartAccess(). The masked-id flow
+        // is exercised through the CartProcessor coupon endpoints instead.
+        throw new BadRequestHttpException('Cart not accessible');
     }
 
     private function validateCouponCode(string $code): void

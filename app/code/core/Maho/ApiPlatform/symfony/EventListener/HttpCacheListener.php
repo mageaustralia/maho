@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Maho\ApiPlatform\EventListener;
 
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -35,6 +36,8 @@ class HttpCacheListener
         '/api/rest/v2/countries',
         '/api/rest/v2/categories',
     ];
+
+    public function __construct(private readonly Security $security) {}
 
     public function __invoke(ResponseEvent $event): void
     {
@@ -76,8 +79,11 @@ class HttpCacheListener
             return;
         }
 
-        // Determine cache tier
-        $isAuthenticated = $request->headers->has('Authorization');
+        // Determine cache tier from the actual security context. The
+        // Authorization header is unreliable: Basic-Auth-protected staging
+        // sites send it for unrelated reasons, and admin-cookie auth (the
+        // bridge listener) authenticates without it.
+        $isAuthenticated = $this->security->getUser() !== null;
         $path = $request->getPathInfo();
 
         if (!$isAuthenticated && $this->isPublicPath($path)) {

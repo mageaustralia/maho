@@ -47,6 +47,25 @@ if (!$connection->tableColumnExists($tableName, 'client_secret')) {
     ]);
 }
 
+// Add guest_access_token column to sales_flat_order so guest order lookup
+// (Mage\Sales\Api\OrderService::getGuestOrder, /guestOrder GraphQL query) can
+// validate the per-order one-time access token issued at order placement.
+$orderTable = $installer->getTable('sales/order');
+if (!$connection->tableColumnExists($orderTable, 'guest_access_token')) {
+    $connection->addColumn($orderTable, 'guest_access_token', [
+        'type'     => Maho\Db\Ddl\Table::TYPE_TEXT,
+        'length'   => 64,
+        'nullable' => true,
+        'default'  => null,
+        'comment'  => 'Guest order access token (hex, issued at order placement)',
+    ]);
+    $connection->addIndex(
+        $orderTable,
+        $installer->getIdxName($orderTable, ['guest_access_token']),
+        ['guest_access_token'],
+    );
+}
+
 // Add masked_quote_id column to sales_flat_quote for secure cart access
 $quoteTable = $installer->getTable('sales/quote');
 if (!$connection->tableColumnExists($quoteTable, 'masked_quote_id')) {

@@ -72,9 +72,17 @@ class Maho_ApiPlatform_Adminhtml_Apiplatform_UserController extends Mage_Adminht
 
         $this->_title($model->getId() ? $model->getUsername() : $this->__('New API User'));
 
+        // Re-populate the form from session flash on save errors. Use the same
+        // field allowlist as saveAction() — never blanket-setData() the raw POST,
+        // or a crafted submit could write password, is_superadmin, etc. on
+        // the next render.
         $data = Mage::getSingleton('adminhtml/session')->getApiUserData(true);
         if (!empty($data)) {
-            $model->setData($data);
+            $model->setUsername($data['username'] ?? $model->getUsername());
+            $model->setFirstname($data['firstname'] ?? $model->getFirstname());
+            $model->setLastname($data['lastname'] ?? $model->getLastname());
+            $model->setEmail($data['email'] ?? $model->getEmail());
+            $model->setIsActive($data['is_active'] ?? $model->getIsActive());
         }
 
         Mage::register('api_user', $model);

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Mage\Checkout\Api;
 
-use Mage\Sales\Api\OrderService;
 use Maho\ApiPlatform\Service\StoreDefaults;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -24,12 +23,6 @@ class CartService
 {
     private const MAX_ITEM_QTY = 10000;
 
-    private OrderService $orderService;
-
-    public function __construct()
-    {
-        $this->orderService = new OrderService();
-    }
     /**
      * Create empty cart
      *
@@ -195,10 +188,11 @@ class CartService
             return;
         }
 
-        // Guest cart: allow if accessed by masked ID OR if caller is authenticated
-        // (authenticated users get guest carts assigned during login)
-        if (!$accessedByMaskedId && $authenticatedCustomerId === null) {
-            throw new AccessDeniedHttpException('Guest carts require authentication or masked ID');
+        // Guest cart: only the masked ID grants access. The numeric /carts/{id}
+        // path is enumerable, so even authenticated customers must not see
+        // someone else's pre-login cart through it.
+        if (!$accessedByMaskedId) {
+            throw new AccessDeniedHttpException('Guest carts must be accessed via masked ID');
         }
     }
 
@@ -512,6 +506,54 @@ class CartService
 
         $quote->setGiftcardCodes(json_encode($appliedCodes));
         $quote->collectTotals()->save();
+
+        return $quote;
+    }
+
+    /**
+     * Re-validate every applied gift card against the live DB balance
+     * immediately before order placement. The amount stored on the quote is
+     * a snapshot from applyGiftcard(); without this re-check, a card that has
+     * been spent elsewhere between apply and place would still discount the
+     * order at its original (now stale) balance and the store would eat the
+     * difference.
+     *
+     * @throws \RuntimeException when an applied card is no longer redeemable
+     */
+    public function revalidateGiftcards(\Mage_Sales_Model_Quote $quote): \Mage_Sales_Model_Quote
+    {
+        $applied = $quote->getGiftcardCodes();
+        $applied = $applied ? json_decode($applied, true) : [];
+        if (!$applied) {
+            return $quote;
+        }
+
+        $changed = false;
+        $quoteCurrency = $quote->getQuoteCurrencyCode();
+
+        foreach ($applied as $code => $snapshotBalance) {
+            $card = \Mage::getModel('giftcard/giftcard')->loadByCode((string) $code);
+            if (!$card->getId() || !$card->isValid()) {
+                throw new \RuntimeException('Gift card "' . $code . '" is no longer valid');
+            }
+
+            $live = (float) $card->getBalance($quoteCurrency);
+            if ($live <= 0) {
+                throw new \RuntimeException('Gift card "' . $code . '" has no remaining balance');
+            }
+
+            // Cap the applied amount at the live balance
+            if ($live < (float) $snapshotBalance) {
+                $applied[$code] = $live;
+                $changed = true;
+            }
+        }
+
+        if ($changed) {
+            $quote->setGiftcardCodes(json_encode($applied));
+            $quote->setTotalsCollectedFlag(false);
+            $quote->collectTotals()->save();
+        }
 
         return $quote;
     }
@@ -836,359 +878,8 @@ class CartService
         return $quoteId ? (int) $quoteId : null;
     }
 
-    /**
-     * Place order - Create order, invoice, and shipment for POS
-     * Uses adminhtml order creation model for POS-specific features (disabled products, stock overrides, etc.)
-     *
-     * @param \Mage_Sales_Model_Quote $quote Quote to convert to order
-     * @param string $paymentMethod Payment method code
-     * @param string|null $shippingMethod Shipping method code (carrier_method format)
-     * @return array Order, invoice, and shipment information
-     */
-    public function placeAdminOrder(\Mage_Sales_Model_Quote $quote, string $paymentMethod = 'purchaseorder', ?string $shippingMethod = null, array $additionalPaymentData = [], ?string $storefrontOrigin = null): array
-    {
-        try {
-            \Mage::log("PlaceOrder START - Quote ID: {$quote->getId()}, Customer ID: {$quote->getCustomerId()}");
 
-            // Apply POS defaults (address, shipping, payment, email)
-            $this->preparePosQuote($quote, $shippingMethod, $paymentMethod);
-            \Mage::log("PlaceOrder - Payment method set: {$paymentMethod}");
 
-            // Collect totals before order creation
-            $quote->setTotalsCollectedFlag(false);
-            $quote->collectTotals()->save();
-            \Mage::log('PlaceOrder - Totals collected and quote saved');
-
-            // Use adminhtml order create model (allows disabled products, stock overrides, etc.)
-            /** @var \Mage_Adminhtml_Model_Sales_Order_Create $orderCreateModel */
-            $orderCreateModel = \Mage::getSingleton('adminhtml/sales_order_create');
-
-            // Get the adminhtml quote session
-            /** @var \Mage_Adminhtml_Model_Session_Quote $session */
-            $session = \Mage::getSingleton('adminhtml/session_quote');
-
-            // Initialize session with customer and store
-            $session->clear();
-            $session->setStoreId($quote->getStoreId());
-
-            if ($quote->getCustomerId()) {
-                // Registered customer
-                $session->setCustomerId($quote->getCustomerId());
-                $quote->setCustomerIsGuest(0);
-                \Mage::log("PlaceOrder - Registered customer mode, Customer ID: {$quote->getCustomerId()}");
-
-                // Load customer and set addresses from default billing/shipping
-                $customer = \Mage::getModel('customer/customer')->load($quote->getCustomerId());
-                if ($customer->getId()) {
-                    // Set billing address from customer's default
-                    $defaultBillingAddress = $customer->getDefaultBillingAddress();
-                    if ($defaultBillingAddress && $defaultBillingAddress->getId()) {
-                        $billingAddress = $quote->getBillingAddress();
-                        $billingAddress->importCustomerAddress($defaultBillingAddress);
-                        $billingAddress->setSaveInAddressBook(0);
-                        \Mage::log('PlaceOrder - Set billing address from customer default');
-                    }
-
-                    // Set shipping address from customer's default
-                    $defaultShippingAddress = $customer->getDefaultShippingAddress();
-                    if ($defaultShippingAddress && $defaultShippingAddress->getId()) {
-                        $shippingAddress = $quote->getShippingAddress();
-                        $shippingAddress->importCustomerAddress($defaultShippingAddress);
-                        $shippingAddress->setSaveInAddressBook(0);
-                        \Mage::log('PlaceOrder - Set shipping address from customer default');
-                    }
-                }
-            } else {
-                // Guest checkout
-                $session->setCustomerId(-1);
-                $quote->setCustomerIsGuest(1);
-                \Mage::log('PlaceOrder - Guest checkout mode');
-            }
-
-            // Initialize with existing quote
-            $orderCreateModel->setQuote($quote);
-            $orderCreateModel->getQuote()->setTotalsCollectedFlag(true);
-            $orderCreateModel->setRecollect(true);
-
-            // Set account email so admin order create model uses it instead of generating timestamp@example.com
-            $customerEmail = $quote->getCustomerEmail();
-            if ($customerEmail) {
-                $orderCreateModel->setAccountData(['email' => $customerEmail]);
-            }
-
-            \Mage::log('PlaceOrder - OrderCreateModel initialized');
-
-            // Import payment data using orderCreateModel to ensure proper availability
-            $paymentData = array_merge($additionalPaymentData, ['method' => $paymentMethod]);
-
-            // Add PO number for purchaseorder payment method
-            if ($paymentMethod === 'purchaseorder') {
-                $paymentData['po_number'] = 'POS-' . \Mage::app()->getLocale()->utcToStore()->format('YmdHis');
-            }
-
-            $orderCreateModel->getQuote()->getPayment()->addData($paymentData);
-            $orderCreateModel->setPaymentData($paymentData);
-            \Mage::log("PlaceOrder - Payment method set via orderCreateModel: {$paymentMethod}");
-
-            // Set currency rates (assumes same currency)
-            $quote->setStoreToQuoteRate(1);
-            $quote->setBaseToGlobalRate(1);
-            $quote->setStoreToBaseRate(1);
-            $quote->setBaseToQuoteRate(1);
-
-            $orderCreateModel->saveQuote();
-            \Mage::log('PlaceOrder - Quote saved via orderCreateModel');
-
-            // Create order via admin model
-            \Mage::log('PlaceOrder - About to call createOrder()');
-            try {
-                $order = $orderCreateModel->createOrder();
-            } catch (\Exception $e) {
-                // Get validation errors from session if available
-                $sessionMessages = $session->getMessages();
-                $errorMessages = [];
-                if ($sessionMessages) {
-                    foreach ($sessionMessages->getItems() as $message) {
-                        if ($message->getType() === 'error') {
-                            $errorMessages[] = $message->getText();
-                        }
-                    }
-                }
-
-                $errorText = empty($errorMessages) ? $e->getMessage() : implode('; ', $errorMessages);
-                \Mage::log('PlaceOrder - createOrder() failed: ' . $errorText);
-                throw new \RuntimeException('Order creation failed: ' . $errorText);
-            }
-            \Mage::log('PlaceOrder - createOrder() returned, checking order...');
-
-            if (!$order || !$order->getId()) {
-                \Mage::log('PlaceOrder - FAILED: Order is null or has no ID');
-                throw new \RuntimeException('Failed to create order');
-            }
-            \Mage::log("PlaceOrder - Order created successfully: {$order->getIncrementId()} (ID: {$order->getId()})");
-
-            // Inactivate quote (to avoid it appearing in abandoned cart report)
-            $quote->setIsActive(0)->save();
-
-            \Mage::log("Order created: {$order->getIncrementId()} (ID: {$order->getId()})");
-
-            // Generate storefront order token and save origin
-            $orderToken = bin2hex(random_bytes(16));
-            $resource = \Mage::getSingleton('core/resource');
-            $db = $resource->getConnection('core_write');
-            $db->update(
-                $resource->getTableName('sales/order'),
-                [
-                    'storefront_order_token' => $orderToken,
-                    'storefront_origin' => $storefrontOrigin,
-                ],
-                ['entity_id = ?' => $order->getId()],
-            );
-
-            $result = [
-                'order_id' => (int) $order->getId(),
-                'increment_id' => $order->getIncrementId(),
-                'status' => $order->getStatus(),
-                'grand_total' => (float) $order->getGrandTotal(),
-                'order_token' => $orderToken,
-                'invoice' => null,
-                'shipment' => null,
-                'redirect_url' => null,
-            ];
-
-            // Create invoice (similar to MDN PointOfSales approach)
-            if ($order->canInvoice()) {
-                $invoice = $this->createInvoice($order);
-
-                $result['invoice'] = [
-                    'invoice_id' => (int) $invoice->getId(),
-                    'increment_id' => $invoice->getIncrementId(),
-                ];
-            }
-
-            // Create shipment
-            if ($order->canShip()) {
-                $shipment = $this->createShipment($order);
-
-                $result['shipment'] = [
-                    'shipment_id' => (int) $shipment->getId(),
-                    'increment_id' => $shipment->getIncrementId(),
-                ];
-
-                \Mage::log('Shipment created - order will auto-transition to complete');
-            }
-
-            // Check for redirect-based payment (PayPal, Klarna, hosted checkout, etc.)
-            try {
-                $redirectUrl = $order->getPayment()->getMethodInstance()->getOrderPlaceRedirectUrl();
-                if ($redirectUrl) {
-                    // Append order context so the payment controller can load the correct order
-                    $separator = str_contains($redirectUrl, '?') ? '&' : '?';
-                    $redirectUrl .= $separator . 'order_id=' . (int) $order->getId()
-                        . '&sft=' . urlencode($orderToken);
-                    $result['redirect_url'] = $redirectUrl;
-                }
-            } catch (\Exception $e) {
-                // Payment method may not support redirect — that's fine
-            }
-
-            return $result;
-        } catch (\Exception $e) {
-            \Mage::log("Error placing order with payment method '{$paymentMethod}': " . $e->getMessage());
-            \Mage::logException($e);
-            throw new \RuntimeException('Failed to place order: ' . $e->getMessage(), 0, $e);
-        }
-    }
-
-    /**
-     * Place order using standard frontend checkout flow (Mage_Sales_Model_Service_Quote).
-     * Used for storefront/API orders where frontend validation rules should apply.
-     * Unlike placeOrder() which uses adminhtml order create model (intended for POS/admin),
-     * this method validates addresses, shipping, and payment through Mage's standard pipeline.
-     */
-    public function placeOrder(
-        \Mage_Sales_Model_Quote $quote,
-        string $paymentMethod,
-        array $additionalPaymentData = [],
-        ?string $storefrontOrigin = null,
-    ): array {
-        try {
-            \Mage::log("PlaceStorefrontOrder START - Quote ID: {$quote->getId()}, Customer: {$quote->getCustomerId()}");
-
-            // Set checkout method
-            if ($quote->getCustomerId()) {
-                $quote->setCheckoutMethod('customer');
-                $quote->setCustomerIsGuest(0);
-            } else {
-                $quote->setCheckoutMethod(\Mage_Checkout_Model_Type_Onepage::METHOD_GUEST);
-                $quote->setCustomerIsGuest(1);
-                $quote->setCustomerGroupId(\Mage_Customer_Model_Group::NOT_LOGGED_IN_ID);
-            }
-
-            // Set payment method with any additional data (e.g. payment intent ID)
-            $paymentData = array_merge($additionalPaymentData, ['method' => $paymentMethod]);
-            $quote->getPayment()->importData($paymentData);
-
-            // Collect totals
-            $quote->setTotalsCollectedFlag(false);
-            $quote->collectTotals()->save();
-
-            // Use the standard frontend quote service — validates addresses, shipping, payment
-            /** @var \Mage_Sales_Model_Service_Quote $service */
-            $service = \Mage::getModel('sales/service_quote', $quote);
-            $order = $service->submitOrder();
-
-            if (!$order || !$order->getId()) {
-                throw new \RuntimeException('Failed to create order');
-            }
-
-            \Mage::log("PlaceStorefrontOrder - Order created: {$order->getIncrementId()} (ID: {$order->getId()})");
-
-            // Auto-invoice if payment is already captured (e.g. Stripe Elements captures immediately)
-            $payment = $order->getPayment();
-            if ($payment && $payment->getIsTransactionClosed() && $order->canInvoice()) {
-                try {
-                    $this->orderService->createInvoiceForOrder($order);
-                    \Mage::log("PlaceStorefrontOrder - Auto-invoiced: {$order->getIncrementId()}");
-                } catch (\Exception $e) {
-                    \Mage::logException($e);
-                    // Don't fail the order for invoice issues
-                }
-            }
-
-            // Generate storefront order token and save origin
-            $orderToken = bin2hex(random_bytes(16));
-            $resource = \Mage::getSingleton('core/resource');
-            $db = $resource->getConnection('core_write');
-            $db->update(
-                $resource->getTableName('sales/order'),
-                [
-                    'storefront_order_token' => $orderToken,
-                    'storefront_origin' => $storefrontOrigin,
-                ],
-                ['entity_id = ?' => $order->getId()],
-            );
-
-            // Send order confirmation email
-            try {
-                $order->sendNewOrderEmail();
-            } catch (\Exception $e) {
-                \Mage::logException($e);
-                // Don't fail the order for email issues
-            }
-
-            $result = [
-                'order_id' => (int) $order->getId(),
-                'increment_id' => $order->getIncrementId(),
-                'status' => $order->getStatus(),
-                'grand_total' => (float) $order->getGrandTotal(),
-                'order_token' => $orderToken,
-                'redirect_url' => null,
-            ];
-
-            // Check for redirect-based payment (PayPal, Klarna, hosted checkout, etc.)
-            try {
-                $redirectUrl = $order->getPayment()->getMethodInstance()->getOrderPlaceRedirectUrl();
-                if ($redirectUrl) {
-                    $separator = str_contains($redirectUrl, '?') ? '&' : '?';
-                    $redirectUrl .= $separator . 'order_id=' . (int) $order->getId()
-                        . '&sft=' . urlencode($orderToken);
-                    $result['redirect_url'] = $redirectUrl;
-                }
-            } catch (\Exception $e) {
-                // Payment method may not support redirect — that's fine
-            }
-
-            return $result;
-        } catch (\Exception $e) {
-            \Mage::log('Error in placeStorefrontOrder: ' . $e->getMessage());
-            \Mage::logException($e);
-            throw new \RuntimeException('Failed to place order: ' . $e->getMessage(), 0, $e);
-        }
-    }
-
-    /**
-     * Create invoice for order (POS approach)
-     * Uses pay() after creation for offline POS payments
-     *
-     * @param string $comments Optional invoice comments
-     */
-    protected function createInvoice(\Mage_Sales_Model_Order $order, string $comments = ''): \Mage_Sales_Model_Order_Invoice
-    {
-        $invoice = $this->orderService->createInvoiceForOrder($order);
-
-        if (!$invoice) {
-            throw new \RuntimeException('Order cannot be invoiced');
-        }
-
-        if ($comments !== '') {
-            $invoice->addComment($comments, false);
-        }
-
-        // Mark invoice as paid (offline payment - use pay() not capture())
-        $invoice->pay();
-        $invoice->save();
-
-        \Mage::log("Invoice created: {$invoice->getIncrementId()} (ID: {$invoice->getId()})");
-
-        return $invoice;
-    }
-
-    /**
-     * Create shipment for order (POS approach)
-     */
-    protected function createShipment(\Mage_Sales_Model_Order $order): \Mage_Sales_Model_Order_Shipment
-    {
-        $shipment = $this->orderService->createShipmentForOrder($order);
-
-        if (!$shipment) {
-            throw new \RuntimeException('Order cannot be shipped');
-        }
-
-        \Mage::log("Shipment created: {$shipment->getIncrementId()} (ID: {$shipment->getId()})");
-
-        return $shipment;
-    }
 
     /**
      * Get super_attribute values for a simple product that belongs to a configurable
@@ -1257,55 +948,5 @@ class CartService
 
     }
 
-    /**
-     * Prepare a quote for POS checkout by applying default address, shipping,
-     * payment, and email when not already set.
-     */
-    public function preparePosQuote(
-        \Mage_Sales_Model_Quote $quote,
-        ?string $shippingMethod = null,
-        ?string $paymentMethod = null,
-        ?string $customerEmail = null,
-    ): void {
-        if ($quote->getStoreId()) {
-            \Mage::app()->setCurrentStore($quote->getStoreId());
-            $quote->setStore(\Mage::app()->getStore($quote->getStoreId()));
-        }
-
-        $storeId = $quote->getStoreId() ? (int) $quote->getStoreId() : null;
-        $posAddress = StoreDefaults::getPosAddress($storeId);
-
-        if (!$quote->isVirtual()) {
-            $shippingAddress = $quote->getShippingAddress();
-            if (!$shippingAddress->getFirstname()) {
-                $shippingAddress->addData($posAddress);
-            }
-            if (!$shippingAddress->getShippingMethod() || $shippingMethod) {
-                $method = $shippingMethod ?: 'freeshipping_freeshipping';
-                $shippingAddress->setShippingMethod($method);
-                // Collect rates so the rate object exists for validation
-                $shippingAddress->setCollectShippingRates(1)->collectShippingRates();
-                if ($method === 'freeshipping_freeshipping') {
-                    $shippingAddress->setShippingDescription('Free Shipping - POS Pickup');
-                    $shippingAddress->setShippingAmount(0);
-                    $shippingAddress->setBaseShippingAmount(0);
-                }
-            }
-        }
-
-        $billingAddress = $quote->getBillingAddress();
-        if (!$billingAddress->getFirstname()) {
-            $billingAddress->addData($posAddress);
-        }
-
-        $payment = $quote->getPayment();
-        if (!$payment->getMethod() || $paymentMethod) {
-            $payment->setMethod($paymentMethod ?: 'cashondelivery');
-        }
-
-        if (!$quote->getCustomerEmail()) {
-            $quote->setCustomerEmail($customerEmail ?: 'pos@store.local');
-        }
-    }
 
 }

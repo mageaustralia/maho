@@ -62,7 +62,25 @@ final class OrderProvider extends \Maho\ApiPlatform\Provider
             }
 
             $order = $this->orderService->getGuestOrder($incrementId, $accessToken);
-            return $order ? $this->mapToDto($order, $accessToken) : null;
+            if (!$order) {
+                return null;
+            }
+
+            $dto = $this->mapToDto($order, $accessToken);
+
+            // Issue an account-creation token if no customer exists for this email
+            $orderEmail = $order->getCustomerEmail();
+            if ($orderEmail) {
+                $existingCustomer = \Mage::getModel('customer/customer')
+                    ->setWebsiteId(\Mage::app()->getStore($order->getStoreId())->getWebsiteId())
+                    ->loadByEmail($orderEmail);
+
+                if (!$existingCustomer->getId()) {
+                    $dto->accountToken = AccountTokenService::generate((int) $order->getId(), $orderEmail);
+                }
+            }
+
+            return $dto;
         }
 
         // Handle customerOrders collection query

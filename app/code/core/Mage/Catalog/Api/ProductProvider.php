@@ -209,12 +209,15 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
             return $this->getByUrlKey((string) $requestFilters['urlKey'], $page, $pageSize);
         }
 
-        // Use search layer for text queries, catalog layer for browsing
+        // Use search layer for text queries, catalog layer for browsing.
+        // Use a fresh instance instead of the singleton — under FPM workers
+        // (and in the test runner) singletons retain state across requests,
+        // so the previous request's category/query would leak into this one.
         if (!empty($search)) {
             \Mage::helper('catalogsearch')->getQuery()->setQueryText($search);
-            $layer = \Mage::getSingleton('catalogsearch/layer');
+            $layer = \Mage::getModel('catalogsearch/layer');
         } else {
-            $layer = \Mage::getSingleton('catalog/layer');
+            $layer = \Mage::getModel('catalog/layer');
         }
 
         if (!empty($requestFilters['categoryId'])) {

@@ -17,7 +17,6 @@ use ApiPlatform\Metadata\Operation;
 use Mage\Checkout\Api\CartService;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -45,15 +44,9 @@ final class OrderProcessor extends \Maho\ApiPlatform\Processor
     {
         $operationName = $operation->getName();
 
-        // Pass incrementId from URI for verify_order
-        if (isset($uriVariables['incrementId'])) {
-            $context['args']['input']['incrementId'] = (string) $uriVariables['incrementId'];
-        }
-
         return match ($operationName) {
             'placeOrder', '_api_/orders_post', 'place_guest_order' => $this->placeOrder($context),
             'cancelOrder' => $this->cancelOrder($context),
-            'verify_order' => $this->verifyOrder($context),
             default => $data instanceof Order ? $data : new Order(),
         };
     }
@@ -180,52 +173,4 @@ final class OrderProcessor extends \Maho\ApiPlatform\Processor
         );
     }
 
-    /**
-     * Verify a placed order by one-time storefront token
-     */
-    private function verifyOrder(array $context): Order
-    {
-        $request = $context['request'] ?? null;
-        $body = $request ? (json_decode($request->getContent(), true) ?? []) : [];
-        $args = $context['args']['input'] ?? $body;
-
-        $incrementId = $args['incrementId'] ?? '';
-        $token = $args['orderToken'] ?? $body['orderToken'] ?? '';
-
-        if (!$token || !$incrementId) {
-            throw new BadRequestHttpException('Order increment ID and order token are required');
-        }
-
-        $order = \Mage::getModel('sales/order')->loadByIncrementId($incrementId);
-        if (!$order || !$order->getId()) {
-            throw new NotFoundHttpException('Order not found');
-        }
-
-        $storedToken = $order->getData('storefront_order_token');
-        if (!$storedToken || !hash_equals($storedToken, $token)) {
-            throw new HttpException(403, 'Invalid order token');
-        }
-
-        // Clear the token after successful verification (one-time use)
-        $resource = \Mage::getSingleton('core/resource');
-        $resource->getConnection('core_write')->update(
-            $resource->getTableName('sales/order'),
-            ['storefront_order_token' => null],
-            ['entity_id = ?' => $order->getId()],
-        );
-
-        $dto = $this->orderProvider->mapToDto($order);
-
-        // Generate account creation token for guest orders without existing account
-        $orderEmail = $order->getCustomerEmail();
-        $existingCustomer = \Mage::getModel('customer/customer')
-            ->setWebsiteId(\Mage::app()->getStore()->getWebsiteId())
-            ->loadByEmail($orderEmail);
-
-        if (!$existingCustomer->getId()) {
-            $dto->accessToken = AccountTokenService::generate((int) $order->getId(), $orderEmail);
-        }
-
-        return $dto;
-    }
 }

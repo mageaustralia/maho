@@ -318,6 +318,13 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
                 throw new UnauthorizedHttpException('Bearer', 'Customer not found');
             }
 
+            // Honour deactivation between issuance and refresh — without this,
+            // a banned/disabled customer can keep refreshing tokens indefinitely
+            // until the original token's expiry.
+            if (!$customer->getIsActive()) {
+                throw new UnauthorizedHttpException('Bearer', 'Customer account is inactive');
+            }
+
             $this->tokenBlacklist->revoke($payload->jti, (int) ($payload->exp ?? time() + 86400));
             $newToken = $this->jwtService->generateCustomerToken($customer);
 
