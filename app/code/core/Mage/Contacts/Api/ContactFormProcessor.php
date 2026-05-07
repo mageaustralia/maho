@@ -48,7 +48,7 @@ class ContactFormProcessor extends \Maho\ApiPlatform\Processor
         }
 
         // Silently accept honeypot submissions to not reveal the trap
-        if ($this->isHoneypotTriggered($body, $storeId)) {
+        if ($this->isHoneypotTriggered($body, self::CONFIG_HONEYPOT)) {
             return $this->successResponse();
         }
 
@@ -79,15 +79,6 @@ class ContactFormProcessor extends \Maho\ApiPlatform\Processor
         }
 
         return $this->successResponse();
-    }
-
-    private function isHoneypotTriggered(array $body, int $storeId): bool
-    {
-        if (!\Mage::getStoreConfigFlag(self::CONFIG_HONEYPOT, $storeId)) {
-            return false;
-        }
-        $honeypot = $body['company'] ?? $body['website'] ?? null;
-        return $honeypot !== null && $honeypot !== '';
     }
 
     private function sanitize(string $value, int $maxLength): string

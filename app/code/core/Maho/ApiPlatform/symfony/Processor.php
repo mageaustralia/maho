@@ -168,4 +168,23 @@ abstract class Processor implements ProcessorInterface
 
         $this->checkRateLimit($keyPrefix . ':ip:' . $ip, $configKey, $windowSeconds);
     }
+
+    /**
+     * Honeypot check: returns true when the request body has a non-empty
+     * value in a hidden trap field. Reads the toggle from the supplied
+     * config path so each module owns its own setting (e.g.
+     * `contacts/api/honeypot_enabled`). Off by default.
+     *
+     * Trap fields are `company` and `website` — common names that bots
+     * fill in eagerly. The frontend hides them with CSS so legitimate
+     * users never see them.
+     */
+    protected function isHoneypotTriggered(array $body, string $configPath): bool
+    {
+        if (!\Mage::getStoreConfigFlag($configPath)) {
+            return false;
+        }
+        $honeypot = $body['company'] ?? $body['website'] ?? null;
+        return $honeypot !== null && $honeypot !== '';
+    }
 }
