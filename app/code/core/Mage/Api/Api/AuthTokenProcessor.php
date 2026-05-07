@@ -20,7 +20,6 @@ use Maho\ApiPlatform\Service\TokenBlacklist;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
@@ -61,8 +60,7 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
         $request = $context['request'] ?? null;
         $body = $request ? (json_decode($request->getContent(), true) ?? []) : [];
 
-        $ip = $request?->getClientIp() ?? 'unknown';
-        $this->checkRateLimit("auth_token:ip:{$ip}", 20, 60);
+        $this->checkRateLimit ByIp('auth_token', 'auth_token_ip', 60);
 
         $grantType = $body['grant_type'] ?? 'customer';
 
@@ -89,7 +87,7 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('Invalid email format');
         }
 
-        $this->checkRateLimit('auth_token:email:' . strtolower($email), 5, 60);
+        $this->checkRateLimit('auth_token:email:' . strtolower($email), 'customer_login', 60);
 
         try {
             $customer = \Mage::getModel('customer/customer')
@@ -240,7 +238,7 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('username and api_key are required');
         }
 
-        $this->checkRateLimit('auth_token:api_user:' . strtolower($username), 5, 60);
+        $this->checkRateLimit('auth_token:api_user:' . strtolower($username), 'customer_login', 60);
 
         try {
             $apiUser = \Mage::getModel('api/user')->loadByUsername($username);
@@ -354,10 +352,4 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
         return $dto;
     }
 
-    private function checkRateLimit(string $key, int $maxAttempts, int $windowSeconds): void
-    {
-        if (\Mage::helper('core')->isRateLimitExceeded(false, true, $key, $maxAttempts, $windowSeconds)) {
-            throw new TooManyRequestsHttpException((string) $windowSeconds, 'Too many requests. Please try again later.');
-        }
-    }
 }

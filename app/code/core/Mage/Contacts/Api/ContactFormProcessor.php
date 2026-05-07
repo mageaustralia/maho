@@ -16,7 +16,6 @@ use ApiPlatform\Metadata\Operation;
 use Maho\ApiPlatform\Service\StoreContext;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class ContactFormProcessor extends \Maho\ApiPlatform\Processor
@@ -25,7 +24,6 @@ class ContactFormProcessor extends \Maho\ApiPlatform\Processor
     private const CONFIG_CAPTCHA_PROVIDER = 'contacts/api/captcha_provider';
     private const CONFIG_CAPTCHA_SECRET = 'contacts/api/captcha_secret_key';
     private const CONFIG_HONEYPOT = 'contacts/api/honeypot_enabled';
-    private const CONFIG_RATE_LIMIT = 'contacts/api/rate_limit';
 
     private const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
     private const RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify';
@@ -70,7 +68,7 @@ class ContactFormProcessor extends \Maho\ApiPlatform\Processor
         }
 
         $this->verifyCaptcha($body, $storeId, $request);
-        $this->checkRateLimit($email, $storeId);
+        $this->checkRateLimit("contact:{$storeId}:" . strtolower($email), 'contact', 3600);
 
         try {
             $this->sendEmail($name, $email, $message, $phone, $storeId);
@@ -148,15 +146,6 @@ class ContactFormProcessor extends \Maho\ApiPlatform\Processor
             throw $e;
         } catch (\Exception $e) {
             \Mage::logException($e);
-        }
-    }
-
-    private function checkRateLimit(#[\SensitiveParameter]
-        string $email, int $storeId): void
-    {
-        $limit = (int) \Mage::getStoreConfig(self::CONFIG_RATE_LIMIT, $storeId);
-        if ($limit > 0 && \Mage::helper('core')->isRateLimitExceeded(false, true, "contact:{$storeId}:" . strtolower($email), $limit, 3600)) {
-            throw new TooManyRequestsHttpException('3600', 'Too many submissions. Please try again later.');
         }
     }
 

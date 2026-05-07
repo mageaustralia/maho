@@ -77,6 +77,8 @@ final class NewsletterProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('Invalid email address');
         }
 
+        $this->checkRateLimit('newsletter_subscribe:email:' . strtolower($email), 'newsletter_subscribe', 3600);
+
         if ($customerId === null) {
             $allowGuest = \Mage::getStoreConfigFlag(\Mage_Newsletter_Model_Subscriber::XML_PATH_ALLOW_GUEST_SUBSCRIBE_FLAG);
             if (!$allowGuest) {
@@ -129,6 +131,8 @@ final class NewsletterProcessor extends \Maho\ApiPlatform\Processor
                 'Authentication required to unsubscribe. Use the unsubscribe link in your email.',
             );
         }
+
+        $this->checkRateLimitByIp('newsletter_unsubscribe', 'newsletter_unsubscribe', 3600);
 
         $customer = \Mage::getModel('customer/customer')->load($customerId);
         if (!$customer->getId()) {

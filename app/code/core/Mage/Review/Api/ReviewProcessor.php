@@ -72,6 +72,8 @@ final class ReviewProcessor extends \Maho\ApiPlatform\Processor
     ): Review {
         $customerId = $this->requireAuthentication();
 
+        $this->checkRateLimitByIp('review_submit', 'review_submit', 3600);
+
         /** @var \Mage_Catalog_Model_Product $product */
         $product = \Mage::getModel('catalog/product')->load($productId);
         if (!$product->getId()) {

@@ -53,16 +53,6 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
         }
     }
 
-    private function checkRateLimit(string $key, int $maxAttempts, int $windowSeconds): void
-    {
-        if (\Mage::helper('core')->isRateLimitExceeded(false, true, $key, $maxAttempts, $windowSeconds)) {
-            throw new \Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException(
-                (string) $windowSeconds,
-                'Too many requests. Please try again later.',
-            );
-        }
-    }
-
     /**
      * Process customer mutations
      */
@@ -139,7 +129,7 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
     private function createCustomer(Customer $data, array $context): Customer
     {
         StoreContext::ensureStore();
-        $this->checkRateLimit('create_customer:ip:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 10, 3600);
+        $this->checkRateLimitByIp('create_customer', 'customer_register', 3600);
         $storeId = StoreContext::getStoreId();
         $websiteId = \Mage::app()->getStore($storeId)->getWebsiteId();
 
@@ -199,7 +189,7 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
         $args = $context['args']['input'] ?? $context['args'] ?? [];
 
         StoreContext::ensureStore();
-        $this->checkRateLimit('create_customer:ip:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 10, 3600);
+        $this->checkRateLimitByIp('create_customer', 'customer_register', 3600);
         $storeId = StoreContext::getStoreId();
         $websiteId = \Mage::app()->getStore($storeId)->getWebsiteId();
 
@@ -266,7 +256,7 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('Email and password are required');
         }
 
-        $this->checkRateLimit('graphql_login:email:' . strtolower($email), 5, 60);
+        $this->checkRateLimit('graphql_login:email:' . strtolower($email), 'customer_login', 60);
 
         StoreContext::ensureStore();
         $storeId = StoreContext::getStoreId();
@@ -403,6 +393,8 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('Email is required');
         }
 
+        $this->checkRateLimit('forgot_password:email:' . strtolower($email), 'forgot_password', 3600);
+
         $storeId = StoreContext::getStoreId();
         $websiteId = \Mage::app()->getStore($storeId)->getWebsiteId();
 
@@ -439,6 +431,8 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
         if (empty($email) || empty($resetToken) || empty($newPassword)) {
             throw new BadRequestHttpException('Email, reset token, and new password are required');
         }
+
+        $this->checkRateLimitByIp('reset_password', 'reset_password', 3600);
 
         $minPasswordLength = \Mage::getModel('customer/customer')->getMinPasswordLength();
         if (!\Mage::helper('core')->isValidLength($newPassword, $minPasswordLength)) {
