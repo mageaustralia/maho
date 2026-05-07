@@ -157,8 +157,11 @@ class Kernel extends BaseKernel
             ],
             'graphql' => [
                 'enabled' => true,
-                'graphiql' => ['enabled' => $twigAvailable],
-                'introspection' => ['enabled' => true],
+                'graphiql' => ['enabled' => $twigAvailable && $this->isDebug()],
+                // Introspection lets any unauthenticated client enumerate the
+                // full schema — we only enable it in debug so dev tools work,
+                // but keep the production attack surface minimal.
+                'introspection' => ['enabled' => $this->isDebug()],
                 'max_query_depth' => 12,
                 'max_query_complexity' => 500,
             ],
