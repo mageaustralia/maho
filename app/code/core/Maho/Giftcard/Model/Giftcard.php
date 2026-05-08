@@ -97,20 +97,6 @@ class Maho_Giftcard_Model_Giftcard extends Mage_Core_Model_Abstract
         return parent::_beforeSave();
     }
 
-    #[\Override]
-    protected function _afterSave()
-    {
-        if ($this->isObjectNew() && $this->getRecipientEmail()) {
-            try {
-                Mage::helper('giftcard')->sendGiftcardEmail($this);
-            } catch (\Exception $e) {
-                Mage::logException($e);
-            }
-        }
-
-        return parent::_afterSave();
-    }
-
     /**
      * Load gift card by code
      *

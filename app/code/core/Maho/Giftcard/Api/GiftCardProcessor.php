@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Maho\Giftcard\Api;
 
 use ApiPlatform\Metadata\Operation;
+use Maho\ApiPlatform\CrudResource;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -27,6 +28,12 @@ final class GiftCardProcessor extends \Maho\ApiPlatform\CrudProcessor
             'adjustGiftcardBalance' => $this->adjustBalance($context),
             default => parent::process($data, $operation, $uriVariables, $context),
         };
+    }
+
+    #[\Override]
+    protected function afterSave(object $model, CrudResource $data): void
+    {
+        $this->sendEmailToRecipient($model);
     }
 
     private function createGiftcardFromGraphQl(array $context): GiftCard
@@ -48,8 +55,26 @@ final class GiftCardProcessor extends \Maho\ApiPlatform\CrudProcessor
             'expires_at' => $args['expiresAt'] ?? null,
         ]);
         $giftcard->save();
+        $this->sendEmailToRecipient($giftcard);
 
         return GiftCard::fromModel($giftcard);
+    }
+
+    /**
+     * Mirrors the explicit-send pattern used by the purchase flow (Observer)
+     * and admin "Send email" button (PrintController). The save-lifecycle hook
+     * approach causes recursion via the helper's $giftcard->save() call.
+     */
+    private function sendEmailToRecipient(\Maho_Giftcard_Model_Giftcard $giftcard): void
+    {
+        if (!$giftcard->getRecipientEmail() || $giftcard->getEmailSentAt()) {
+            return;
+        }
+        try {
+            \Mage::helper('giftcard')->sendGiftcardEmail($giftcard);
+        } catch (\Exception $e) {
+            \Mage::logException($e);
+        }
     }
 
     private function adjustBalance(array $context): GiftCard
