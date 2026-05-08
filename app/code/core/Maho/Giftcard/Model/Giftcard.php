@@ -82,13 +82,19 @@ class Maho_Giftcard_Model_Giftcard extends Mage_Core_Model_Abstract
                 $this->setExpiresAt($helper->calculateExpirationDate());
             }
 
-            // Compare against null, not falsy: balance=0 is a legitimate starting
-            // value (e.g. fully-used card created for a refund) and must not be
-            // overwritten with initial_balance.
-            if ($this->getData('initial_balance') === null && $this->getData('balance') !== null) {
-                $this->setInitialBalance((float) $this->getData('balance'));
-            } elseif ($this->getData('balance') === null && $this->getData('initial_balance') !== null) {
-                $this->setBalance((float) $this->getData('initial_balance'));
+            // Mirror one field to the other when only one is provided, but treat
+            // an explicit 0 as set — a fully-used card created for a refund has
+            // balance=0 and must not be overwritten with initial_balance. Form
+            // posts surface unfilled fields as '' (not null), so check both.
+            $balance = $this->getData('balance');
+            $initialBalance = $this->getData('initial_balance');
+            $hasBalance = $balance !== null && $balance !== '';
+            $hasInitialBalance = $initialBalance !== null && $initialBalance !== '';
+
+            if (!$hasInitialBalance && $hasBalance) {
+                $this->setInitialBalance((float) $balance);
+            } elseif (!$hasBalance && $hasInitialBalance) {
+                $this->setBalance((float) $initialBalance);
             }
 
             if (!$this->getStatus()) {
