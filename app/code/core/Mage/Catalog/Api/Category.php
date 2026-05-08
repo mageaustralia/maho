@@ -24,17 +24,20 @@ use ApiPlatform\Metadata\GraphQl\Query;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Maho\ApiPlatform\CrudResource;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     mahoOperations: ['read' => 'View', 'write' => 'Create & Update', 'delete' => 'Delete'],
     shortName: 'Category',
     description: 'Product category resource',
     provider: CategoryProvider::class,
+    normalizationContext: ['groups' => ['category:read']],
     operations: [
         new Get(
             uriTemplate: '/categories/{id}',
             security: 'true',
             description: 'Get a category by ID',
+            normalizationContext: ['groups' => ['category:read', 'category:detail']],
         ),
         new GetCollection(
             uriTemplate: '/categories',
@@ -46,12 +49,14 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
             processor: CategoryProcessor::class,
             security: "is_granted('ROLE_API_USER')",
             description: 'Creates a new category',
+            normalizationContext: ['groups' => ['category:read', 'category:detail']],
         ),
         new Put(
             uriTemplate: '/categories/{id}',
             processor: CategoryProcessor::class,
             security: "is_granted('ROLE_API_USER')",
             description: 'Updates a category',
+            normalizationContext: ['groups' => ['category:read', 'category:detail']],
         ),
         new Delete(
             uriTemplate: '/categories/{id}',
@@ -61,7 +66,11 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
         ),
     ],
     graphQlOperations: [
-        new Query(name: 'category', description: 'Get a category by ID'),
+        new Query(
+            name: 'category',
+            description: 'Get a category by ID',
+            normalizationContext: ['groups' => ['category:read', 'category:detail']],
+        ),
         new QueryCollection(
             name: 'categories',
             args: [
@@ -75,6 +84,7 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
             args: ['urlKey' => ['type' => 'String!']],
             description: 'Get a category by URL key',
             resolver: CustomQueryResolver::class,
+            normalizationContext: ['groups' => ['category:read', 'category:detail']],
         ),
     ],
 )]
@@ -82,59 +92,84 @@ class Category extends CrudResource
 {
     public const MODEL = 'catalog/category';
 
+    #[Groups(['category:read'])]
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 
+    #[Groups(['category:read'])]
     public ?int $parentId = null;
 
+    #[Groups(['category:read'])]
     public string $name = '';
+
+    #[Groups(['category:read'])]
     public ?string $description = null;
 
+    #[Groups(['category:read'])]
     public ?string $urlKey = null;
 
+    #[Groups(['category:read'])]
     #[ApiProperty(writable: false)]
     public ?string $urlPath = null;
 
+    #[Groups(['category:read'])]
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public ?string $image = null;
 
+    #[Groups(['category:read'])]
     public int $level = 0;
+
+    #[Groups(['category:read'])]
     public int $position = 0;
 
+    #[Groups(['category:read'])]
     public bool $isActive = true;
 
+    #[Groups(['category:read'])]
     public bool $includeInMenu = true;
 
+    #[Groups(['category:read'])]
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public int $productCount = 0;
 
     /** @var Category[] */
+    #[Groups(['category:detail'])]
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public array $children = [];
 
     /** @var int[] */
+    #[Groups(['category:read'])]
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public array $childrenIds = [];
 
+    #[Groups(['category:read'])]
     #[ApiProperty(writable: false)]
     public ?string $path = null;
 
+    #[Groups(['category:read'])]
     public ?string $displayMode = null;
 
+    #[Groups(['category:detail'])]
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public ?string $cmsBlock = null;
 
+    #[Groups(['category:read'])]
     public ?string $metaTitle = null;
 
+    #[Groups(['category:read'])]
     public ?string $metaKeywords = null;
 
+    #[Groups(['category:read'])]
     public ?string $metaDescription = null;
 
+    #[Groups(['category:read'])]
     public ?string $pageLayout = null;
 
+    #[Groups(['category:read'])]
     #[ApiProperty(writable: false)]
     public ?string $createdAt = null;
 
+    #[Groups(['category:read'])]
     #[ApiProperty(writable: false)]
     public ?string $updatedAt = null;
 
