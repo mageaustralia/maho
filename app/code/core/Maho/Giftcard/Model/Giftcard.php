@@ -64,7 +64,10 @@ class Maho_Giftcard_Model_Giftcard extends Mage_Core_Model_Abstract
     #[\Override]
     protected function _beforeSave()
     {
-        if ($this->isObjectNew()) {
+        // Mage_Core_Model_Abstract sets _isObjectNew=true on first save and never
+        // resets it, so isObjectNew() keeps returning true on subsequent saves. Use
+        // !getId() instead so the creation defaults below run exactly once.
+        if (!$this->getId()) {
             $helper = Mage::helper('giftcard');
 
             if (!$this->getCode()) {
@@ -79,9 +82,12 @@ class Maho_Giftcard_Model_Giftcard extends Mage_Core_Model_Abstract
                 $this->setExpiresAt($helper->calculateExpirationDate());
             }
 
-            if (!$this->getData('initial_balance') && $this->getData('balance')) {
+            // Compare against null, not falsy: balance=0 is a legitimate starting
+            // value (e.g. fully-used card created for a refund) and must not be
+            // overwritten with initial_balance.
+            if ($this->getData('initial_balance') === null && $this->getData('balance') !== null) {
                 $this->setInitialBalance((float) $this->getData('balance'));
-            } elseif (!$this->getData('balance') && $this->getData('initial_balance')) {
+            } elseif ($this->getData('balance') === null && $this->getData('initial_balance') !== null) {
                 $this->setBalance((float) $this->getData('initial_balance'));
             }
 
