@@ -78,7 +78,10 @@ class Maho_Giftcard_Model_Giftcard extends Mage_Core_Model_Abstract
                 $this->setWebsiteId((int) Mage::app()->getStore()->getWebsiteId());
             }
 
-            if (!$this->getExpiresAt()) {
+            // Only fill a default when the field wasn't provided. Explicit null
+            // means "never expires" — both the admin form note ("Leave empty
+            // for no expiration") and API callers depend on that semantic.
+            if (!$this->hasData('expires_at')) {
                 $this->setExpiresAt($helper->calculateExpirationDate());
             }
 
