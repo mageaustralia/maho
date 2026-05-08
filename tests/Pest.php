@@ -165,6 +165,8 @@ uses()
         // core_config_data persist for the test run; the suite assumes an
         // ephemeral test database anyway.
         if (!$protocolsEnabled) {
+            // Frontend/Backend tearDown calls Mage::reset(), so re-bootstrap before DB writes.
+            \Mage::app();
             $protocols = ['rest_v2', 'graphql', 'admin_graphql', 'legacy_rest', 'soap', 'v2_soap', 'xmlrpc', 'jsonrpc'];
             $config = \Mage::getModel('core/config');
             foreach ($protocols as $protocol) {
