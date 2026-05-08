@@ -173,6 +173,11 @@ class Category extends CrudResource
     #[ApiProperty(writable: false)]
     public ?string $updatedAt = null;
 
+    /** @var array<string, mixed> */
+    #[Groups(['category:read'])]
+    #[ApiProperty(description: 'Module-provided extension data')]
+    public array $extensions = [];
+
     public static function afterLoad(self $dto, object $model): void
     {
         // Image URL
