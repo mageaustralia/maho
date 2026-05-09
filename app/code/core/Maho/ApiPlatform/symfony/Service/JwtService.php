@@ -174,6 +174,41 @@ class JwtService
             }
         }
 
+
+        // v2 resources (orders/read, customers/read, etc.) live in
+        // ApiPermissionRegistry::RESOURCES, not the legacy XML <acl><resources>
+        // tree. Their api_rule rows are silently dropped in
+        // Mage_Api_Model_Resource_Acl::loadRules() with "Resource not found",
+        // so $acl->isAllowed() will never return true for them. Read the rules
+        // directly from api_rule for any role this user belongs to (group +
+        // user role) and union with the M1 results.
+        $resource = \Mage::getSingleton('core/resource');
+        $read = $resource->getConnection('core_read');
+        $roleTable = $resource->getTableName('api/role');
+        $ruleTable = $resource->getTableName('api/rule');
+        $directRoleIds = array_map('intval', $roleIds);
+        $userRoleRows = $read->fetchAll(
+            $read->select()
+                ->from($roleTable, 'role_id')
+                ->where('role_type = ?', \Mage_Api_Model_Acl::ROLE_TYPE_USER)
+                ->where('user_id = ?', (int) $apiUser->getId())
+        );
+        foreach ($userRoleRows as $r) {
+            $directRoleIds[] = (int) $r['role_id'];
+        }
+        if ($directRoleIds !== []) {
+            $direct = $read->fetchAll(
+                $read->select()
+                    ->from($ruleTable, 'resource_id')
+                    ->where('role_id IN (?)', array_unique($directRoleIds))
+                    ->where('api_permission = ?', 'allow')
+            );
+            foreach ($direct as $row) {
+                if ($row['resource_id'] !== '' && !in_array($row['resource_id'], $permissions, true)) {
+                    $permissions[] = $row['resource_id'];
+                }
+            }
+        }
         return array_unique($permissions);
     }
 
