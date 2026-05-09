@@ -10,9 +10,6 @@ declare(strict_types=1);
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-/**
- * API Platform Helper
- */
 class Maho_ApiPlatform_Helper_Data extends Mage_Core_Helper_Abstract
 {
     public const XML_PATH_PROTOCOL_PREFIX = 'apiplatform/protocols/';
@@ -91,5 +88,4 @@ class Maho_ApiPlatform_Helper_Data extends Mage_Core_Helper_Abstract
 
         return null;
     }
-
 }
