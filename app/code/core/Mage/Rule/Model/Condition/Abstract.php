@@ -371,10 +371,11 @@ abstract class Mage_Rule_Model_Condition_Abstract extends \Maho\DataObject imple
                     break;
             }
 
-            if ($format !== null) {
-                $parsed = DateTime::createFromFormat($format, $this->getData('value'));
+            $value = $this->getData('value');
+            if ($format !== null && $value !== null && $value !== '') {
+                $parsed = DateTime::createFromFormat($format, $value);
                 if ($parsed === false) {
-                    $parsed = new DateTime($this->getData('value'));
+                    $parsed = new DateTime($value);
                 }
                 $this->setValue($parsed->format($format));
                 $this->setIsValueParsed(true);
