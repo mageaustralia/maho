@@ -75,23 +75,24 @@ class RouteCollectionBuilder
     }
 
     /**
-     * Resolve a controller class from frontName + controllerName.
+     * Look up the controller class FQCN for an attribute-routed (frontName, controllerName) pair
+     * in the compiled `controllerLookup` map.
      *
-     * Legacy `<frontend><routers>` XML declarations (BC shim) take precedence
-     * over the compiled attribute lookup, so a legacy module shadowing a core
-     * frontName (M1 semantics) still wins. If the legacy module can't satisfy
-     * the request (no such controller class), the dispatcher falls through to
-     * the Symfony matcher via the normal miss path.
+     * Narrow by design — this only reads the compiled lookup. Full controller resolution
+     * (frontend chain, legacy XML, admin chain) is `ControllerDispatcher::resolveControllerClass()`,
+     * which composes this lookup with the other sources in the right precedence order.
      *
-     * @return string|null The module class prefix (e.g. 'Mage_Customer') or null if not found
+     * The compiled lookup stores the full class because the runtime can't reconstruct it
+     * unambiguously from the module name — Maho-style admin controllers live in
+     * `controllers/Adminhtml/<Group>/` and have an `_Adminhtml_` infix in their class name,
+     * while `Mage_Adminhtml`'s own controllers don't. The compiler captures the actual class
+     * once; callers just look it up.
+     *
+     * Legacy `<frontend><routers>` XML modules are NOT in this lookup — `getLegacyFrontNames()`
+     * is the BC shim for those.
      */
-    public static function resolveControllerModule(string $frontName, string $controllerName): ?string
+    public static function lookupCompiledControllerClass(string $frontName, string $controllerName): ?string
     {
-        $legacyModule = self::getLegacyFrontNames()[strtolower($frontName)] ?? null;
-        if ($legacyModule !== null) {
-            return $legacyModule;
-        }
-
         $compiled = \Maho::getCompiledAttributes();
         $key = self::normalizeFrontName($frontName) . '/' . strtolower($controllerName);
         return $compiled['controllerLookup'][$key] ?? null;
