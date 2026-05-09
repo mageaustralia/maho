@@ -178,6 +178,9 @@ class Address extends CrudResource
 {
     public const MODEL = 'customer/address';
 
+    /** Admin ACL gate. Customer addresses are gated by the same node as customer mgmt. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_CustomerController::ADMIN_RESOURCE;
+
     #[ApiProperty(identifier: true)]
     public ?int $id = null;
 

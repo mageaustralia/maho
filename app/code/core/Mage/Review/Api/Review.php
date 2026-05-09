@@ -100,6 +100,9 @@ class Review extends CrudResource
 {
     public const MODEL = 'review/review';
 
+    /** Admin ACL gate. No backend ReviewController declares ADMIN_RESOURCE; use the standard reviews path. */
+    public const ADMIN_RESOURCE = 'catalog/reviews_ratings/reviews';
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 

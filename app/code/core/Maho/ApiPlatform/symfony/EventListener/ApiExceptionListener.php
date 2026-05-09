@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -184,10 +183,18 @@ class ApiExceptionListener implements EventSubscriberInterface
 
         // Mage_Core_Exception is the canonical user-facing validation/business
         // rule signal in Maho models (Mage::throwException()). Treat it as a
-        // 422 Unprocessable Entity with the model's message instead of a 500;
-        // these are never internal errors.
+        // 422 Unprocessable Entity with the model's message instead of a 500.
+        // The trust assumption is that callers of Mage::throwException() pass
+        // safe, translated messages — log every occurrence to api.log so
+        // anomalous leaks (DB error fragments, internal IDs, file paths) can
+        // be detected post-hoc by reviewing the channel.
         if ($exception instanceof \Mage_Core_Exception) {
             $statusCode = 422;
+            \Mage::log(
+                'API 422 Mage_Core_Exception: ' . $exception->getMessage(),
+                \Mage::LOG_INFO,
+                'api.log',
+            );
             $data = [
                 'error' => 'unprocessable_entity',
                 'message' => $exception->getMessage(),

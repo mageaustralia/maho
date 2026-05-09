@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -157,26 +156,15 @@ class AdminUserProvider implements UserProviderInterface
     {
         $roles = ['ROLE_ADMIN'];
 
-        // Check if this admin has POS permissions
-        // This could be based on a specific role or ACL permission
         try {
             $aclRole = $admin->getRole();
-
             if ($aclRole) {
                 $roleName = strtolower($aclRole->getRoleName() ?? '');
-
-                // Add ROLE_POS if admin has POS role
-                if (str_contains($roleName, 'pos')) {
-                    $roles[] = 'ROLE_POS';
-                }
-
-                // Add ROLE_SUPER_ADMIN for administrators
                 if (str_contains($roleName, 'administrator') || $roleName === 'administrators') {
                     $roles[] = 'ROLE_SUPER_ADMIN';
                 }
             }
         } catch (\Exception $e) {
-            // If we can't get role info, just use basic ROLE_ADMIN
             \Mage::logException($e);
         }
 

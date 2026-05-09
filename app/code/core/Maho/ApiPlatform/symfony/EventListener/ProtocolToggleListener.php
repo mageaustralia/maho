@@ -50,10 +50,10 @@ class ProtocolToggleListener
 
         if (!\Mage::helper('apiplatform')->isProtocolEnabled($protocol)) {
             $event->setResponse(new Response(
-                json_encode([
+                \Mage::helper('core')->jsonEncode([
                     'error' => 'protocol_disabled',
                     'message' => 'This API protocol is not enabled on this Maho instance.',
-                ], JSON_THROW_ON_ERROR),
+                ]),
                 Response::HTTP_NOT_FOUND,
                 ['Content-Type' => 'application/json'],
             ));

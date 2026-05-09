@@ -12,10 +12,13 @@ declare(strict_types=1);
 
 namespace Mage\Customer\Api\GraphQL;
 
+use Mage\Customer\Api\Address;
+use Mage\Customer\Api\Customer;
 use Mage\Customer\Api\CustomerProvider;
 use Mage\Customer\Api\CustomerService;
 use Maho\ApiPlatform\Exception\NotFoundException;
 use Maho\ApiPlatform\Exception\ValidationException;
+use Maho\ApiPlatform\Security\AdminAcl;
 
 /**
  * Customer Query Handler
@@ -40,6 +43,7 @@ class CustomerQueryHandler
      */
     public function handleSearchCustomers(array $variables): array
     {
+        AdminAcl::checkResource(Customer::class);
         $telephone = $variables['telephone'] ?? null;
         $email = $variables['email'] ?? null;
         $search = $variables['search'] ?? $variables['query'] ?? '';
@@ -62,6 +66,7 @@ class CustomerQueryHandler
      */
     public function handleGetCustomer(array $variables): array
     {
+        AdminAcl::checkResource(Customer::class);
         $id = $variables['id'] ?? $variables['customerId'] ?? null;
         if (!$id) {
             throw ValidationException::requiredField('customerId');
@@ -75,6 +80,7 @@ class CustomerQueryHandler
      */
     public function handleCreateCustomer(array $variables): array
     {
+        AdminAcl::checkResource(Customer::class);
         $input = $variables['input'] ?? $variables;
 
         $email = $input['email'] ?? null;
@@ -139,6 +145,7 @@ class CustomerQueryHandler
      */
     public function handleUpdateCustomerAddress(array $variables): array
     {
+        AdminAcl::checkResource(Address::class);
         $customerId = $variables['customerId'] ?? null;
         $input = $variables['input'] ?? $variables;
 

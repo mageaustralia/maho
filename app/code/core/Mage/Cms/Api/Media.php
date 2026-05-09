@@ -83,6 +83,9 @@ use ApiPlatform\OpenApi\Model\RequestBody;
 )]
 class Media extends \Maho\ApiPlatform\Resource
 {
+    /** Admin ACL gate. Mirrors backend Mage_Adminhtml_Cms_Wysiwyg_ImagesController. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_Cms_Wysiwyg_ImagesController::ADMIN_RESOURCE;
+
     /** @var string|null URL to access the uploaded file */
     public ?string $url = null;
 

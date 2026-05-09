@@ -69,6 +69,9 @@ class CmsBlock extends CrudResource
 {
     public const MODEL = 'cms/block';
 
+    /** Admin ACL gate. Mirrors backend Mage_Adminhtml_Cms_BlockController. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_Cms_BlockController::ADMIN_RESOURCE;
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 

@@ -117,6 +117,9 @@ class Product extends CrudResource
 {
     public const MODEL = 'catalog/product';
 
+    /** Admin ACL gate. Mirrors backend Mage_Adminhtml_Catalog_ProductController. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_Catalog_ProductController::ADMIN_RESOURCE;
+
     #[Groups(['product:read'])]
     #[ApiProperty(identifier: true, description: 'Product entity ID')]
     public ?int $id = null;

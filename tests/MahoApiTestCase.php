@@ -118,9 +118,9 @@ abstract class MahoApiTestCase extends \Tests\MahoBackendTestCase
                 return $scheme . '://' . $host . $baseDir . '/api.php';
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Log error but don't fail the test setup
-            error_log('Failed to detect API base URL: ' . $e->getMessage());
+            \Mage::log('Failed to detect API base URL: ' . $e->getMessage(), \Mage::LOG_WARNING);
         }
 
         // Final fallback

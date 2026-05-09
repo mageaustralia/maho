@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -64,7 +63,11 @@ class GraphQlPermissionListener
             return;
         }
 
-        $body = json_decode($content, true);
+        try {
+            $body = (array) \Mage::helper('core')->jsonDecode($content);
+        } catch (\JsonException) {
+            return;
+        }
         $query = $body['query'] ?? null;
         if (!is_string($query) || $query === '') {
             return;

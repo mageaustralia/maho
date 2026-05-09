@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -111,7 +110,11 @@ class IdempotencyListener
         $existing = $read->fetchRow($select);
 
         if ($existing) {
-            $headers = json_decode($existing['response_headers'] ?? '{}', true) ?: [];
+            try {
+                $headers = (array) \Mage::helper('core')->jsonDecode($existing['response_headers'] ?? '{}');
+            } catch (\JsonException) {
+                $headers = [];
+            }
             $headers[self::HEADER_REPLAYED] = 'true';
 
             $response = new Response(
@@ -187,7 +190,7 @@ class IdempotencyListener
                 'request_method' => $request->getMethod(),
                 'response_code' => $response->getStatusCode(),
                 'response_body' => $responseBody,
-                'response_headers' => json_encode($headersToStore),
+                'response_headers' => \Mage::helper('core')->jsonEncode($headersToStore),
                 'created_at' => \Mage::app()->getLocale()->formatDateForDb('now'),
             ]);
         } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException) {

@@ -69,7 +69,7 @@ final class CartProvider extends \Maho\ApiPlatform\Provider
             $quote,
             $byMasked,
             $this->getAuthenticatedCustomerId(),
-            $this->isAdmin() || $this->isPosUser() || $this->isApiUser(),
+            $this->isAdmin() || $this->isApiUser(),
         );
 
         return $this->cartMapper->mapQuoteToCart($quote);

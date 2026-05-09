@@ -185,7 +185,7 @@ class Mage_Core_Helper_Data extends Mage_Core_Helper_Abstract
         bool $useTimezone = true,
     ): string {
         if (!in_array($format, $this->_allowedFormats, true)) {
-            return $date;
+            return is_string($date) ? $date : '';
         }
 
         $locale = Mage::app()->getLocale();

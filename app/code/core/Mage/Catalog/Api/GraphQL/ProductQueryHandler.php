@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Mage\Catalog\Api\GraphQL;
 
+use Mage\Catalog\Api\Category;
+use Mage\Catalog\Api\Product;
 use Mage\Catalog\Api\ProductProvider;
 use Maho\ApiPlatform\Exception\ValidationException;
+use Maho\ApiPlatform\Security\AdminAcl;
 
 /**
  * Product Query Handler
@@ -37,6 +40,7 @@ class ProductQueryHandler
      */
     public function handleGetProduct(array $variables): array
     {
+        AdminAcl::checkResource(Product::class);
         $id = $variables['id'] ?? $variables['productId'] ?? null;
         if (!$id) {
             throw ValidationException::requiredField('id');
@@ -50,6 +54,7 @@ class ProductQueryHandler
      */
     public function handleGetProductBySku(array $variables): array
     {
+        AdminAcl::checkResource(Product::class);
         $sku = $variables['sku'] ?? null;
         if (!$sku) {
             throw ValidationException::requiredField('sku');
@@ -64,6 +69,7 @@ class ProductQueryHandler
      */
     public function handleGetProductByBarcode(array $variables): array
     {
+        AdminAcl::checkResource(Product::class);
         $barcode = $variables['barcode'] ?? null;
         if (!$barcode) {
             throw ValidationException::requiredField('barcode');
@@ -81,6 +87,7 @@ class ProductQueryHandler
      */
     public function handleSearchProducts(array $variables, array $context): array
     {
+        AdminAcl::checkResource(Product::class);
         $search = $variables['search'] ?? $variables['query'] ?? '';
         $page = $variables['page'] ?? 1;
         $pageSize = $variables['pageSize'] ?? $variables['limit'] ?? 20;
@@ -129,6 +136,7 @@ class ProductQueryHandler
      */
     public function handleGetConfigurableProduct(array $variables): array
     {
+        AdminAcl::checkResource(Product::class);
         $sku = $variables['sku'] ?? null;
         if (!$sku) {
             throw ValidationException::requiredField('sku');
@@ -174,6 +182,7 @@ class ProductQueryHandler
      */
     public function handleGetCategories(array $variables, array $context): array
     {
+        AdminAcl::checkResource(Category::class);
         $storeId = $context['store_id'] ?? 1;
         \Mage::app()->setCurrentStore($storeId);
 

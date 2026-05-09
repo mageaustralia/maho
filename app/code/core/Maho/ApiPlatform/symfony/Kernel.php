@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -74,6 +73,22 @@ class Kernel extends BaseKernel
                 array_map('trim', explode(',', $corsOrigins)),
                 static fn(string $o): bool => $o !== '',
             ));
+            // Reject `*` in the allowlist. NelmioCors echoes a wildcard origin
+            // back to any caller, which combined with allow_credentials creates
+            // a CSRF vector — and even without credentials it bypasses the
+            // operator's intent of pinning origins. Operators must enumerate
+            // the origins they actually trust.
+            $origins = array_values(array_filter(
+                $origins,
+                static fn(string $o): bool => $o !== '*',
+            ));
+            if (in_array('*', explode(',', $corsOrigins), true)) {
+                \Mage::log(
+                    'apiplatform/general/cors_origins contains a "*" wildcard; '
+                    . 'wildcards are dropped — list explicit origins instead.',
+                    \Mage::LOG_WARNING,
+                );
+            }
             $_ENV['CORS_ALLOW_ORIGIN'] = json_encode($origins, JSON_THROW_ON_ERROR);
         }
     }
@@ -202,10 +217,16 @@ class Kernel extends BaseKernel
             ],
         ]);
 
+        // allow_credentials is pinned to false in both blocks: combined with a
+        // reflected origin (which NelmioCors does when `*` is present, even
+        // though we filter it out at env-resolution time) it produces a
+        // cross-site credentialed-request vector. The API is bearer-token
+        // authenticated — no cookies/credentials need to flow cross-origin.
         $container->extension('nelmio_cors', [
             'defaults' => [
                 'origin_regex' => false,
                 'allow_origin' => '%env(json:CORS_ALLOW_ORIGIN)%',
+                'allow_credentials' => false,
                 'allow_methods' => ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'],
                 'allow_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],
                 'expose_headers' => ['Link', 'Deprecation', 'Sunset'],
@@ -214,6 +235,7 @@ class Kernel extends BaseKernel
             'paths' => [
                 '^/api/' => [
                     'allow_origin' => '%env(json:CORS_ALLOW_ORIGIN)%',
+                    'allow_credentials' => false,
                     'allow_headers' => ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Store-Code'],
                     'allow_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
                     'max_age' => 3600,
@@ -222,9 +244,16 @@ class Kernel extends BaseKernel
         ]);
 
         $container->extension('security', [
+            // ROLE_ADMIN inherits ROLE_API_USER so admin tokens can reach the
+            // REST endpoints gated by ROLE_API_USER (products, categories,
+            // CMS, etc.) — the listener AdminAclListener (default-deny via
+            // ADMIN_RESOURCE) is the actual gate, not the security
+            // expression. ROLE_USER is NOT inherited because customer-only
+            // endpoints (`/me`, `/me/orders`, etc.) shouldn't be reached by
+            // admin tokens at all; AdminAclListener default-denies those
+            // since they don't declare ADMIN_RESOURCE.
             'role_hierarchy' => [
-                'ROLE_ADMIN' => ['ROLE_USER', 'ROLE_POS', 'ROLE_API_USER'],
-                'ROLE_POS' => ['ROLE_USER'],
+                'ROLE_ADMIN' => ['ROLE_API_USER'],
             ],
             'password_hashers' => [
                 \Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface::class => 'auto',

@@ -99,18 +99,18 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
                 'pageSize' => ['type' => 'Int', 'description' => 'Number of results per page'],
                 'page' => ['type' => 'Int', 'description' => 'Page number'],
             ],
-            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_POS') or is_granted('ROLE_API_USER')",
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
         ),
         new Mutation(
             name: 'createCustomerQuick',
-            description: 'Quick customer creation for POS',
+            description: 'Quick customer creation by an admin or API integration',
             args: [
                 'email' => ['type' => 'String!', 'description' => 'Customer email'],
                 'firstname' => ['type' => 'String!', 'description' => 'First name'],
                 'lastname' => ['type' => 'String!', 'description' => 'Last name'],
                 'telephone' => ['type' => 'String', 'description' => 'Phone number'],
             ],
-            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_POS') or is_granted('ROLE_API_USER')",
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
         ),
         new Mutation(
             name: 'customerLogin',
@@ -162,6 +162,9 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 class Customer extends CrudResource
 {
     public const MODEL = 'customer/customer';
+
+    /** Admin ACL gate. Mirrors backend Mage_Adminhtml_CustomerController. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_CustomerController::ADMIN_RESOURCE;
 
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;

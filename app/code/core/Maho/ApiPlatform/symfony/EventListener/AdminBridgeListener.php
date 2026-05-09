@@ -47,7 +47,11 @@ class AdminBridgeListener
             Mage_Core_Model_App_Area::PART_EVENTS,
         );
 
-        $input = json_decode($request->getContent(), true) ?? [];
+        try {
+            $input = (array) \Mage::helper('core')->jsonDecode($request->getContent() ?: '[]');
+        } catch (\JsonException) {
+            $input = [];
+        }
 
         $adminSession = \Mage::getSingleton('admin/session');
         if (!$adminSession->isLoggedIn()) {

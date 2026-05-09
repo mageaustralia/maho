@@ -92,6 +92,9 @@ class Category extends CrudResource
 {
     public const MODEL = 'catalog/category';
 
+    /** Admin ACL gate. Mirrors backend Mage_Adminhtml_Catalog_CategoryController. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_Catalog_CategoryController::ADMIN_RESOURCE;
+
     #[Groups(['category:read'])]
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;

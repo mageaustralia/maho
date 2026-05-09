@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -45,11 +44,19 @@ class AdminSessionAuthenticator extends AbstractAuthenticator
     #[\Override]
     public function authenticate(Request $request): Passport
     {
-        // First check if admin context was set by the controller
-        $adminId = $_SERVER['MAHO_ADMIN_USER_ID'] ?? null;
+        // Trust $_SERVER['MAHO_ADMIN_USER_ID'] only when accompanied by a
+        // valid HMAC bridge token (set by AdminBridgeListener after a real
+        // admin session is verified). Without the HMAC, fall back to a
+        // direct admin-session lookup. This prevents any earlier code path
+        // — including unusual SAPI/CGI configurations that may surface
+        // request-supplied vars into $_SERVER — from short-circuiting the
+        // session check.
+        $adminId = null;
+        if ($this->hasAdminContext()) {
+            $adminId = $_SERVER['MAHO_ADMIN_USER_ID'];
+        }
 
         if ($adminId === null) {
-            // Try to get from admin session
             $adminId = $this->getAdminIdFromSession();
         }
 

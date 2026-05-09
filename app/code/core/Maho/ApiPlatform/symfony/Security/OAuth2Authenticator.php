@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -150,6 +149,19 @@ class OAuth2Authenticator extends AbstractAuthenticator
             } catch (\Symfony\Component\Security\Core\Exception\UserNotFoundException) {
                 throw new CustomUserMessageAuthenticationException('Admin account is inactive or not found');
             }
+
+            // Hydrate Mage's admin session with the authenticated admin user
+            // and load their ACL. Without this, every Maho ACL check (both the
+            // AdminAclListener below and any inline isAllowed() calls in
+            // providers/processors) sees an unauthenticated session and denies
+            // by default. Mirrors AdminBridgeListener for the JWT path.
+            $admin = \Mage::getModel('admin/user')->load($adminId);
+            if ($admin->getId()) {
+                $session = \Mage::getSingleton('admin/session');
+                $session->setUser($admin);
+                $session->setAcl(\Mage::getResourceModel('admin/acl')->loadAcl());
+            }
+
             return new ApiUser(
                 identifier: (string) $payload->sub,
                 roles: $base->getRoles(),
@@ -173,7 +185,7 @@ class OAuth2Authenticator extends AbstractAuthenticator
             );
         }
 
-        // Default: customer token (or 'pos' which still maps to a customer record)
+        // Default: customer token
         if (!isset($payload->customer_id)) {
             throw new CustomUserMessageAuthenticationException('Invalid token: missing customer subject');
         }
@@ -185,11 +197,9 @@ class OAuth2Authenticator extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException('Customer account is inactive or not found');
         }
 
-        $roles = $type === 'pos' ? ['ROLE_POS'] : $base->getRoles();
-
         return new ApiUser(
             identifier: (string) $payload->sub,
-            roles: $roles,
+            roles: $base->getRoles(),
             customerId: $customerId,
             allowedStoreIds: $allowedStoreIds,
         );

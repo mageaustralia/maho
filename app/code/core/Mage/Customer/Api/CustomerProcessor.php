@@ -469,8 +469,9 @@ final class CustomerProcessor extends \Maho\ApiPlatform\Processor
             throw new BadRequestHttpException('Account token and password are required.');
         }
 
-        if (strlen($password) < 6) {
-            throw new BadRequestHttpException('Password must be at least 6 characters.');
+        $minPasswordLength = \Mage::getModel('customer/customer')->getMinPasswordLength();
+        if (!\Mage::helper('core')->isValidLength($password, $minPasswordLength)) {
+            throw new BadRequestHttpException("Password must be at least {$minPasswordLength} characters");
         }
 
         try {

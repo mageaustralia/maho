@@ -67,6 +67,9 @@ class CmsPage extends CrudResource
 {
     public const MODEL = 'cms/page';
 
+    /** Admin ACL gate. Backend PageController has no ADMIN_RESOURCE; declare directly. */
+    public const ADMIN_RESOURCE = 'cms/page';
+
     #[ApiProperty(identifier: true, writable: false)]
     public ?int $id = null;
 

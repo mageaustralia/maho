@@ -220,22 +220,46 @@ class Maho_Giftcard_Model_Giftcard extends Mage_Core_Model_Abstract
             throw new Mage_Core_Exception('Amount must be greater than zero.');
         }
 
+        // Optimistic pre-check so callers get a clear "exceeds balance"
+        // message when the model state is fresh. The atomic UPDATE below is
+        // still the source of truth and will reject concurrent
+        // double-decrements that race past this check.
         if ($baseAmount > $this->getBalance()) {
             throw new Mage_Core_Exception('Amount exceeds gift card balance.');
         }
 
-        $balanceBefore = (float) $this->getBalance();
-        $balanceAfter = $balanceBefore - $baseAmount;
+        $resource = $this->getResource();
+        $write = Mage::getSingleton('core/resource')->getConnection('core_write');
+        $table = $resource->getMainTable();
 
-        // Update balance
-        $this->setBalance($balanceAfter);
+        // Atomic decrement: WHERE balance >= ? guarantees no double-spend
+        // when two carts try to consume the same card concurrently. Without
+        // this, the read-modify-write sequence can pass `> 0` checks in two
+        // requests and let both decrement off the same balance.
+        $rowsAffected = $write->update(
+            $table,
+            [
+                'balance' => new \Maho\Db\Expr('balance - ' . $write->quote($baseAmount)),
+                'status' => new \Maho\Db\Expr(
+                    'CASE WHEN balance - ' . $write->quote($baseAmount) . ' <= 0 '
+                    . 'THEN ' . $write->quote(self::STATUS_USED) . ' '
+                    . 'ELSE status END',
+                ),
+            ],
+            [
+                'giftcard_id = ?' => (int) $this->getId(),
+                'balance >= ?' => $baseAmount,
+            ],
+        );
 
-        // Update status if fully used
-        if ($balanceAfter <= 0) {
-            $this->setStatus(self::STATUS_USED);
+        if ($rowsAffected === 0) {
+            throw new Mage_Core_Exception('Gift card balance changed concurrently or is insufficient.');
         }
 
-        $this->save();
+        // Refresh model state from the row we just mutated
+        $balanceBefore = (float) $this->getBalance();
+        $this->load((int) $this->getId());
+        $balanceAfter = (float) $this->getBalance();
 
         // Record history
         $this->_addHistory(

@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -26,7 +25,7 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Admin GraphQL Controller
  *
- * Handles GraphQL requests for admin users (POS, admin tools).
+ * Handles GraphQL requests for authenticated admin users.
  * Uses handler-based resolution for clean separation of concerns.
  */
 #[Route('/api/admin/graphql', name: 'api_admin_graphql', methods: ['GET', 'POST'])]
@@ -50,7 +49,11 @@ class AdminGraphQlController
 
         // Parse request
         $content = $request->getContent();
-        $input = json_decode($content, true) ?? [];
+        try {
+            $input = (array) \Mage::helper('core')->jsonDecode($content ?: '[]');
+        } catch (\JsonException) {
+            $input = [];
+        }
 
         $query = $input['query'] ?? '';
         $variables = $input['variables'] ?? null;
@@ -64,17 +67,13 @@ class AdminGraphQlController
         try {
             // Authentication handled by Symfony firewall (AdminSessionAuthenticator)
             // $_SERVER context vars are set by the authenticator
-            $input = json_decode($content, true) ?? [];
             $storeId = (int) ($_SERVER['MAHO_STORE_ID'] ?? $input['variables']['storeId'] ?? 1);
             $adminUserId = (int) ($_SERVER['MAHO_ADMIN_USER_ID'] ?? 0);
-            $customerId = $_SERVER['MAHO_POS_CUSTOMER_ID'] ?? null;
-
 
             $context = [
                 'store_id' => $storeId,
                 'is_admin' => true,
                 'admin_user_id' => $adminUserId,
-                'customer_id' => $customerId,
             ];
 
             $operationName = $input['operationName'] ?? null;
@@ -199,7 +198,13 @@ class AdminGraphQlController
     }
 
     /**
-     * Route operation to appropriate handler
+     * Route operation to appropriate handler.
+     *
+     * Per-operation Maho admin ACL is enforced inline by each handler method
+     * via Maho\ApiPlatform\Security\AdminAcl::checkResource(...). Each
+     * handler imports its own resource class — no central
+     * operation→resource map, so 3rd-party modules can add operations
+     * without touching this controller's metadata.
      */
     private function resolveOperation(string $operation, array $variables, array $context): array
     {

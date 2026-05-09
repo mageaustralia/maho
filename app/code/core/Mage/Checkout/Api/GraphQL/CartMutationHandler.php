@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Mage\Checkout\Api\GraphQL;
 
+use Mage\Checkout\Api\Cart;
 use Mage\Checkout\Api\CartMapper;
 use Mage\Checkout\Api\CartService;
 use Maho\ApiPlatform\Exception\NotFoundException;
 use Maho\ApiPlatform\Exception\ValidationException;
+use Maho\ApiPlatform\Security\AdminAcl;
+use Maho\Giftcard\Api\GiftCard;
 
 /**
  * Cart Mutation Handler
@@ -41,6 +44,7 @@ class CartMutationHandler
      */
     public function handleGetCart(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? $variables['id'] ?? null;
         $maskedId = $variables['maskedId'] ?? null;
         $quote = $this->cartService->getCart($cartId ? (int) $cartId : null, $maskedId);
@@ -52,6 +56,7 @@ class CartMutationHandler
      */
     public function handleCreateCart(array $variables, array $context): array
     {
+        AdminAcl::checkResource(Cart::class);
         $customerId = $variables['customerId'] ?? $context['customer_id'] ?? null;
         $storeId = $variables['storeId'] ?? $context['store_id'] ?? 1;
         $result = $this->cartService->createEmptyCart($customerId, $storeId);
@@ -67,6 +72,7 @@ class CartMutationHandler
      */
     public function handleAddToCart(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? $variables['input']['cartId'] ?? null;
         $sku = $variables['sku'] ?? $variables['input']['sku'] ?? null;
         $qty = $variables['qty'] ?? $variables['input']['qty'] ?? 1;
@@ -111,6 +117,7 @@ class CartMutationHandler
      */
     public function handleUpdateQty(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? null;
         $itemId = $variables['itemId'] ?? null;
         $qty = $variables['qty'] ?? null;
@@ -136,6 +143,7 @@ class CartMutationHandler
      */
     public function handleRemoveItem(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? null;
         $itemId = $variables['itemId'] ?? null;
         if (!$cartId) {
@@ -157,6 +165,7 @@ class CartMutationHandler
      */
     public function handleSetItemFulfillment(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? null;
         $itemId = $variables['itemId'] ?? null;
         $fulfillmentType = strtoupper($variables['fulfillmentType'] ?? 'SHIP');
@@ -202,6 +211,7 @@ class CartMutationHandler
      */
     public function handleApplyCoupon(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? null;
         $couponCode = $variables['couponCode'] ?? null;
         if (!$cartId) {
@@ -242,6 +252,7 @@ class CartMutationHandler
      */
     public function handleRemoveCoupon(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? null;
         if (!$cartId) {
             throw ValidationException::requiredField('cartId');
@@ -260,6 +271,7 @@ class CartMutationHandler
      */
     public function handleAssignCustomer(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? null;
         $customerId = $variables['customerId'] ?? null;
         if (!$cartId) {
@@ -287,6 +299,7 @@ class CartMutationHandler
      */
     public function handleCheckGiftCardBalance(array $variables): array
     {
+        AdminAcl::checkResource(GiftCard::class);
         $code = $variables['code'] ?? null;
         if (!$code) {
             throw ValidationException::requiredField('code');
@@ -313,6 +326,7 @@ class CartMutationHandler
      */
     public function handleApplyGiftCard(array $variables): array
     {
+        AdminAcl::checkResource(GiftCard::class);
         $cartId = $variables['cartId'] ?? null;
         // Accept both 'code' and 'giftcardCode' parameter names
         $code = $variables['code'] ?? $variables['giftcardCode'] ?? null;
@@ -348,6 +362,7 @@ class CartMutationHandler
      */
     public function handleRemoveGiftCard(array $variables): array
     {
+        AdminAcl::checkResource(GiftCard::class);
         $cartId = $variables['cartId'] ?? null;
         // Accept both 'code' and 'giftcardCode' parameter names
         $code = $variables['code'] ?? $variables['giftcardCode'] ?? null;
@@ -376,6 +391,7 @@ class CartMutationHandler
      */
     public function handleShippingMethods(array $variables): array
     {
+        AdminAcl::checkResource(Cart::class);
         $cartId = $variables['cartId'] ?? null;
         if (!$cartId) {
             throw ValidationException::requiredField('cartId');
@@ -521,7 +537,11 @@ class CartMutationHandler
         $codesJson = $quote->getGiftcardCodes();
         $codes = $codesJson ? (array) json_decode($codesJson, true) : [];
 
-        $applyAmount = $amount ?? $giftcard->getBalance();
+        // Cap caller-supplied amount at the live balance: revalidateGiftcards()
+        // re-checks at order placement, but until then the inflated amount
+        // distorts every quote total and any pre-placement payment authorization.
+        $balance = (float) $giftcard->getBalance();
+        $applyAmount = $amount === null ? $balance : min((float) $amount, $balance);
         $codes[$giftcard->getCode()] = $applyAmount;
 
         $quote->setGiftcardCodes(json_encode($codes));

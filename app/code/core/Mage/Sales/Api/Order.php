@@ -118,6 +118,9 @@ class Order extends CrudResource
 {
     public const MODEL = 'sales/order';
 
+    /** Admin ACL gate for admin-token requests. Mirrors backend Mage_Adminhtml_Sales_OrderController. */
+    public const ADMIN_RESOURCE = 'sales/order';
+
     #[ApiProperty(identifier: true, writable: false, description: 'Order entity ID')]
     public ?int $id = null;
 

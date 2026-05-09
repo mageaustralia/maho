@@ -65,6 +65,9 @@ use ApiPlatform\Metadata\Put;
 )]
 class BundleOption extends \Maho\ApiPlatform\Resource
 {
+    /** Admin ACL gate. Bundle options are gated under product management. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_Catalog_ProductController::ADMIN_RESOURCE;
+
     #[ApiProperty(identifier: true, description: 'Option ID')]
     public ?int $id = null;
 

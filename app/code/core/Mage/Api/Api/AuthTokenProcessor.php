@@ -58,7 +58,15 @@ class AuthTokenProcessor extends \Maho\ApiPlatform\Processor
         StoreContext::ensureStore();
 
         $request = $context['request'] ?? null;
-        $body = $request ? (json_decode($request->getContent(), true) ?? []) : [];
+        if ($request === null) {
+            $body = [];
+        } else {
+            try {
+                $body = (array) \Mage::helper('core')->jsonDecode($request->getContent() ?: '[]');
+            } catch (\JsonException) {
+                $body = [];
+            }
+        }
 
         $this->checkRateLimitByIp('auth_token', 'auth_token_ip', 60);
 

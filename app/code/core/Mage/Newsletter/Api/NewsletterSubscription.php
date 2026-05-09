@@ -78,6 +78,9 @@ class NewsletterSubscription extends CrudResource
 {
     public const MODEL = 'newsletter/subscriber';
 
+    /** Admin ACL gate. Mirrors backend Mage_Adminhtml_Newsletter_SubscriberController. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_Newsletter_SubscriberController::ADMIN_RESOURCE;
+
     #[ApiProperty(extraProperties: ['modelField' => 'subscriber_email'])]
     public ?string $email = null;
 

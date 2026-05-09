@@ -5,7 +5,6 @@ declare(strict_types=1);
 /**
  * Maho
  *
- * @category   Maho
  * @package    Maho_ApiPlatform
  * @copyright  Copyright (c) 2026 Maho (https://mahocommerce.com)
  * @license    https://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
@@ -62,11 +61,6 @@ trait AuthenticationTrait
         return $this->security !== null && $this->security->isGranted('ROLE_ADMIN');
     }
 
-    protected function isPosUser(): bool
-    {
-        return $this->security !== null && $this->security->isGranted('ROLE_POS');
-    }
-
     protected function isApiUser(): bool
     {
         if ($this->security === null) {
@@ -91,13 +85,6 @@ trait AuthenticationTrait
     protected function requireAdmin(string $message = 'Admin access required'): void
     {
         if (!$this->isAdmin()) {
-            throw new AccessDeniedHttpException($message);
-        }
-    }
-
-    protected function requirePosAccess(string $message = 'POS access required'): void
-    {
-        if (!$this->isPosUser() && !$this->isAdmin()) {
             throw new AccessDeniedHttpException($message);
         }
     }
@@ -151,5 +138,15 @@ trait AuthenticationTrait
         if (!$user->hasPermission($permission)) {
             throw new AccessDeniedHttpException("Missing permission: {$permission}");
         }
+    }
+
+    /**
+     * Shortcut for requirePermission() that resolves the current ApiUser
+     * from the token storage. Use this when the caller has already
+     * established the request is from an API-user token.
+     */
+    protected function requireApiPermission(string $permission): void
+    {
+        $this->requirePermission($this->getAuthorizedUser(), $permission);
     }
 }

@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Mage\Sales\Api\GraphQL;
 
+use Mage\Sales\Api\CreditMemo;
+use Mage\Sales\Api\Order;
 use Mage\Sales\Api\OrderProvider;
 use Mage\Sales\Api\OrderService;
 use Maho\ApiPlatform\Exception\NotFoundException;
 use Maho\ApiPlatform\Exception\ValidationException;
+use Maho\ApiPlatform\Security\AdminAcl;
 
 /**
  * Order Mutation Handler
@@ -40,6 +43,7 @@ class OrderMutationHandler
      */
     public function handlePlaceOrder(array $variables, array $context): array
     {
+        AdminAcl::checkResource(Order::class);
         $cartId = $variables['cartId'] ?? null;
         if (!$cartId) {
             throw ValidationException::requiredField('cartId');
@@ -95,6 +99,7 @@ class OrderMutationHandler
      */
     public function handleLookupOrder(array $variables): array
     {
+        AdminAcl::checkResource(Order::class);
         $incrementId = $variables['incrementId'] ?? $variables['orderNumber'] ?? null;
         if (!$incrementId) {
             throw ValidationException::requiredField('incrementId');
@@ -113,6 +118,7 @@ class OrderMutationHandler
      */
     public function handleGetCustomerOrders(array $variables): array
     {
+        AdminAcl::checkResource(Order::class);
         $customerId = $variables['customerId'] ?? null;
         $limit = $variables['limit'] ?? 10;
 
@@ -143,6 +149,7 @@ class OrderMutationHandler
      */
     public function handleRecentOrders(array $variables): array
     {
+        AdminAcl::checkResource(Order::class);
         $storeId = $variables['storeId'] ?? null;
         $limit = $variables['limit'] ?? 10;
 
@@ -172,6 +179,7 @@ class OrderMutationHandler
      */
     public function handleSearchOrders(array $variables): array
     {
+        AdminAcl::checkResource(Order::class);
         $search = $variables['search'] ?? null;
         $storeId = $variables['storeId'] ?? null;
         $limit = $variables['limit'] ?? 10;
@@ -218,6 +226,7 @@ class OrderMutationHandler
      */
     public function handleProcessReturn(array $variables, array $context): array
     {
+        AdminAcl::checkResource(CreditMemo::class);
         $orderId = $variables['orderId'] ?? null;
         $items = $variables['items'] ?? [];
         $refundToStoreCredit = $variables['refundToStoreCredit'] ?? false;

@@ -112,7 +112,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
             $quote,
             $byMasked,
             $this->getAuthenticatedCustomerId(),
-            $this->isAdmin() || $this->isPosUser() || $this->isApiUser(),
+            $this->isAdmin() || $this->isApiUser(),
         );
 
         return $quote;
@@ -361,7 +361,7 @@ final class CartProcessor extends \Maho\ApiPlatform\Processor
         $requestedCustomerId = $args['customerId'] ?? null;
 
         // Admin/POS users can assign any customer to any cart
-        if ($this->isAdmin() || $this->isPosUser() || $this->isApiUser()) {
+        if ($this->isAdmin() || $this->isApiUser()) {
             if (!$requestedCustomerId) {
                 throw new \RuntimeException('Customer ID is required');
             }

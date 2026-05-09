@@ -286,7 +286,7 @@ use Mage\Customer\Api\Address;
             name: 'assignCustomerToCart',
             args: ['cartId' => ['type' => 'ID'], 'maskedId' => ['type' => 'String'], 'customerId' => ['type' => 'ID!']],
             description: 'Assign customer to cart',
-            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or is_granted('ROLE_POS') or is_granted('ROLE_API_USER')",
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') or is_granted('ROLE_API_USER')",
         ),
         new Mutation(
             name: 'applyGiftcardToCart',
@@ -302,6 +302,9 @@ use Mage\Customer\Api\Address;
 )]
 class Cart extends \Maho\ApiPlatform\Resource
 {
+    /** Admin ACL gate. Admin cart operations mirror the backend "Create Order" flow. */
+    public const ADMIN_RESOURCE = 'sales/order/actions/create';
+
     #[ApiProperty(description: 'Cart/quote entity ID', writable: false)]
     public ?int $id = null;
 

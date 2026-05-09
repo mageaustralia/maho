@@ -129,6 +129,9 @@ class Coupon extends CrudResource
 {
     public const MODEL = 'salesrule/coupon';
 
+    /** Admin ACL gate. Mirrors backend Mage_Adminhtml_Promo_QuoteController. */
+    public const ADMIN_RESOURCE = \Mage_Adminhtml_Promo_QuoteController::ADMIN_RESOURCE;
+
     private const DISCOUNT_TYPE_MAP = [
         'by_percent' => 'percent',
         'by_fixed' => 'fixed',

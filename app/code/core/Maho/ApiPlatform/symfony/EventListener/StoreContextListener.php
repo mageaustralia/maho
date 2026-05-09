@@ -25,10 +25,17 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * IdempotencyListener (100): the store must be resolved before admin context
  * is bridged in (admin store-id resolution depends on it) and before the
  * idempotency key scope is computed.
+ *
+ * Authorization for the requested store is enforced by a second listener
+ * (StoreContextAuthorizationListener) that runs after the firewall — this
+ * listener captures the requested store but does not gate it.
  */
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 110)]
 class StoreContextListener
 {
+    public const ATTR_REQUESTED_STORE_CODE = '_maho_requested_store_code';
+    public const ATTR_RESOLVED_STORE_ID = '_maho_resolved_store_id';
+
     public function __invoke(RequestEvent $event): void
     {
         if (!$event->isMainRequest()) {
@@ -45,6 +52,8 @@ class StoreContextListener
             $store = \Mage::app()->getStore($storeCode);
             if ($store && $store->getId()) {
                 \Mage::app()->setCurrentStore($store);
+                $request->attributes->set(self::ATTR_REQUESTED_STORE_CODE, $storeCode);
+                $request->attributes->set(self::ATTR_RESOLVED_STORE_ID, (int) $store->getId());
             }
         } catch (Mage_Core_Model_Store_Exception) {
             // Invalid store code — fall back to default
