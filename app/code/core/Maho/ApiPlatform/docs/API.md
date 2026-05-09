@@ -1326,8 +1326,6 @@ use Maho\Config\ApiResource;
 final class WidgetAttributes {}
 ```
 
-See `app/code/core/Maho/ApiPlatform/PermissionStubs/` for examples (`ProductAttributes`, `OrderComments`, `Payments`).
-
 ### Multiple `#[ApiResource]` on one class
 
 The attribute is repeatable — a single class can carry several declarations with different `uriTemplate` / `operations` sets that share one permission identity (the Cms `Media` DTO uses this pattern for `/media` and `/media/{path}`). Just give each attribute the same `mahoId` and the compiler unions their segments and GraphQL fields under one registry entry.
