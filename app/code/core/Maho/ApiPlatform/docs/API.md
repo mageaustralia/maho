@@ -53,32 +53,36 @@ All authenticated endpoints require a Bearer token in the `Authorization` header
 
 **Get a token:**
 
+The endpoint dispatches by `grant_type`. Supported grants: `customer` (default), `client_credentials`, `api_user`.
+
 ```bash
-# Customer login
+# Customer login (grant_type defaults to "customer")
 curl -X POST /api/rest/v2/auth/token \
   -H 'Content-Type: application/json' \
   -d '{"email": "customer@example.com", "password": "password123"}'
 
-# Admin login
+# OAuth2 client_credentials (recommended for integrations)
 curl -X POST /api/rest/v2/auth/token \
   -H 'Content-Type: application/json' \
-  -d '{"username": "admin", "password": "admin123", "type": "admin"}'
+  -d '{"grant_type": "client_credentials", "client_id": "...", "client_secret": "..."}'
 
-# API key login
+# Legacy API user (username + api_key)
 curl -X POST /api/rest/v2/auth/token \
   -H 'Content-Type: application/json' \
-  -d '{"api_key": "your-api-key", "api_secret": "your-api-secret", "type": "api"}'
+  -d '{"grant_type": "api_user", "username": "admin", "api_key": "..."}'
 ```
 
 **Response:**
 ```json
 {
   "token": "eyJ...",
-  "refresh_token": "abc123...",
-  "expires_in": 3600,
-  "token_type": "Bearer"
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "customer": {"id": 1, "email": "...", "firstName": "...", "lastName": "..."}
 }
 ```
+
+`customer` is populated for the `customer` grant; `apiUser` and `permissions` are populated for `client_credentials` / `api_user` grants. There is no separate `refresh_token` field — call `/auth/refresh` with the existing JWT in the `Authorization` header to get a new token.
 
 **Use the token:**
 ```bash
@@ -86,20 +90,18 @@ curl /api/rest/v2/products \
   -H 'Authorization: Bearer eyJ...'
 ```
 
-**Refresh a token:**
+**Refresh a token:** send the current (still-valid) JWT as a Bearer token; the body is ignored.
 ```bash
 curl -X POST /api/rest/v2/auth/refresh \
-  -H 'Content-Type: application/json' \
-  -d '{"refresh_token": "abc123..."}'
+  -H 'Authorization: Bearer eyJ...'
 ```
 
 **Other auth endpoints:**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/rest/v2/auth/me` | Get current user info |
-| POST | `/api/rest/v2/auth/forgot-password` | Send password reset email |
-| POST | `/api/rest/v2/auth/reset-password` | Reset password with token |
-| POST | `/api/rest/v2/auth/logout` | Invalidate token |
+| POST | `/api/rest/v2/auth/logout` | Revoke the current token |
+
+Password reset and "current customer" live under the Customer resource — see [Customers](#customers).
 
 ### Permission Levels
 
@@ -126,21 +128,32 @@ curl -X POST /api/rest/v2/auth/refresh \
 
 ## Pagination
 
-Collection endpoints support pagination via query parameters:
+Collection endpoints support pagination via query parameters (REST) or arguments (GraphQL):
 
 | Parameter | Default | Max | Description |
 |-----------|---------|-----|-------------|
 | `page` | 1 | — | Page number |
-| `itemsPerPage` | 20 | 100 | Items per page |
+| `itemsPerPage` (alias: `pageSize`) | 20 | 100 | Items per page |
 
-**Response includes pagination metadata:**
+**Response format depends on the negotiated content type:**
+
+`application/json` (default): a JSON array of items. Total count and next-page links are returned via the `Link` header (`Link: <...?page=2>; rel="next"`).
+
+`application/ld+json`: API Platform's Hydra format:
+
 ```json
 {
-  "data": [...],
-  "meta": {
-    "totalItems": 150,
-    "itemsPerPage": 20,
-    "currentPage": 1
+  "@context": "/api/contexts/Product",
+  "@id": "/api/rest/v2/products",
+  "@type": "Collection",
+  "totalItems": 150,
+  "member": [...],
+  "view": {
+    "@id": "/api/rest/v2/products?page=1",
+    "@type": "PartialCollectionView",
+    "first": "/api/rest/v2/products?page=1",
+    "last": "/api/rest/v2/products?page=8",
+    "next": "/api/rest/v2/products?page=2"
   }
 }
 ```
@@ -236,12 +249,11 @@ mutation {
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/auth/token` | None | Get JWT token (customer/admin/API) |
-| POST | `/auth/refresh` | None | Refresh JWT token |
-| GET | `/auth/me` | Customer/Admin | Get current user info |
-| POST | `/auth/forgot-password` | None | Send password reset email |
-| POST | `/auth/reset-password` | None | Reset password with token |
-| POST | `/auth/logout` | Customer/Admin | Invalidate token |
+| POST | `/auth/token` | None | Get JWT token (`grant_type`: `customer`/`client_credentials`/`api_user`) |
+| POST | `/auth/refresh` | Bearer JWT | Refresh JWT token (current token sent via `Authorization` header) |
+| POST | `/auth/logout` | Bearer JWT | Revoke the current token |
+
+"Current customer" and password reset are part of the Customer resource — see [Customers](#customers).
 
 ---
 
@@ -249,13 +261,13 @@ mutation {
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/store-config` | None | Get store configuration |
-| GET | `/stores` | None | List all stores |
-| GET | `/stores/config` | None | Get store config |
-| GET | `/{storeCode}/config` | None | Get config for specific store |
-| GET | `/stores/countries` | None | List countries |
-| GET | `/stores/currencies` | None | List currencies |
+| GET | `/store-config` | None | Get store configuration for the current store |
+| GET | `/{storeCode}/config` | None | Get store configuration for a specific store code |
+| GET | `/stores` | None | List all active stores and websites |
+| GET | `/stores/currencies` | None | List allowed currencies |
 | POST | `/stores/switch/{storeCode}` | None | Switch store context |
+
+Country listings live under [Directory](#directory) (`/countries`).
 
 ---
 
@@ -269,30 +281,31 @@ mutation {
 | PUT | `/products/{id}` | Admin/API | Update product |
 | DELETE | `/products/{id}` | Admin/API | Delete product |
 
-**Sub-resources:**
+**Sub-resources** (path parameter is `{productId}` everywhere except `/options`, which uses `{sku}`):
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/products/{id}/media` | None | Product images |
-| GET | `/products/{id}/tier-prices` | Admin/API | Tier pricing |
-| GET | `/products/{id}/custom-options` | None | Custom options |
-| GET | `/products/{id}/custom-options/{optionId}` | None | Single custom option |
-| GET | `/products/{id}/bundle-options` | None | Bundle product options |
-| GET | `/products/{id}/configurable` | None | Configurable product setup |
-| GET | `/products/{id}/configurable/children` | None | Configurable children (simples) |
-| PUT | `/products/{id}/configurable/children/{childId}` | Admin/API | Add/update child |
-| DELETE | `/products/{id}/configurable/children/{childId}` | Admin/API | Remove child |
-| GET | `/products/{id}/downloadable-links` | None | Downloadable links |
-| GET | `/products/{id}/grouped` | None | Grouped product links |
-| PUT | `/products/{id}/grouped/{childProductId}` | Admin/API | Add/update grouped link |
-| DELETE | `/products/{id}/grouped/{childProductId}` | Admin/API | Remove grouped link |
-| GET | `/products/{id}/links/related` | None | Related products |
-| GET | `/products/{id}/links/up_sell` | None | Up-sell products |
-| GET | `/products/{id}/links/cross_sell` | None | Cross-sell products |
-| PUT | `/products/{id}/links/{type}/{linkedProductId}` | Admin/API | Add product link |
-| DELETE | `/products/{id}/links/{type}/{linkedProductId}` | Admin/API | Remove product link |
-| GET | `/products/{id}/reviews` | None | Product reviews |
-| GET | `/products/{sku}/options` | None | Product options by SKU |
+| GET / POST / PUT / DELETE | `/products/{productId}/media` | GET=None, writes=Admin/API | Product images |
+| GET / POST / DELETE | `/products/{productId}/tier-prices` | Admin/API | Tier pricing (POST replaces, DELETE clears all) |
+| GET / POST | `/products/{productId}/custom-options` | GET=None, POST=Admin/API | Custom options |
+| PUT / DELETE | `/products/{productId}/custom-options/{optionId}` | Admin/API | Update/remove a custom option |
+| GET | `/products/{sku}/options` | None | Custom options by SKU (resolves configurable parents) |
+| GET | `/custom-option-file/{optionId}/{key}` | None | Download a customer-uploaded option file |
+| GET / POST / PUT / DELETE | `/products/{productId}/bundle-options` | GET=None, writes=Admin/API | Bundle product options |
+| PUT / DELETE | `/products/{productId}/bundle-options/{id}` | Admin/API | Update/remove a bundle option |
+| GET / PUT | `/products/{productId}/configurable` | GET=None, PUT=Admin/API | Read super-attributes + child IDs / set them all |
+| POST | `/products/{productId}/configurable/children` | Admin/API | Add a child product (body: `{childId: int}`) |
+| DELETE | `/products/{productId}/configurable/children/{childId}` | Admin/API | Remove a child product |
+| GET / POST / PUT / DELETE | `/products/{productId}/downloadable-links` | GET=None, writes=Admin/API | Downloadable links |
+| GET / POST / PUT | `/products/{productId}/grouped` | GET=None, writes=Admin/API | Grouped product links (PUT replaces all) |
+| DELETE | `/products/{productId}/grouped/{childProductId}` | Admin/API | Remove a grouped child |
+| GET / POST / PUT | `/products/{productId}/links/related` | GET=None, writes=Admin/API | Related products (POST adds one, PUT replaces all) |
+| DELETE | `/products/{productId}/links/related/{linkedProductId}` | Admin/API | Remove a related link |
+| GET / POST / PUT | `/products/{productId}/links/cross_sell` | GET=None, writes=Admin/API | Cross-sell links (POST adds one, PUT replaces all) |
+| DELETE | `/products/{productId}/links/cross_sell/{linkedProductId}` | Admin/API | Remove a cross-sell link |
+| GET / POST / PUT | `/products/{productId}/links/up_sell` | GET=None, writes=Admin/API | Up-sell links (POST adds one, PUT replaces all) |
+| DELETE | `/products/{productId}/links/up_sell/{linkedProductId}` | Admin/API | Remove an up-sell link |
+| GET / POST | `/products/{productId}/reviews` | GET=None, POST=Customer | Reviews for a product |
 
 **Layered navigation:**
 
@@ -318,29 +331,33 @@ mutation {
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/carts` | Customer | List customer's carts |
-| GET | `/carts/{id}` | Customer | Get cart by ID |
-| POST | `/carts` | Customer | Create cart |
+| GET | `/carts/{id}` | Customer/Admin/API | Get a cart by numeric ID (ownership enforced via `verifyCartAccess()`) |
+| POST | `/carts` | Customer/Admin/API | Create a new cart for the authenticated customer |
+| POST | `/carts/{id}/items` | Customer/Admin/API | Add item to cart |
+| PUT | `/carts/{id}/items/{itemId}` | Customer/Admin/API | Update cart item quantity |
+| DELETE | `/carts/{id}/items/{itemId}` | Customer/Admin/API | Remove cart item |
 
 ---
 
 ### Guest Cart
 
+`{id}` is the masked cart ID returned by `POST /guest-carts`.
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/guest-carts` | None | Create guest cart |
-| GET | `/guest-carts/{cartId}` | None | Get guest cart |
-| POST | `/guest-carts/{cartId}/items` | None | Add item to cart |
-| PUT | `/guest-carts/{cartId}/items/{itemId}` | None | Update cart item |
-| DELETE | `/guest-carts/{cartId}/items/{itemId}` | None | Remove cart item |
-| GET | `/guest-carts/{cartId}/totals` | None | Get cart totals |
-| PUT | `/guest-carts/{cartId}/coupon` | None | Apply coupon code |
-| DELETE | `/guest-carts/{cartId}/coupon` | None | Remove coupon |
-| POST | `/guest-carts/{cartId}/giftcard` | None | Apply gift card |
-| DELETE | `/guest-carts/{cartId}/giftcard/{code}` | None | Remove gift card |
-| POST | `/guest-carts/{cartId}/shipping-methods` | None | Get shipping methods |
-| GET | `/guest-carts/{cartId}/payment-methods` | None | Get payment methods |
-| POST | `/guest-carts/{cartId}/place-order` | None | Place order |
+| POST | `/guest-carts` | None | Create a guest cart |
+| GET | `/guest-carts/{id}` | None | Get a guest cart by masked ID |
+| POST | `/guest-carts/{id}/items` | None | Add item to cart |
+| PUT | `/guest-carts/{id}/items/{itemId}` | None | Update cart item quantity |
+| DELETE | `/guest-carts/{id}/items/{itemId}` | None | Remove cart item |
+| GET | `/guest-carts/{id}/totals` | None | Get cart totals |
+| POST | `/guest-carts/{id}/coupon` | None | Apply coupon code |
+| DELETE | `/guest-carts/{id}/coupon` | None | Remove coupon |
+| POST | `/guest-carts/{id}/giftcard` | None | Apply gift card |
+| DELETE | `/guest-carts/{id}/giftcard/{code}` | None | Remove gift card |
+| POST | `/guest-carts/{id}/shipping-methods` | None | Get available shipping methods |
+| GET | `/guest-carts/{id}/payment-methods` | None | Get available payment methods |
+| POST | `/guest-carts/{id}/place-order` | None | Place order from guest cart |
 
 ---
 
@@ -349,19 +366,33 @@ mutation {
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/customers` | Admin/API | List customers |
-| GET | `/customers/{id}` | Admin/API | Get customer by ID |
-| POST | `/customers` | Admin/API | Create customer |
-| PUT | `/customers/{id}` | Admin/API | Update customer |
-| DELETE | `/customers/{id}` | Admin/API | Delete customer |
-| GET | `/customers/me` | Customer | Get own profile |
-| PUT | `/customers/me/password` | Customer | Change password |
-| GET | `/customers/me/addresses` | Customer | List own addresses |
-| POST | `/customers/me/addresses` | Customer | Create address |
-| PUT | `/customers/me/addresses/{id}` | Customer | Update address |
-| DELETE | `/customers/me/addresses/{id}` | Customer | Delete address |
-| GET | `/customers/me/orders` | Customer | List own orders |
-| GET | `/customers/me/reviews` | Customer | List own reviews |
-| GET | `/customers/{customerId}/addresses` | Admin/API | List customer addresses |
+| GET | `/customers/{id}` | Customer/Admin/API | Get customer by ID |
+| POST | `/customers` | None | Register a customer |
+| PUT | `/customers/me` | Customer/API | Update current customer profile |
+| POST | `/customers/me/password` | Customer/API | Change password |
+| GET | `/customers/me` | Customer/API | Get current authenticated customer |
+| GET | `/customers/me/orders` | Customer/API | List own orders |
+| GET | `/customers/me/reviews` | Customer/API | List own reviews |
+| POST | `/customers/forgot-password` | None | Request password reset email |
+| POST | `/customers/reset-password` | None | Reset password with token |
+| POST | `/customers/create-from-order` | None | Create a customer account from a placed guest order |
+
+**Addresses** (`Address` resource — same DTO is exposed under three URL families):
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/customers/me/addresses` | Customer/API | List own addresses |
+| POST | `/customers/me/addresses` | Customer/API | Create an address for the current customer |
+| GET | `/customers/me/addresses/{id}` | Customer/API | Get one of the current customer's addresses |
+| PUT | `/customers/me/addresses/{id}` | Customer/API | Update an address |
+| DELETE | `/customers/me/addresses/{id}` | Customer/API | Delete an address |
+| GET | `/addresses` | Customer/API | List own addresses (alias of `/customers/me/addresses`) |
+| POST | `/addresses` | Customer/API | Create an address |
+| GET | `/addresses/{id}` | Customer/API | Get an address by ID |
+| PUT | `/addresses/{id}` | Customer/API | Update an address |
+| DELETE | `/addresses/{id}` | Customer/API | Delete an address |
+| GET | `/customers/{customerId}/addresses` | Admin/API | List a customer's addresses |
+| POST | `/customers/{customerId}/addresses` | Admin/API | Create an address for a customer |
 
 ---
 
@@ -370,7 +401,8 @@ mutation {
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/orders` | Admin/API | List orders (paginated) |
-| GET | `/orders/{id}` | Admin/API | Get order by ID |
+| GET | `/orders/{id}` | Customer/Admin/API | Get order by ID (customers see only their own) |
+| POST | `/orders` | None | Place an order from a customer or guest cart |
 
 **Order sub-resources:**
 
@@ -380,15 +412,15 @@ mutation {
 | POST | `/orders/{orderId}/shipments` | Admin/API | Create shipment |
 | GET | `/orders/{orderId}/credit-memos` | Admin/API | List credit memos for order |
 | POST | `/orders/{orderId}/credit-memos` | Admin/API | Create credit memo/refund |
-| GET | `/orders/{orderId}/invoices` | Admin/API | List invoices for order |
-| GET | `/orders/{orderId}/invoices/{invoiceId}/pdf` | Admin/API | Download invoice PDF |
+| GET | `/orders/{orderId}/invoices` | Customer/Admin/API | List invoices for order |
+| GET | `/orders/{orderId}/invoices/{id}/pdf` | Customer/Admin/API | Download invoice PDF |
 
 **Customer invoice access:**
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/customers/me/orders/{orderId}/invoices` | Customer | List own invoices |
-| GET | `/customers/me/orders/{orderId}/invoices/{invoiceId}/pdf` | Customer | Download own invoice PDF |
+| GET | `/customers/me/orders/{orderId}/invoices` | Customer/API | List own invoices |
+| GET | `/customers/me/orders/{orderId}/invoices/{id}/pdf` | Customer/API | Download own invoice PDF |
 
 ---
 
@@ -405,10 +437,13 @@ curl -X POST /api/rest/v2/orders/123/shipments \
   -H 'Content-Type: application/json' \
   -d '{
     "items": [{"orderItemId": 456, "qty": 2}],
-    "tracks": [{"carrier": "auspost", "title": "Australia Post", "number": "AP123456"}],
-    "comment": "Shipped via express"
+    "tracks": [{"carrierCode": "auspost", "title": "Australia Post", "trackNumber": "AP123456"}],
+    "comment": "Shipped via express",
+    "notifyCustomer": true
   }'
 ```
+
+Omit `items` to ship every remaining item on the order. Each track entry needs at least `trackNumber`; `carrierCode` defaults to `custom` and `title` defaults to the carrier code.
 
 ---
 
@@ -500,8 +535,12 @@ mutation {
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/orders/{orderId}/invoices` | Admin/API | List invoices for order |
-| GET | `/orders/{orderId}/invoices/{invoiceId}/pdf` | Admin/API | Download invoice PDF |
+| GET | `/orders/{orderId}/invoices` | Customer/Admin/API | List invoices for order |
+| GET | `/orders/{orderId}/invoices/{id}/pdf` | Customer/Admin/API | Download invoice PDF |
+| GET | `/customers/me/orders/{orderId}/invoices` | Customer/API | List own invoices |
+| GET | `/customers/me/orders/{orderId}/invoices/{id}/pdf` | Customer/API | Download own invoice PDF |
+
+There is no standalone collection endpoint or write endpoint for invoices — they are produced as part of the order workflow.
 
 ---
 
@@ -600,7 +639,7 @@ Full CRUD for coupon/discount rule management + validation.
 | POST | `/coupons` | Admin/API | Create coupon + rule |
 | PUT | `/coupons/{id}` | Admin/API | Update coupon/rule |
 | DELETE | `/coupons/{id}` | Admin/API | Delete coupon + rule |
-| POST | `/coupons/validate` | Admin/API/Customer | Validate coupon code |
+| POST | `/coupons/validate` | None | Validate a coupon code (public — used by storefront checkouts) |
 
 **Create a coupon:**
 ```bash
@@ -688,11 +727,10 @@ mutation {
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/giftcards` | Admin/API | List gift cards |
-| GET | `/giftcards/{id}` | Admin/API | Get gift card by ID |
-| POST | `/giftcards` | Admin/API | Create gift card |
-| PUT | `/giftcards/{id}` | Admin/API | Update gift card |
-| DELETE | `/giftcards/{id}` | Admin/API | Delete gift card |
+| GET | `/giftcards/{id}` | Admin/API | Get a gift card by ID |
+| POST | `/giftcards` | Admin/API | Create a new gift card |
+
+Balance lookups and adjustments are exposed via GraphQL only (`checkGiftcardBalance`, `adjustGiftcardBalance`).
 
 ---
 
@@ -722,6 +760,8 @@ mutation {
 | POST | `/blog-posts` | Admin/API | Create blog post |
 | PUT | `/blog-posts/{id}` | Admin/API | Update blog post |
 | DELETE | `/blog-posts/{id}` | Admin/API | Delete blog post |
+| GET | `/blog-categories` | None | List blog categories |
+| GET | `/blog-categories/{id}` | None | Get blog category |
 
 ---
 
@@ -729,9 +769,9 @@ mutation {
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/media` | Admin/API | List media files |
-| GET | `/media/{path}` | None | Get media file |
-| POST | `/media` | Admin/API | Upload media file |
+| GET | `/media` | Admin/API | List image files in a folder under `wysiwyg/` |
+| POST | `/media` | Admin/API | Upload an image (multipart/form-data; auto-converted to the configured format) |
+| DELETE | `/media/{path}` | Admin/API | Delete a media file (path must be inside `wysiwyg/`) |
 
 ---
 
@@ -741,8 +781,8 @@ mutation {
 |--------|----------|------|-------------|
 | GET | `/reviews/{id}` | None | Get review by ID |
 | GET | `/products/{productId}/reviews` | None | List reviews for product |
-| POST | `/products/{productId}/reviews` | Customer | Create review |
-| GET | `/customers/me/reviews` | Customer | List own reviews |
+| POST | `/products/{productId}/reviews` | Customer/API | Submit a review (requires authentication) |
+| GET | `/customers/me/reviews` | Customer/API | List own reviews |
 
 ---
 
@@ -750,9 +790,9 @@ mutation {
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/newsletter/subscribe` | None or Customer | Subscribe to newsletter |
-| POST | `/newsletter/unsubscribe` | Customer | Unsubscribe (guests use email link) |
-| GET | `/newsletter/status` | Customer | Get subscription status |
+| POST | `/newsletter/subscribe` | None | Subscribe to newsletter (gated by `newsletter/subscription/allow_guest_subscribe`) |
+| POST | `/newsletter/unsubscribe` | None | Unsubscribe by email |
+| GET | `/newsletter/status` | Customer/API | Get subscription status |
 
 **Guest subscription control:** Guest (unauthenticated) subscribe is controlled by the Maho config flag `newsletter/subscription/allow_guest_subscribe` (**System > Config > Newsletter > Subscription Options > Allow Guest Subscription**). When disabled, only authenticated customers can subscribe. Recommended: set to **No** for API use to prevent abuse.
 
@@ -771,17 +811,15 @@ mutation {
 
 ```json
 {
+  "id": "contact",
   "enabled": true,
-  "captcha": {
-    "enabled": true,
-    "provider": "altcha",
-    "challengeUrl": "https://example.com/captcha/index/challenge"
-  },
+  "captchaProvider": "turnstile",
+  "captchaSiteKey": "0x4AAA...",
   "honeypotField": "_h_a4b2c1d3"
 }
 ```
 
-The `captcha` object is populated by the active captcha module (see [CAPTCHA](#captcha) below). When no module is active, it returns `{"enabled": false}`.
+`captchaProvider` is one of `none`, `turnstile`, `recaptcha_v3` (or anything an installed third-party module registers). `captchaSiteKey` is `null` when the provider is `none`. Frontends use these two fields to load the matching widget client-side; for richer per-provider config the helper-based event flow described under [CAPTCHA](#captcha) is used instead.
 
 The `honeypotField` value is **deterministic per install** (derived from the encryption key) and **opaque** to the frontend — render it as a hidden input and don't expose its value, e.g. `<input type="text" name="{honeypotField}" style="display:none" tabindex="-1" autocomplete="off" />`. If a request body arrives with a non-empty value in that field, the API silently treats it as spam (returns success without sending the email). When honeypot is disabled in admin, `honeypotField` is `null` and the frontend can skip it.
 
@@ -800,12 +838,11 @@ The `honeypotField` value is **deterministic per install** (derived from the enc
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/customers/me/wishlist` | Customer | Get wishlist items |
-| POST | `/customers/me/wishlist` | Customer | Add to wishlist |
-| PUT | `/customers/me/wishlist/{id}` | Customer | Update wishlist item |
-| DELETE | `/customers/me/wishlist/{id}` | Customer | Remove from wishlist |
-| POST | `/customers/me/wishlist/{id}/move-to-cart` | Customer | Move item to cart |
-| POST | `/customers/me/wishlist/sync` | Customer | Sync wishlist |
+| GET | `/customers/me/wishlist` | Customer/API | Get wishlist items |
+| POST | `/customers/me/wishlist` | Customer/API | Add to wishlist |
+| DELETE | `/customers/me/wishlist/{id}` | Customer/API | Remove from wishlist |
+| POST | `/customers/me/wishlist/{id}/move-to-cart` | Customer/API | Move item to cart |
+| POST | `/customers/me/wishlist/sync` | Customer/API | Sync a guest (localStorage) wishlist into the customer's wishlist |
 
 ---
 
@@ -848,19 +885,9 @@ The API Platform does not bundle any CAPTCHA provider. Instead, it exposes two e
 
 ### How it works
 
-**Configuration** — frontends call `GET /contact/config` (or any endpoint that returns captcha config) to discover which provider is active and what client-side parameters it needs:
+**Configuration** — endpoints that need to advertise CAPTCHA settings to a frontend (e.g. `GET /contact/config`) read from store config and/or the `api_captcha_config` event. The exact fields exposed depend on the endpoint; for `/contact/config` they are flat: `captchaProvider`, `captchaSiteKey`, `enabled`. Other endpoints (or third-party modules calling `Mage::helper('apiplatform')->getCaptchaConfig()`) get the open key/value bag populated by the event.
 
-```json
-{
-  "captcha": {
-    "enabled": true,
-    "provider": "altcha",
-    "challengeUrl": "https://example.com/captcha/index/challenge"
-  }
-}
-```
-
-The frontend uses this to load the right widget (Altcha, Turnstile, reCAPTCHA, etc.) and obtain a token.
+The frontend uses this to load the right widget (Turnstile, reCAPTCHA, etc.) and obtain a token.
 
 **Verification** — on form submission, include the solved token as `captchaToken` in the request body. The API dispatches `api_verify_captcha` and the active module verifies it.
 
@@ -1050,13 +1077,14 @@ Domain-specific traits that can be added to providers or processors as needed:
 
 ### Shared Services
 
+Live under `app/code/core/Maho/ApiPlatform/symfony/Service/`:
+
 | Service | Purpose |
 |---|---|
-| `StoreContext` | Store scope management, `storeIdsToStoreCodes()`, `isAvailableForStore()` |
-| `AddressMapper` | Maps order/quote/customer address models to the Address DTO |
-| `CustomerMapper` | Maps customer models to the Customer DTO |
-| `ContentSanitizer` | Sanitizes HTML content for CMS/blog resources |
-| `ArrayPaginator` | Paginated collection wrapper for API Platform, with `::empty()` factory |
+| `StoreContext` | Store scope management — `ensureStore()`, `getStoreId()`, `storeIdsToStoreCodes()`, `isAvailableForStore()` |
+| `JwtService` | JWT issuance/validation for customer and API-user tokens |
+| `TokenBlacklist` | Tracks revoked JWT IDs (used by `/auth/logout` and on password change) |
+| `StoreDefaults` | Resolves default values per store (currency, locale, etc.) used during DTO building |
 
 ---
 
@@ -1334,7 +1362,7 @@ The attribute is repeatable — a single class can carry several declarations wi
 
 All API resources extend `\Maho\ApiPlatform\Resource`, which provides an `extensions` field — an open array where modules can inject additional data without modifying core API files. The base class also provides a `toArray()` method for serializing DTOs (used by GraphQL handlers).
 
-Each Provider exposes a public `mapToDto()` method that builds the DTO from a Mage model and dispatches the corresponding event. This method can be called from any context (REST, GraphQL, custom code) to get a consistent representation with extensions.
+Providers build DTOs via `toDto($model)` (the abstract method on the `Provider` base class). A handful of providers (Order, Category, Address, Customer, Product, Cart) also expose a public `mapToDto()` method with domain-specific extra arguments, used directly from GraphQL handlers and custom processors when they need a consistent representation including extensions.
 
 ### How It Works
 
@@ -1350,17 +1378,13 @@ The API Platform loads a dedicated `api` event area (`Mage_Core_Model_App_Area::
 |-------|---------------|---------------------|
 | `api_product_dto_build` | ProductProvider | `product` (model), `for_listing` (bool), `dto` |
 | `api_category_dto_build` | CategoryProvider | `category` (model), `dto` |
-| `api_cms_page_dto_build` | CmsPageProvider | `cms_page` (model), `dto` |
-| `api_cms_block_dto_build` | CmsBlockProvider | `cms_block` (model), `dto` |
-| `api_blog_post_dto_build` | BlogPostProvider | `blog_post` (model), `dto` |
-| `api_store_config_dto_build` | StoreConfigProvider | `store` (model), `dto` |
+| `api_store_config_dto_build` | StoreConfigProvider | `dto` |
 | `api_order_dto_build` | OrderProvider | `order` (model), `dto` |
-| `api_order_item_dto_build` | OrderProvider | `order_item` (model), `dto` |
+| `api_order_item_dto_build` | OrderProvider | `item` (model), `dto` |
 | `api_customer_dto_build` | CustomerProvider | `customer` (model), `dto` |
-| `api_cart_dto_build` | CartProvider | `quote` (model), `dto` |
-| `api_cart_item_dto_build` | CartProvider | `quote_item` (model), `dto` |
-| `api_review_dto_build` | ReviewProvider | `review` (model), `dto` |
-| `api_wishlist_item_dto_build` | WishlistProvider | `wishlist_item` (model), `dto` |
+| `api_cart_dto_build` | CartMapper | `quote` (model), `dto` |
+| `api_cart_item_dto_build` | CartMapper | `item` (model), `dto` |
+| `api_wishlist_item_dto_build` | WishlistProvider | `dto` |
 | `api_captcha_config` | ApiPlatform Helper | `config` (DataObject) |
 | `api_verify_captcha` | ApiPlatform Helper | `result` (DataObject), `data` (array) |
 
@@ -1400,7 +1424,7 @@ A module that adds bundle component data to products and cart items.
 ```php
 class Vendor_SimpleBundles_Model_Api_Observer
 {
-    public function addBundleToProduct(Varien_Event_Observer $observer): void
+    public function addBundleToProduct(\Maho\Event\Observer $observer): void
     {
         $product = $observer->getEvent()->getProduct();
         $dto = $observer->getEvent()->getDto();
@@ -1427,9 +1451,9 @@ class Vendor_SimpleBundles_Model_Api_Observer
         ];
     }
 
-    public function addBundleToCartItem(Varien_Event_Observer $observer): void
+    public function addBundleToCartItem(\Maho\Event\Observer $observer): void
     {
-        $quoteItem = $observer->getEvent()->getQuoteItem();
+        $quoteItem = $observer->getEvent()->getItem();
         $dto = $observer->getEvent()->getDto();
 
         $bundleData = $quoteItem->getOptionByCode('simple_bundle_data');
