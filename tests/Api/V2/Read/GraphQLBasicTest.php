@@ -146,4 +146,15 @@ describe('GraphQL Endpoint - Error Handling', function (): void {
         expect($response['json'])->toHaveKey('errors');
     });
 
+    it('returns null instead of HTTP 500 when an ID arg is a bare integer', function (): void {
+        // Bare scalars where an IRI is expected used to escape the GraphQL
+        // pipeline as a 500. They should resolve to null — same shape as
+        // a valid-IRI-but-missing-item query.
+        $response = gqlQuery('{ orderOrder(id: 1) { _id } }');
+
+        expect($response['status'])->toBe(200);
+        expect($response['json'])->toHaveKey('data');
+        expect($response['json']['data']['orderOrder'] ?? 'missing')->toBeNull();
+    });
+
 });

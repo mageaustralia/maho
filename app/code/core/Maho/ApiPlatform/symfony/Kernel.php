@@ -331,6 +331,13 @@ class Kernel extends BaseKernel
             ->arg('$providerLocator', tagged_locator('maho.api.state_provider'))
             ->tag('api_platform.graphql.query_resolver');
 
+        // Translate IriConverter input errors (bare `id: 1` instead of an IRI)
+        // into proper GraphQL null-results / 404s instead of HTTP 500. See the
+        // class docblock for the full rationale.
+        $services->set(GraphQl\IriToleranceProvider::class)
+            ->decorate('api_platform.graphql.state_provider.read')
+            ->arg('$inner', new Reference(GraphQl\IriToleranceProvider::class . '.inner'));
+
         $services->set(EventListener\DefaultDenyListener::class)
             ->arg('$resourceMetadataFactory', new Reference('api_platform.metadata.resource.metadata_collection_factory'))
             ->tag('kernel.event_listener', ['event' => 'kernel.request', 'priority' => 28]);
