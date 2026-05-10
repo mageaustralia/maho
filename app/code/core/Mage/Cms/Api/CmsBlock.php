@@ -56,6 +56,8 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a CMS block by ID', security: 'true'),
+        new QueryCollection(name: 'collection_query', description: 'Get CMS blocks', security: 'true'),
         new Query(name: 'cmsBlock'),
         new QueryCollection(name: 'cmsBlocks'),
         new Query(

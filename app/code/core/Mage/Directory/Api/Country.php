@@ -40,6 +40,8 @@ use Maho\ApiPlatform\CrudResource;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a country', security: 'true'),
+        new QueryCollection(name: 'collection_query', description: 'Get countries', security: 'true'),
         new QueryCollection(name: 'countries', description: 'Get all available countries with regions'),
         new Query(
             name: 'country',

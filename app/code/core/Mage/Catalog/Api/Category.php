@@ -66,6 +66,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a category by ID', security: 'true'),
+        new QueryCollection(name: 'collection_query', description: 'Get categories', security: 'true'),
         new Query(
             name: 'category',
             description: 'Get a category by ID',

@@ -17,6 +17,8 @@ use ApiPlatform\Metadata\ApiProperty;
 use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\GraphQl\Mutation;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Maho\ApiPlatform\CrudResource;
 
 #[ApiResource(
@@ -39,6 +41,8 @@ use Maho\ApiPlatform\CrudResource;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a stock update', security: "is_granted('ROLE_API_USER')"),
+        new QueryCollection(name: 'collection_query', description: 'Get stock updates', security: "is_granted('ROLE_API_USER')"),
         new Mutation(
             name: 'updateStock',
             description: 'Update stock for a single product by SKU',

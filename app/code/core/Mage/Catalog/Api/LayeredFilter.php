@@ -16,6 +16,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\QueryCollection;
+use ApiPlatform\Metadata\GraphQl\Query;
 
 #[ApiResource(
     shortName: 'LayeredFilter',
@@ -29,6 +30,8 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a layered filter', security: 'true'),
+        new QueryCollection(name: 'collection_query', description: 'Get layered filters', security: 'true'),
         new QueryCollection(
             name: 'layeredFilters',
             args: [
