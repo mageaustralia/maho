@@ -55,6 +55,8 @@ use Maho\ApiPlatform\CrudResource;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a CMS page by ID', security: 'true'),
+        new QueryCollection(name: 'collection_query', description: 'Get CMS pages', security: 'true'),
         new Query(name: 'cmsPage'),
         new QueryCollection(name: 'cmsPages'),
         new QueryCollection(

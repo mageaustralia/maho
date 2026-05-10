@@ -16,6 +16,7 @@ namespace Mage\Core\Api;
 use Maho\Config\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
@@ -34,6 +35,8 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a URL resolve result', security: 'true'),
+        new QueryCollection(name: 'collection_query', description: 'Get URL resolve results', security: 'true'),
         new Query(
             name: 'resolveUrl',
             args: ['path' => ['type' => 'String!']],

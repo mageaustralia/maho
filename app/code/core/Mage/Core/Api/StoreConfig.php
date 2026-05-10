@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
 use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
 
 #[ApiResource(
@@ -37,6 +38,8 @@ use Maho\ApiPlatform\GraphQl\CustomQueryResolver;
         ),
     ],
     graphQlOperations: [
+        new Query(name: 'item_query', description: 'Get a store config', security: 'true'),
+        new QueryCollection(name: 'collection_query', description: 'Get store configs', security: 'true'),
         new Query(
             name: 'storeConfig',
             args: [],
