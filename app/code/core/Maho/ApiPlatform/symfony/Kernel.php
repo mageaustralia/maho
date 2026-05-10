@@ -139,6 +139,14 @@ class Kernel extends BaseKernel
 
     protected function configureContainer(ContainerConfigurator $container): void
     {
+        // Decode CORS_ALLOW_ORIGIN here rather than relying on Symfony's
+        // %env(json:...)% resolver. Extension load() callbacks (e.g.
+        // NelmioCorsExtension) run before env placeholders are expanded,
+        // so the placeholder string reaches in_array() unresolved and
+        // trips a TypeError. resolveEnvironmentVars() has already
+        // populated $_ENV['CORS_ALLOW_ORIGIN'] with the JSON-encoded list.
+        $corsAllowOrigin = json_decode($_ENV['CORS_ALLOW_ORIGIN'] ?? '[]', true) ?: [];
+
         $container->extension('framework', [
             'secret' => '%env(APP_SECRET)%',
             'http_method_override' => false,
@@ -225,7 +233,7 @@ class Kernel extends BaseKernel
         $container->extension('nelmio_cors', [
             'defaults' => [
                 'origin_regex' => false,
-                'allow_origin' => '%env(json:CORS_ALLOW_ORIGIN)%',
+                'allow_origin' => $corsAllowOrigin,
                 'allow_credentials' => false,
                 'allow_methods' => ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE'],
                 'allow_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -234,7 +242,7 @@ class Kernel extends BaseKernel
             ],
             'paths' => [
                 '^/api/' => [
-                    'allow_origin' => '%env(json:CORS_ALLOW_ORIGIN)%',
+                    'allow_origin' => $corsAllowOrigin,
                     'allow_credentials' => false,
                     'allow_headers' => ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Store-Code'],
                     'allow_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
