@@ -31,7 +31,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
     shortName: 'Product',
     description: 'Product catalog resource',
     provider: ProductProvider::class,
-    normalizationContext: ['groups' => ['product:read']],
+    // Both groups exposed at resource level so the GraphQL schema includes all
+    // detail fields (configurableOptions, variants, mediaGallery, etc.). Per-operation
+    // normalizationContext still controls which fields are POPULATED at request time -
+    // listings stay light, item fetches return everything. Without product:detail here,
+    // ApiPlatform's GraphQL TypeBuilder excludes detail fields from the schema and clients
+    // get "Cannot query field X on type Product" errors even when the operation's own
+    // context lists product:detail.
+    normalizationContext: ['groups' => ['product:read', 'product:detail']],
     operations: [
         new Get(
             uriTemplate: '/products/{id}',
@@ -66,8 +73,23 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     graphQlOperations: [
-        new Query(name: 'item_query', description: 'Get a product by ID', security: 'true'),
-        new QueryCollection(name: 'collection_query', description: 'Get products', security: 'true'),
+        // Canonical operation names ApiPlatform uses internally to resolve
+        // related-resource references (relatedProducts, crosssellProducts, etc.).
+        // Without these, FieldsBuilder crashes with "Operation collection_query
+        // not found for resource Product" the moment any field references the
+        // Product type. Field names exposed by these are `product` / `products`
+        // (no compose because the names are the conventional ones).
+        new Query(
+            name: 'item_query',
+            description: 'Get a product by ID (canonical)',
+            normalizationContext: ['groups' => ['product:read', 'product:detail']],
+            security: 'true',
+        ),
+        new QueryCollection(
+            name: 'collection_query',
+            description: 'Get product collection (canonical)',
+            security: 'true',
+        ),
         new Query(
             name: 'product',
             description: 'Get a product by ID',
@@ -255,17 +277,26 @@ class Product extends CrudResource
     #[ApiProperty(description: 'Product media gallery images', writable: false, extraProperties: ['computed' => true])]
     public array $mediaGallery = [];
 
-    /** @var Product[]|null */
+    /**
+     * Related products as a flat array of product summaries. Typed as
+     * untyped array (not Product[]) so GraphQL exposes them as Iterable
+     * scalar - consistent with configurableOptions / customOptions /
+     * mediaGallery and what every consumer currently expects. Typing as
+     * Product[] would wrap in a ProductCursorConnection that forces sub-
+     * selection (edges/node), breaking bare queries.
+     *
+     * @var array<int, array<string, mixed>>|null
+     */
     #[Groups(['product:detail'])]
     #[ApiProperty(description: 'Related products', writable: false, extraProperties: ['computed' => true])]
     public ?array $relatedProducts = null;
 
-    /** @var Product[]|null */
+    /** @var array<int, array<string, mixed>>|null Cross-sell product summaries; same Iterable-scalar rationale as $relatedProducts. */
     #[Groups(['product:detail'])]
     #[ApiProperty(description: 'Cross-sell products', writable: false, extraProperties: ['computed' => true])]
     public ?array $crosssellProducts = null;
 
-    /** @var Product[]|null */
+    /** @var array<int, array<string, mixed>>|null Up-sell product summaries; same Iterable-scalar rationale as $relatedProducts. */
     #[Groups(['product:detail'])]
     #[ApiProperty(description: 'Up-sell products', writable: false, extraProperties: ['computed' => true])]
     public ?array $upsellProducts = null;

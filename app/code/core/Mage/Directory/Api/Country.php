@@ -66,7 +66,7 @@ class Country extends CrudResource
     #[ApiProperty(writable: false)]
     public ?string $iso3Code = null;
 
-    /** @var Region[] */
+    /** @var array<int, array<string, mixed>> Regions/states for the country; Region is a plain DTO (not a standalone ApiResource per its own docblock) so kept as Iterable scalar. */
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public array $availableRegions = [];
 

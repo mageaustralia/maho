@@ -145,7 +145,14 @@ class Order extends CrudResource
     #[ApiProperty(writable: false, description: 'Order state (new, processing, complete, closed, canceled)')]
     public ?string $state = null;
 
-    /** @var OrderItem[] */
+    /**
+     * Order line items. Typed as untyped array so GraphQL exposes as Iterable
+     * scalar (queryable bare). OrderItem is a plain DTO with no #[ApiResource],
+     * so wrapping in IterableCursorConnection breaks: the connection resolver
+     * can't materialize edges without a registered Read operation on the
+     * element type and returns null edges.
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(writable: false, description: 'Order line items', extraProperties: ['computed' => true])]
     public array $items = [];
 

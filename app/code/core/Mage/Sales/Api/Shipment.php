@@ -108,11 +108,11 @@ class Shipment extends CrudResource
     #[ApiProperty(writable: false)]
     public ?string $createdAt = null;
 
-    /** @var ShipmentTrack[] */
+    /** @var array<int, array<string, mixed>> Tracking entries; plain-DTO elements so kept as Iterable scalar to avoid the IterableCursorConnection null-edges bug. */
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public array $tracks = [];
 
-    /** @var ShipmentItem[] */
+    /** @var array<int, array<string, mixed>> Shipment line items; same reason as $tracks above. */
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public array $items = [];
 
