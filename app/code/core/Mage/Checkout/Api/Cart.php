@@ -320,7 +320,20 @@ class Cart extends \Maho\ApiPlatform\Resource
     #[ApiProperty(description: 'Whether the cart is active (not yet ordered)', writable: false)]
     public bool $isActive = true;
 
-    /** @var CartItem[] */
+    /**
+     * Cart line items. Typed as untyped array so ApiPlatform's GraphQL exposes
+     * this as Iterable scalar (queryable bare, returns JSON array of CartItem
+     * shape) rather than wrapping in an IterableCursorConnection. The connection
+     * wrapping requires CartItem to be a registered ApiResource for edge node
+     * resolution, but CartItem is intentionally a plain DTO (no ApiResource
+     * attribute) - so the connection resolver returns null edges. REST already
+     * returns items as a flat array; mirror that in GraphQL.
+     *
+     * If a client needs to enumerate items: `cart { items }` returns the array,
+     * client iterates and reads .sku, .qty, .priceInclTax, etc. as normal JSON.
+     *
+     * @var array<int, array<string, mixed>>
+     */
     #[ApiProperty(description: 'Cart line items', writable: false)]
     public array $items = [];
 

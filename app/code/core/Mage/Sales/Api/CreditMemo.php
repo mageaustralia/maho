@@ -129,7 +129,7 @@ class CreditMemo extends CrudResource
     #[ApiProperty(writable: false)]
     public ?string $createdAt = null;
 
-    /** @var CreditMemoItem[] */
+    /** @var array<int, array<string, mixed>> Credit memo line items; CreditMemoItem is a plain DTO so kept as Iterable scalar (see Cart.items / Order.items rationale). */
     #[ApiProperty(writable: false, extraProperties: ['computed' => true])]
     public array $items = [];
 

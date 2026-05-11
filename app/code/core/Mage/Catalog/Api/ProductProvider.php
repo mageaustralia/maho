@@ -110,7 +110,16 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
     private function getProductBySku(string $sku): ?Product
     {
         $product = \Mage::getModel('catalog/product')->loadByAttribute('sku', $sku);
-        return $product instanceof \Mage_Catalog_Model_Product ? $this->toDto($product) : null;
+        if (!$product instanceof \Mage_Catalog_Model_Product || !$product->getId()) {
+            return null;
+        }
+        // loadByAttribute() returns a partially-hydrated model that doesn't fire
+        // the catalog_product_load_after event chain, so $product->getOptions()
+        // returns empty and getMediaGalleryImages() is null. Re-load by ID to
+        // get the full product surface (custom options, media gallery, type
+        // instance data) the detail DTO needs.
+        $product = \Mage::getModel('catalog/product')->load((int) $product->getId());
+        return $this->toDto($product);
     }
 
     /**
@@ -118,12 +127,17 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
      */
     private function getProductByBarcode(string $barcode): ?Product
     {
-        $product = \Mage::getModel('catalog/product')
+        $row = \Mage::getModel('catalog/product')
             ->getCollection()
             ->addAttributeToFilter('barcode', $barcode)
             ->getFirstItem();
-        /** @var \Mage_Catalog_Model_Product $product */
-        return $product->getId() ? $this->toDto($product) : null;
+        if (!$row->getId()) {
+            return null;
+        }
+        // Same as getProductBySku: collection->getFirstItem() doesn't load
+        // custom options or media gallery. Do a full load by id.
+        $product = \Mage::getModel('catalog/product')->load((int) $row->getId());
+        return $this->toDto($product);
     }
 
     /**
@@ -463,29 +477,34 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
             }
         }
 
-        // Custom options
-        $dto->customOptions = array_map(fn($opt) => [
+        // Custom options. array_values to drop the option-id keys -
+        // $product->getOptions() returns an associative array keyed by id,
+        // which PHP serializes to a JSON object rather than an array. Clients
+        // expect a list they can iterate.
+        $dto->customOptions = array_values(array_map(fn($opt) => [
             'id' => (int) $opt->getId(),
             'title' => $opt->getTitle(),
             'type' => $opt->getType(),
             'required' => (bool) $opt->getIsRequire(),
             'sortOrder' => (int) $opt->getSortOrder(),
-            'values' => $opt->getValues() ? array_map(fn($v) => [
+            'values' => $opt->getValues() ? array_values(array_map(fn($v) => [
                 'id' => (int) $v->getId(),
                 'title' => $v->getTitle(),
                 'price' => (float) $v->getPrice(),
                 'priceType' => $v->getPriceType(),
                 'sortOrder' => (int) $v->getSortOrder(),
-            ], $opt->getValues()) : [],
-        ], $product->getOptions());
+            ], $opt->getValues())) : [],
+        ], $product->getOptions()));
 
-        // Media gallery
+        // Media gallery - same array_values rationale; iterator_to_array
+        // preserves the gallery image IDs as keys, producing a JSON object
+        // rather than a list. Reset to a plain ordered list.
         $images = $product->getMediaGalleryImages();
-        $dto->mediaGallery = $images ? array_map(fn($img) => [
+        $dto->mediaGallery = $images ? array_values(array_map(fn($img) => [
             'url' => $mediaConfig->getMediaUrl($img->getFile()),
             'label' => $img->getLabel() ?: null,
             'position' => (int) $img->getPosition(),
-        ], iterator_to_array($images)) : [];
+        ], iterator_to_array($images))) : [];
 
         // Linked products
         $dto->relatedProducts = $this->getLinkedProducts($product->getRelatedProductCollection());
@@ -537,7 +556,7 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
             /** @var \Mage_Downloadable_Model_Product_Type $typeInstance */
             $links = $typeInstance->getLinks($product);
             $store = \Mage::app()->getStore();
-            $dto->downloadableLinks = $links ? array_map(function ($link) use ($store) {
+            $dto->downloadableLinks = $links ? array_values(array_map(function ($link) use ($store) {
                 $sampleUrl = $link->getSampleFile()
                     ? \Mage::getUrl('downloadable/download/linkSample', ['link_id' => $link->getId()])
                     : ($link->getSampleUrl() ?: null);
@@ -549,7 +568,7 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
                     'numberOfDownloads' => (int) $link->getNumberOfDownloads(),
                     'sampleUrl' => $sampleUrl,
                 ];
-            }, $links) : [];
+            }, $links)) : [];
             $dto->linksTitle = $product->getData('links_title')
                 ?: \Mage::getStoreConfig('catalog/downloadable/links_title')
                 ?: 'Links';
