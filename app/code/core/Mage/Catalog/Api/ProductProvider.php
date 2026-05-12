@@ -506,10 +506,14 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
             'position' => (int) $img->getPosition(),
         ], iterator_to_array($images))) : [];
 
-        // Linked products
-        $dto->relatedProducts = $this->getLinkedProducts($product->getRelatedProductCollection());
-        $dto->crosssellProducts = $this->getLinkedProducts($product->getCrossSellProductCollection());
-        $dto->upsellProducts = $this->getLinkedProducts($product->getUpSellProductCollection());
+        // Linked products. getLinkedProducts() returns Product[] DTOs; the
+        // exposed properties are typed as array<int, array<string, mixed>>|null
+        // so GraphQL renders them as Iterable scalar rather than the broken
+        // CursorConnection wrapping (see the typed-array null-edges commit
+        // history). Flatten each Product to a summary-shape array on assignment.
+        $dto->relatedProducts   = array_map($this->productToSummary(...), $this->getLinkedProducts($product->getRelatedProductCollection()));
+        $dto->crosssellProducts = array_map($this->productToSummary(...), $this->getLinkedProducts($product->getCrossSellProductCollection()));
+        $dto->upsellProducts    = array_map($this->productToSummary(...), $this->getLinkedProducts($product->getUpSellProductCollection()));
 
         // Grouped children
         if ($typeId === \Mage_Catalog_Model_Product_Type::TYPE_GROUPED) {
@@ -709,6 +713,33 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
             $products[] = $this->toDto($product, forListing: true);
         }
         return $products;
+    }
+
+    /**
+     * Flatten a Product DTO to the summary-shape array the
+     * relatedProducts / crosssellProducts / upsellProducts properties
+     * expect. Keeps fields that a card-style tile needs (id, sku, name,
+     * pricing, image URLs, url_key); drops the heavy detail fields
+     * (descriptions, options, variants, etc.) since linked-product
+     * surfaces are listing-style.
+     *
+     * @return array<string, mixed>
+     */
+    private function productToSummary(Product $p): array
+    {
+        return [
+            'id'           => $p->id,
+            'sku'          => $p->sku,
+            'name'         => $p->name,
+            'urlKey'       => $p->urlKey,
+            'price'        => $p->price,
+            'specialPrice' => $p->specialPrice,
+            'finalPrice'   => $p->finalPrice,
+            'stockStatus'  => $p->stockStatus,
+            'imageUrl'     => $p->imageUrl,
+            'smallImageUrl'=> $p->smallImageUrl,
+            'thumbnailUrl' => $p->thumbnailUrl,
+        ];
     }
 
     /**

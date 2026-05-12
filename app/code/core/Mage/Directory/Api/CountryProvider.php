@@ -116,15 +116,14 @@ final class CountryProvider extends \Maho\ApiPlatform\Provider
     private function dtoToArray(Country $dto): array
     {
         return [
-            'id' => $dto->id,
-            'name' => $dto->name,
-            'iso2Code' => $dto->iso2Code,
-            'iso3Code' => $dto->iso3Code,
-            'availableRegions' => array_map(fn(Region $r) => [
-                'id' => $r->id,
-                'code' => $r->code,
-                'name' => $r->name,
-            ], $dto->availableRegions),
+            'id'               => $dto->id,
+            'name'             => $dto->name,
+            'iso2Code'         => $dto->iso2Code,
+            'iso3Code'         => $dto->iso3Code,
+            // $dto->availableRegions is already array<int, array{id, code, name}>
+            // (built as plain arrays by Country::afterLoad) - straight passthrough
+            // for the cache round-trip, no Region DTO conversion needed.
+            'availableRegions' => $dto->availableRegions,
         ];
     }
 
@@ -134,17 +133,11 @@ final class CountryProvider extends \Maho\ApiPlatform\Provider
     private function arrayToDto(array $data): Country
     {
         $dto = new Country();
-        $dto->id = $data['id'] ?? '';
-        $dto->name = $data['name'] ?? '';
-        $dto->iso2Code = $data['iso2Code'] ?? '';
-        $dto->iso3Code = $data['iso3Code'] ?? '';
-        $dto->availableRegions = array_map(function (array $r) {
-            $region = new Region();
-            $region->id = $r['id'] ?? 0;
-            $region->code = $r['code'] ?? '';
-            $region->name = $r['name'] ?? '';
-            return $region;
-        }, $data['availableRegions'] ?? []);
+        $dto->id               = $data['id'] ?? '';
+        $dto->name             = $data['name'] ?? '';
+        $dto->iso2Code         = $data['iso2Code'] ?? '';
+        $dto->iso3Code         = $data['iso3Code'] ?? '';
+        $dto->availableRegions = $data['availableRegions'] ?? [];
         return $dto;
     }
 }

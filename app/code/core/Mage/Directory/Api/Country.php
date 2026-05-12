@@ -80,14 +80,18 @@ class Country extends CrudResource
         $collection->addCountryFilter($model->getCountryId());
 
         foreach ($collection as $mahoRegion) {
-            $region = new Region();
-            $region->id = (int) $mahoRegion->getRegionId();
-            $region->code = $mahoRegion->getCode() ?? '';
-            $region->name = $mahoRegion->getDefaultName() ?? $mahoRegion->getName() ?? '';
-            $regions[] = $region;
+            // Plain array shape (not a Region DTO) to match the
+            // array<int, array<string, mixed>> property type. Region is a
+            // non-ApiResource DTO so the typed-array form trips GraphQL's
+            // CursorConnection wrapping with null edges.
+            $regions[] = [
+                'id'   => (int) $mahoRegion->getRegionId(),
+                'code' => $mahoRegion->getCode() ?? '',
+                'name' => $mahoRegion->getDefaultName() ?? $mahoRegion->getName() ?? '',
+            ];
         }
 
-        usort($regions, fn($a, $b) => strcmp($a->name, $b->name));
+        usort($regions, fn($a, $b) => strcmp($a['name'], $b['name']));
         $dto->availableRegions = $regions;
     }
 }

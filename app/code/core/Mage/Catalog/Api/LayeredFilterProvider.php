@@ -100,15 +100,24 @@ final class LayeredFilterProvider extends \Maho\ApiPlatform\Provider
 
             $items = $filterModel->getItems();
             foreach ($items as $item) {
-                $option = new FilterOption();
-                // For layered nav items, getValue() returns the eav_attribute_option.option_id
-                $option->value = (string) $item->getValue();
-                $option->label = (string) $item->getLabel();
-                $option->count = (int) $item->getCount();
-
+                // Build a plain array shape (not a FilterOption DTO) - the
+                // $dto->options property is typed as array<int, array<string, mixed>>
+                // so GraphQL exposes it as Iterable scalar instead of wrapping
+                // in a broken CursorConnection (FilterOption is a non-ApiResource
+                // DTO with no Read operation for edge resolution).
                 $optionId = (int) $item->getValue();
+                $option = [
+                    'value' => (string) $item->getValue(),
+                    'label' => (string) $item->getLabel(),
+                    'count' => (int) $item->getCount(),
+                    'swatch' => null,
+                ];
+
                 if (isset($swatchMap[$optionId])) {
-                    $option->swatch = $swatchMap[$optionId];
+                    $option['swatch'] = [
+                        'type'  => $swatchMap[$optionId]->type,
+                        'value' => $swatchMap[$optionId]->value,
+                    ];
                 }
 
                 $dto->options[] = $option;
@@ -190,16 +199,14 @@ final class LayeredFilterProvider extends \Maho\ApiPlatform\Provider
     private function dtoToArray(LayeredFilter $dto): array
     {
         return [
-            'code' => $dto->code,
-            'label' => $dto->label,
-            'type' => $dto->type,
+            'code'     => $dto->code,
+            'label'    => $dto->label,
+            'type'     => $dto->type,
             'position' => $dto->position,
-            'options' => array_map(fn(FilterOption $o) => [
-                'value' => $o->value,
-                'label' => $o->label,
-                'count' => $o->count,
-                'swatch' => $o->swatch ? ['type' => $o->swatch->type, 'value' => $o->swatch->value] : null,
-            ], $dto->options),
+            // $dto->options is already array<int, array{value, label, count, swatch}>
+            // - the builder above produces plain array shapes, not FilterOption DTOs
+            // - so the cache round-trip is a straight passthrough.
+            'options'  => $dto->options,
         ];
     }
 
@@ -209,23 +216,14 @@ final class LayeredFilterProvider extends \Maho\ApiPlatform\Provider
     private function arrayToDto(array $data): LayeredFilter
     {
         $dto = new LayeredFilter();
-        $dto->code = $data['code'] ?? '';
-        $dto->label = $data['label'] ?? '';
-        $dto->type = $data['type'] ?? 'select';
+        $dto->code     = $data['code'] ?? '';
+        $dto->label    = $data['label'] ?? '';
+        $dto->type     = $data['type'] ?? 'select';
         $dto->position = $data['position'] ?? 0;
-        $dto->options = array_map(function (array $o) {
-            $option = new FilterOption();
-            $option->value = $o['value'] ?? '';
-            $option->label = $o['label'] ?? '';
-            $option->count = $o['count'] ?? 0;
-            if (!empty($o['swatch'])) {
-                $option->swatch = new FilterOptionSwatch(
-                    type: $o['swatch']['type'] ?? 'color',
-                    value: $o['swatch']['value'] ?? '',
-                );
-            }
-            return $option;
-        }, $data['options'] ?? []);
+        // Options are stored and retrieved as plain array shapes
+        // (array<int, array{value, label, count, swatch}>) - no DTO
+        // round-trip needed.
+        $dto->options  = $data['options'] ?? [];
         return $dto;
     }
 }
