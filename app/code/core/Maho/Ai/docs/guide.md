@@ -335,39 +335,103 @@ Per-provider API keys (encrypted), default models, rate limits, safety toggles, 
 
 ---
 
-## 10. Extending With Community Providers
+## 10. Dev Guide: Extending With Community Providers
 
-Add a new provider without modifying core. Two files plus a `config.xml` entry.
+The whole point of the module is to make adding a new provider easy. The recommended pattern: **extend `Maho_Ai_Model_Platform_Symfony`**. You inherit everything Maho-side (encrypted config wiring, model resolution, token-usage capture in `{input, output}` shape, custom `ModelCatalog` plumbing, exception types) and only override what's actually different about your provider.
+
+Real-world example: [`MageAustralia/AiContent`](https://github.com/mageaustralia/maho-module-ai-content) adds NanoGPT — chat (OpenAI-compatible at a custom host), image (OpenAI-shaped with NanoGPT-specific extras), and video (custom async API). The full implementation is ~200 lines.
+
+### Why extend `Maho_Ai_Model_Platform_Symfony` (and not implement interfaces directly)?
+
+Symfony AI Platform's `Bridge\OpenAi\PlatformFactory::create()` already accepts a custom `host:` parameter, so any OpenAI-compatible endpoint (NanoGPT, LiteLLM, vLLM, Azure OpenAI, etc.) can be wired without writing new HTTP code. The Maho shim sits on top of that and adds:
+
+- Encrypted API key retrieval from store config
+- Model resolution order (`maho_ai/{platform}/{capability}_model` → defaults)
+- Token-usage normalisation to Maho's `{input, output}` shape
+- Custom `ModelCatalog` so admin-set model IDs not in Symfony's built-in catalog still resolve
+- Maho's `Mage_Core_Exception` from provider errors
+
+Extending the shim gets you all of that for free. The shim is non-final and the following members are `protected` (intentional extension points):
+
+| Member | Purpose |
+|---|---|
+| `protected readonly PlatformInterface $platform` | The Symfony bridge instance you built in the subclass constructor |
+| `protected readonly string $platformCode` | Your provider code (`'nanogpt'`, `'azureopenai'`, etc.) |
+| `protected readonly string $defaultChatModel` / `$defaultEmbedModel` / `$defaultImageModel` | Defaults passed through the constructor |
+| `protected string $lastModel` / `$lastEmbedModel` / `$lastImageModel` | Update from your overrides so getLastModel*() reports correctly |
+| `protected array $lastTokenUsage` / `$lastEmbedTokenUsage` | Update from your overrides so getLastTokenUsage*() reports correctly |
+| `protected function buildMessageBag(array $messages): MessageBag` | Maho `[{role, content}]` → Symfony `MessageBag` |
+| `protected function mapChatOptions(array $options): array` | Maho options → Symfony invoke options |
+| `protected function mapEmbedOptions(array $options): array` | (same, for embeddings) |
+| `protected function mapImageOptions(array $options): array` | (same, for image gen) |
+| `protected function captureChatMetadata(DeferredResult $deferred, string $model): void` | Pulls token usage + model from the response and stores in `$lastTokenUsage` / `$lastModel` |
+| `protected function extractTokenUsage(DeferredResult $deferred): ?TokenUsage` | Just the token-usage extraction (useful in custom flows that don't use full captureChatMetadata) |
 
 ### Step 1: Provider Class
 
-Implement the relevant interface (`ProviderInterface`, `EmbedProviderInterface`, `ImageProviderInterface`, or `VideoProviderInterface`) in your module:
+For an OpenAI-compatible chat endpoint at a custom host (like NanoGPT):
 
 ```php
 // app/code/community/My/Module/Model/Platform/Foo.php
-class My_Module_Model_Platform_Foo implements Maho_Ai_Model_Platform_ProviderInterface
+use Symfony\AI\Platform\Bridge\OpenAi\PlatformFactory as OpenAiPlatformFactory;
+use Symfony\Component\HttpClient\HttpClient;
+
+class My_Module_Model_Platform_Foo extends Maho_Ai_Model_Platform_Symfony
 {
-    public function __construct(private readonly string $apiKey) {}
-
-    public function complete(array $messages, array $options = []): string
+    public function __construct(string $apiKey, string $defaultChatModel)
     {
-        // your HTTP call (or wrap a symfony/ai-platform Bridge)
-        return $response;
-    }
+        // Build a Symfony OpenAI bridge against your provider's OpenAI-compatible host.
+        // Custom ModelCatalog entries register admin-set models so they resolve.
+        $catalog = new \Symfony\AI\Platform\Bridge\OpenAi\ModelCatalog([
+            $defaultChatModel => [
+                'class' => \Symfony\AI\Platform\Bridge\OpenAi\Gpt::class,
+                'capabilities' => [
+                    \Symfony\AI\Platform\Capability::INPUT_MESSAGES,
+                    \Symfony\AI\Platform\Capability::OUTPUT_TEXT,
+                ],
+            ],
+        ]);
 
-    public function getLastTokenUsage(): array { /* ... */ }
-    public function getPlatformCode(): string { return 'foo'; }
-    public function getLastModel(): string { /* ... */ }
+        parent::__construct(
+            platform: OpenAiPlatformFactory::create($apiKey, host: 'api.foo.example/v1', modelCatalog: $catalog),
+            platformCode: 'foo',
+            defaultChatModel: $defaultChatModel,
+        );
+    }
 }
 ```
 
+That's it for the common case — chat works out of the box, inherited from the parent. To add a custom-shaped image endpoint (where the provider accepts extra fields the OpenAI bridge doesn't expose), override `generateImage()`:
+
+```php
+    #[\Override]
+    public function generateImage(string $prompt, array $options = []): string
+    {
+        $model = (string) ($options['model'] ?? $this->defaultImageModel);
+        $this->lastImageModel = $model;
+
+        $response = HttpClient::create()->request('POST', 'https://api.foo.example/v1/images', [
+            'headers' => ['Authorization' => 'Bearer ' . $this->apiKey],
+            'json'    => ['model' => $model, 'prompt' => $prompt, /* ... */],
+        ]);
+        $data = $response->toArray(false);
+        return $data['data'][0]['url'] ?? '';
+    }
+```
+
+For a fully custom non-OpenAI-shaped endpoint (e.g. video, where Symfony has no bridge), implement the relevant interface and add direct HTTP logic — see NanoGpt's `generateVideo()` / `getVideoStatus()` for a real implementation.
+
 ### Step 2: Factory Class
+
+Builds the provider from store config and returns the instance to `Maho_Ai_Model_Platform_Factory`:
 
 ```php
 // app/code/community/My/Module/Model/Platform/Foo/Factory.php
-class My_Module_Model_Platform_Foo_Factory implements Maho_Ai_Model_Platform_ProviderFactoryInterface
+class My_Module_Model_Platform_Foo_Factory
+    implements Maho_Ai_Model_Platform_ProviderFactoryInterface
 {
-    public function create(?int $storeId): object
+    #[\Override]
+    public function create(?int $storeId = null): Maho_Ai_Model_Platform_ProviderInterface
     {
         $apiKey = (string) Mage::helper('core')->decrypt(
             (string) Mage::getStoreConfig('maho_ai/general/foo_api_key', $storeId),
@@ -375,7 +439,11 @@ class My_Module_Model_Platform_Foo_Factory implements Maho_Ai_Model_Platform_Pro
         if ($apiKey === '') {
             throw new Mage_Core_Exception('Foo API key is not configured.');
         }
-        return new My_Module_Model_Platform_Foo($apiKey);
+
+        return new My_Module_Model_Platform_Foo(
+            apiKey: $apiKey,
+            defaultChatModel: (string) Mage::getStoreConfig('maho_ai/general/foo_model', $storeId) ?: 'foo-default',
+        );
     }
 }
 ```
