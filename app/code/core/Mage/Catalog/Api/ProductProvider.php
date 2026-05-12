@@ -737,7 +737,7 @@ final class ProductProvider extends \Maho\ApiPlatform\Provider
             'finalPrice'   => $p->finalPrice,
             'stockStatus'  => $p->stockStatus,
             'imageUrl'     => $p->imageUrl,
-            'smallImageUrl'=> $p->smallImageUrl,
+            'smallImageUrl' => $p->smallImageUrl,
             'thumbnailUrl' => $p->thumbnailUrl,
         ];
     }
