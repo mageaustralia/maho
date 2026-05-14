@@ -14,13 +14,16 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
 {
     public const ADMIN_RESOURCE = 'system/config';
 
-    /** Skip secret key validation for AJAX — session cookie + ACL is sufficient. */
-    protected $_publicActions = ['fetchModels', 'taskStatus'];
+    /** Read-only JSON poll — skip URL secret key, session cookie + ACL is sufficient. */
+    protected $_publicActions = ['taskStatus'];
 
     #[\Override]
     public function preDispatch(): static
     {
-        $this->_setForcedFormKeyActions(['reindexPost']);
+        // fetchModels triggers outbound provider HTTP and writes the cached
+        // model list to core_config_data, so it's a state-changing action
+        // and must require a form key.
+        $this->_setForcedFormKeyActions(['reindexPost', 'fetchModels']);
         return parent::preDispatch();
     }
 
@@ -179,11 +182,12 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
 
     /**
      * AJAX: fetch available models for a provider and cache in config.
-     * Listed in $_publicActions to skip URL secret key (incompatible with AJAX).
-     * CSRF is mitigated by ACL (admin session required) and browser same-origin policy.
+     * POST-only + form-key required (registered in preDispatch). The admin
+     * URL secret key is added automatically by getUrl(); mahoFetch attaches
+     * form_key from the page's FORM_KEY global on every POST.
      * Provider is implicitly whitelisted by fetchForProvider()'s match() statement.
      */
-    #[Maho\Config\Route('/admin/ai/fetchModels')]
+    #[Maho\Config\Route('/admin/ai/fetchModels', methods: ['POST'])]
     public function fetchModelsAction(): void
     {
         $this->getResponse()->setHeader('Content-Type', 'application/json');
