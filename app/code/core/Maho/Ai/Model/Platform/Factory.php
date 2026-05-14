@@ -146,6 +146,17 @@ class Maho_Ai_Model_Platform_Factory
 
     private function createSymfonyShim(string $platformCode, ?int $storeId): Maho_Ai_Model_Platform_Symfony
     {
+        $config = Maho_Ai_Model_Platform::getProviderConfig($platformCode);
+        $package = $config !== null ? (string) ($config->package ?? '') : '';
+        if ($package !== '' && !\Composer\InstalledVersions::isInstalled($package)) {
+            throw new Mage_Core_Exception(sprintf(
+                'Maho AI provider "%s" requires the %s Composer package. Install it with: composer require %s',
+                $platformCode,
+                $package,
+                $package,
+            ));
+        }
+
         return match ($platformCode) {
             Maho_Ai_Model_Platform::OPENAI     => Maho_Ai_Model_Platform_Symfony::createForOpenAi($storeId),
             Maho_Ai_Model_Platform::ANTHROPIC  => Maho_Ai_Model_Platform_Symfony::createForAnthropic($storeId),

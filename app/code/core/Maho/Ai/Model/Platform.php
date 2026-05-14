@@ -87,6 +87,21 @@ class Maho_Ai_Model_Platform
     }
 
     /**
+     * Append a "⚠️ Install <package>" hint to a provider label when its
+     * Composer package isn't installed. Mirrors the SMTP transport source's
+     * UX so admins discover missing optional dependencies inline.
+     */
+    public static function decorateLabelForUi(string $code, string $label): string
+    {
+        $config = self::getProviderConfig($code);
+        $package = $config !== null ? (string) ($config->package ?? '') : '';
+        if ($package === '' || \Composer\InstalledVersions::isInstalled($package)) {
+            return $label;
+        }
+        return $label . " ⚠️ Install {$package}";
+    }
+
+    /**
      * Get providers that declare a given capability, sorted by sort_order.
      *
      * @param string $capability  One of: chat, embed, image, video

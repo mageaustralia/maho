@@ -16,7 +16,10 @@ class Maho_Ai_Model_Source_EmbedPlatform
     {
         $options = [];
         foreach (Maho_Ai_Model_Platform::getProvidersWithCapability('embed') as $code => $label) {
-            $options[] = ['value' => $code, 'label' => $label];
+            $options[] = [
+                'value' => $code,
+                'label' => Maho_Ai_Model_Platform::decorateLabelForUi($code, $label),
+            ];
         }
         return $options;
     }

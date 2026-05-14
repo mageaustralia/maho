@@ -16,7 +16,10 @@ class Maho_Ai_Model_Source_ImagePlatform
     {
         $options = [];
         foreach (Maho_Ai_Model_Platform::getProvidersWithCapability('image') as $code => $label) {
-            $options[] = ['value' => $code, 'label' => $label];
+            $options[] = [
+                'value' => $code,
+                'label' => Maho_Ai_Model_Platform::decorateLabelForUi($code, $label),
+            ];
         }
         return $options;
     }
