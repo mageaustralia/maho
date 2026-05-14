@@ -16,9 +16,8 @@ class Maho_Ai_Model_Source_EmbedPlatform
     {
         $options = [];
         foreach (Maho_Ai_Model_Platform::getProvidersWithCapability('embed') as $code => $label) {
-            $package = Maho_Ai_Model_Platform::PACKAGES[$code] ?? null;
-            if ($package && !\Composer\InstalledVersions::isInstalled($package)) {
-                $label .= " ⚠️ Install $package";
+            if (isset(Maho_Ai_Model_Platform::PACKAGES[$code])) {
+                $label .= Mage::helper('core')->packageInstallWarning(Maho_Ai_Model_Platform::PACKAGES[$code]);
             }
             $options[] = ['value' => $code, 'label' => $label];
         }

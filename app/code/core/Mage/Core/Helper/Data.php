@@ -1163,6 +1163,22 @@ XML;
     }
 
     /**
+     * Return a "⚠️ Install <package>" hint when the given Composer package
+     * isn't installed, or '' when it is. Used by system-config sources that
+     * surface optional dependencies inline (SMTP transports, AI providers).
+     *
+     * @param string $separator string inserted before the warning - " " for
+     *                          dropdown labels, "<br>" for heading rows.
+     */
+    public function packageInstallWarning(string $package, string $separator = ' '): string
+    {
+        if (\Composer\InstalledVersions::isInstalled($package)) {
+            return '';
+        }
+        return $separator . "⚠️ Install $package";
+    }
+
+    /**
      * Get SVG icon content
      *
      * @param string $name Icon name (e.g., 'circle-x', 'plus', etc.)
