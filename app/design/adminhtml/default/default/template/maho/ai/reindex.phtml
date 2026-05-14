@@ -21,16 +21,21 @@ $estMinutes    = $this->estimateMinutes($totalCount);
     <h3 class="icon-head head-edit-form"><?php echo $helper->__('Queue All Embeddings') ?></h3>
 </div>
 
-<?php if (!$embedEnabled): ?>
-<div class="messages"><ul class="messages"><li class="error-msg"><ul><li>
-    <?php echo $helper->__('Embeddings are disabled. Enable them under System &gt; Maho AI &gt; Embed Settings before queuing.') ?>
-</li></ul></li></ul></div>
-<?php endif ?>
-
-<?php if (!$queueEnabled): ?>
-<div class="messages"><ul class="messages"><li class="error-msg"><ul><li>
-    <?php echo $helper->__('The async queue is disabled. Enable it under System &gt; Maho AI &gt; Queue Settings or tasks will never be processed.') ?>
-</li></ul></li></ul></div>
+<?php if (!$embedEnabled || !$queueEnabled): ?>
+<div class="messages">
+    <ul class="messages">
+        <li class="error-msg">
+            <ul>
+                <?php if (!$embedEnabled): ?>
+                <li><?php echo $helper->__('Embeddings are disabled. Enable them under System &gt; AI &gt; Embed Settings before queuing.') ?></li>
+                <?php endif ?>
+                <?php if (!$queueEnabled): ?>
+                <li><?php echo $helper->__('The async queue is disabled. Enable it under System &gt; AI &gt; Queue Settings or tasks will never be processed.') ?></li>
+                <?php endif ?>
+            </ul>
+        </li>
+    </ul>
+</div>
 <?php endif ?>
 
 <div class="entry-edit ai-entry--narrow">
