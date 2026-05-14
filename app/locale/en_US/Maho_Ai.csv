@@ -1,5 +1,4 @@
 "%s items queued for embedding.","%s items queued for embedding."
-"— click ""Update Models"" to load available models —","— click ""Update Models"" to load available models —"
 "Action","Action"
 "AI","AI"
 "AI Task #%s","AI Task #%s"
@@ -118,3 +117,4 @@
 "Vector with %d dimensions","Vector with %d dimensions"
 "View","View"
 "Warning: %d embedding tasks are already pending. Running this again will add duplicate tasks.","Warning: %d embedding tasks are already pending. Running this again will add duplicate tasks."
+"— click ""Update Models"" to load available models —","— click ""Update Models"" to load available models —"
