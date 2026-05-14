@@ -16,10 +16,11 @@ class Maho_Ai_Model_Source_VideoPlatform
     {
         $options = [];
         foreach (Maho_Ai_Model_Platform::getProvidersWithCapability('video') as $code => $label) {
-            $options[] = [
-                'value' => $code,
-                'label' => Maho_Ai_Model_Platform::decorateLabelForUi($code, $label),
-            ];
+            $package = Maho_Ai_Model_Platform::PACKAGES[$code] ?? null;
+            if ($package && !\Composer\InstalledVersions::isInstalled($package)) {
+                $label .= " ⚠️ Install $package";
+            }
+            $options[] = ['value' => $code, 'label' => $label];
         }
         return $options;
     }

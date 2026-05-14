@@ -24,6 +24,22 @@ class Maho_Ai_Model_Platform
     /**
      * Per-token pricing in USD (input, output) — approximate, updated periodically
      */
+    /**
+     * Map of provider code to the Composer package that ships its Symfony AI
+     * bridge. Built-in providers only — community providers handle their own
+     * dependencies. Mirrors SCHEME_TO_PACKAGE_MAP in
+     * Mage_Adminhtml_Model_System_Config_Source_Email_Transport.
+     */
+    public const PACKAGES = [
+        self::OPENAI     => 'symfony/ai-open-ai-platform',
+        self::ANTHROPIC  => 'symfony/ai-anthropic-platform',
+        self::GOOGLE     => 'symfony/ai-gemini-platform',
+        self::MISTRAL    => 'symfony/ai-mistral-platform',
+        self::OPENROUTER => 'symfony/ai-open-router-platform',
+        self::OLLAMA     => 'symfony/ai-ollama-platform',
+        self::GENERIC    => 'symfony/ai-generic-platform',
+    ];
+
     public const PRICING = [
         self::OPENAI => [
             'gpt-4o'              => [0.0000025, 0.000010],
@@ -84,21 +100,6 @@ class Maho_Ai_Model_Platform
     {
         $node = Mage::getConfig()->getNode("global/ai/providers/{$code}");
         return $node ?: null;
-    }
-
-    /**
-     * Append a "⚠️ Install <package>" hint to a provider label when its
-     * Composer package isn't installed. Mirrors the SMTP transport source's
-     * UX so admins discover missing optional dependencies inline.
-     */
-    public static function decorateLabelForUi(string $code, string $label): string
-    {
-        $config = self::getProviderConfig($code);
-        $package = $config !== null ? (string) ($config->package ?? '') : '';
-        if ($package === '' || \Composer\InstalledVersions::isInstalled($package)) {
-            return $label;
-        }
-        return $label . " ⚠️ Install {$package}";
     }
 
     /**
