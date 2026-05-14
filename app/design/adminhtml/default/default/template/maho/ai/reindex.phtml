@@ -22,20 +22,18 @@ $estMinutes    = $this->estimateMinutes($totalCount);
 </div>
 
 <?php if (!$embedEnabled || !$queueEnabled): ?>
-<div class="messages">
-    <ul class="messages">
-        <li class="error-msg">
-            <ul>
-                <?php if (!$embedEnabled): ?>
-                <li><?php echo $helper->__('Embeddings are disabled. Enable them under System &gt; AI &gt; Embed Settings before queuing.') ?></li>
-                <?php endif ?>
-                <?php if (!$queueEnabled): ?>
-                <li><?php echo $helper->__('The async queue is disabled. Enable it under System &gt; AI &gt; Queue Settings or tasks will never be processed.') ?></li>
-                <?php endif ?>
-            </ul>
-        </li>
-    </ul>
-</div>
+<ul class="messages">
+    <?php if (!$embedEnabled): ?>
+    <li class="error-msg">
+        <ul><li><?php echo $helper->__('Embeddings are disabled. Enable them under System &gt; AI &gt; Embed Settings before queuing.') ?></li></ul>
+    </li>
+    <?php endif ?>
+    <?php if (!$queueEnabled): ?>
+    <li class="error-msg">
+        <ul><li><?php echo $helper->__('The async queue is disabled. Enable it under System &gt; AI &gt; Queue Settings or tasks will never be processed.') ?></li></ul>
+    </li>
+    <?php endif ?>
+</ul>
 <?php endif ?>
 
 <div class="entry-edit ai-entry--narrow">
