@@ -16,18 +16,11 @@
                     <show_in_website>0</show_in_website>
                     <show_in_store>0</show_in_store>
                     <fields>
-                        <requirements translate="label">
-                            <label>Requirements</label>
-                            <frontend_model>adminhtml/system_config_form_field_heading_packagecheck</frontend_model>
-                            <mandatory_package>symfony/ai-platform</mandatory_package>
-                            <sort_order>1</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </requirements>
                         <enabled translate="label">
-                            <label>Enable Maho AI</label>
+                            <label>Enabled</label>
                             <frontend_type>boolean</frontend_type>
+                            <frontend_model>adminhtml/system_config_form_field_packagecheck</frontend_model>
+                            <mandatory_package>symfony/ai-platform</mandatory_package>
                             <sort_order>10</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
@@ -43,7 +36,7 @@
                             <show_in_store>0</show_in_store>
                         </default_platform>
                         <log_requests translate="label">
-                            <label>Log AI Requests</label>
+                            <label>Log Requests</label>
                             <frontend_type>boolean</frontend_type>
                             <sort_order>30</sort_order>
                             <show_in_default>1</show_in_default>
