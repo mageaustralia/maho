@@ -99,12 +99,10 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
     #[Maho\Config\Route('/admin/ai/task_status')]
     public function taskStatusAction(): void
     {
-        $this->getResponse()->setHeader('Content-Type', 'application/json');
-
         $id = (int) $this->getRequest()->getParam('id');
         if ($id <= 0) {
             $this->getResponse()->setHttpResponseCode(400);
-            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => 'Missing or invalid id parameter.']));
+            $this->getResponse()->setBodyJson(['error' => 'Missing or invalid id parameter.']);
             return;
         }
 
@@ -112,12 +110,12 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         $task = Mage::getModel('ai/task')->load($id);
         if (!$task->getId()) {
             $this->getResponse()->setHttpResponseCode(404);
-            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => 'Task not found.']));
+            $this->getResponse()->setBodyJson(['error' => 'Task not found.']);
             return;
         }
 
         $status = (string) $task->getData('status');
-        $this->getResponse()->setBody(Mage::helper('core')->jsonEncode([
+        $this->getResponse()->setBodyJson([
             'task_id'       => $id,
             'status'        => $status,
             'task_type'     => (string) $task->getData('task_type'),
@@ -126,7 +124,7 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
                 : null,
             'error_message' => (string) $task->getData('error_message') ?: null,
             'completed_at'  => $task->getData('completed_at'),
-        ]));
+        ]);
     }
 
     #[Maho\Config\Route('/admin/ai/usage')]
@@ -190,12 +188,10 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
     #[Maho\Config\Route('/admin/ai/fetchModels', methods: ['POST'])]
     public function fetchModelsAction(): void
     {
-        $this->getResponse()->setHeader('Content-Type', 'application/json');
-
         $provider = (string) $this->getRequest()->getParam('provider');
         $capability = (string) $this->getRequest()->getParam('capability') ?: 'chat';
         if ($provider === '') {
-            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => 'Provider is required.']));
+            $this->getResponse()->setBodyJson(['error' => 'Provider is required.']);
             return;
         }
 
@@ -211,9 +207,9 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
             );
             Mage::app()->getCache()->cleanType('config');
 
-            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['models' => $models]));
+            $this->getResponse()->setBodyJson(['models' => $models]);
         } catch (Exception $e) {
-            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => $e->getMessage()]));
+            $this->getResponse()->setBodyJson(['error' => $e->getMessage()]);
         }
     }
 
