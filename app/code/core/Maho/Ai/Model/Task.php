@@ -37,7 +37,7 @@ class Maho_Ai_Model_Task extends Mage_Core_Model_Abstract
         if (!$json) {
             return [];
         }
-        return json_decode($json, true) ?? [];
+        return Mage::helper('core')->jsonDecode($json) ?? [];
     }
 
     public function getContextArray(): array
@@ -46,7 +46,7 @@ class Maho_Ai_Model_Task extends Mage_Core_Model_Abstract
         if (!$json) {
             return [];
         }
-        return json_decode($json, true) ?? [];
+        return Mage::helper('core')->jsonDecode($json) ?? [];
     }
 
     public function isPending(): bool
@@ -67,7 +67,7 @@ class Maho_Ai_Model_Task extends Mage_Core_Model_Abstract
     public function markProcessing(): static
     {
         $this->setData('status', self::STATUS_PROCESSING);
-        $this->setData('started_at', date('Y-m-d H:i:s'));
+        $this->setData('started_at', Mage::app()->getLocale()->formatDateForDb('now'));
         return $this;
     }
 
@@ -79,7 +79,7 @@ class Maho_Ai_Model_Task extends Mage_Core_Model_Abstract
         $this->setData('output_tokens', $outputTokens);
         $this->setData('platform', $platform);
         $this->setData('model', $model);
-        $this->setData('completed_at', date('Y-m-d H:i:s'));
+        $this->setData('completed_at', Mage::app()->getLocale()->formatDateForDb('now'));
         return $this;
     }
 
@@ -96,7 +96,7 @@ class Maho_Ai_Model_Task extends Mage_Core_Model_Abstract
         } else {
             $this->setData('status', self::STATUS_FAILED);
             $this->setData('error_message', $errorMessage);
-            $this->setData('completed_at', date('Y-m-d H:i:s'));
+            $this->setData('completed_at', Mage::app()->getLocale()->formatDateForDb('now'));
         }
         return $this;
     }

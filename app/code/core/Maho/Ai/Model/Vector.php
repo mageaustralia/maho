@@ -29,6 +29,6 @@ class Maho_Ai_Model_Vector extends Mage_Core_Model_Abstract
         if (!$json) {
             return [];
         }
-        return json_decode($json, true) ?? [];
+        return Mage::helper('core')->jsonDecode($json) ?? [];
     }
 }

@@ -31,7 +31,7 @@ class Maho_Ai_Model_Resource_Usage extends Mage_Core_Model_Resource_Db_Abstract
     ): void {
         $connection = $this->_getWriteAdapter();
         $table = $this->getMainTable();
-        $date = date('Y-m-d');
+        $date = Mage::app()->getLocale()->formatDateForDb('now', withTime: false);
 
         $connection->insertOnDuplicate(
             $table,
@@ -59,7 +59,7 @@ class Maho_Ai_Model_Resource_Usage extends Mage_Core_Model_Resource_Db_Abstract
             ->from($this->getMainTable(), [
                 'total' => new Maho\Db\Expr('SUM(input_tokens + output_tokens)'),
             ])
-            ->where('period_date = ?', date('Y-m-d'));
+            ->where('period_date = ?', Mage::app()->getLocale()->formatDateForDb('now', withTime: false));
 
         return (int) $connection->fetchOne($select);
     }

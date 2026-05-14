@@ -57,7 +57,7 @@ class Maho_Ai_Model_TaskRunner
         $usageTable = Mage::getSingleton('core/resource')->getTableName('ai/usage');
 
         // Aggregate yesterday's completed tasks into usage
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $yesterday = Mage::app()->getLocale()->formatDateForDb('-1 day', withTime: false);
 
         $connection->query("
             INSERT INTO {$usageTable}
@@ -91,7 +91,7 @@ class Maho_Ai_Model_TaskRunner
     {
         $connection = Mage::getSingleton('core/resource')->getConnection('core_write');
         $taskTable  = Mage::getSingleton('core/resource')->getTableName('ai/task');
-        $cutoff     = date('Y-m-d H:i:s', strtotime('-90 days'));
+        $cutoff     = Mage::app()->getLocale()->formatDateForDb('-90 days');
 
         $connection->delete($taskTable, [
             'status IN (?)' => [Maho_Ai_Model_Task::STATUS_COMPLETE, Maho_Ai_Model_Task::STATUS_FAILED, Maho_Ai_Model_Task::STATUS_CANCELLED],
@@ -220,7 +220,7 @@ class Maho_Ai_Model_TaskRunner
         }
 
         $usage    = $provider->getLastEmbedTokenUsage();
-        $response = json_encode($vector);
+        $response = Mage::helper('core')->jsonEncode($vector);
 
         $task->markComplete(
             response: $response,
@@ -296,7 +296,7 @@ class Maho_Ai_Model_TaskRunner
     {
         $connection = Mage::getSingleton('core/resource')->getConnection('core_write');
         $taskTable  = Mage::getSingleton('core/resource')->getTableName('ai/task');
-        $cutoff     = date('Y-m-d H:i:s', time() - $timeoutSeconds);
+        $cutoff     = Mage::app()->getLocale()->formatDateForDb('-' . $timeoutSeconds . ' seconds');
 
         // Re-queue timed-out tasks (they'll be retried up to max_retries)
         $connection->query("

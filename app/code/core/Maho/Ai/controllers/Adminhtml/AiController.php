@@ -104,7 +104,7 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         $id = (int) $this->getRequest()->getParam('id');
         if ($id <= 0) {
             $this->getResponse()->setHttpResponseCode(400);
-            $this->getResponse()->setBody(json_encode(['error' => 'Missing or invalid id parameter.']));
+            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => 'Missing or invalid id parameter.']));
             return;
         }
 
@@ -112,12 +112,12 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         $task = Mage::getModel('ai/task')->load($id);
         if (!$task->getId()) {
             $this->getResponse()->setHttpResponseCode(404);
-            $this->getResponse()->setBody(json_encode(['error' => 'Task not found.']));
+            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => 'Task not found.']));
             return;
         }
 
         $status = (string) $task->getData('status');
-        $this->getResponse()->setBody(json_encode([
+        $this->getResponse()->setBody(Mage::helper('core')->jsonEncode([
             'task_id'       => $id,
             'status'        => $status,
             'task_type'     => (string) $task->getData('task_type'),
@@ -195,7 +195,7 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         $provider = (string) $this->getRequest()->getParam('provider');
         $capability = (string) $this->getRequest()->getParam('capability') ?: 'chat';
         if ($provider === '') {
-            $this->getResponse()->setBody(json_encode(['error' => 'Provider is required.']));
+            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => 'Provider is required.']));
             return;
         }
 
@@ -207,13 +207,13 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
             // Cache result in config so source models can use it
             Mage::getModel('core/config')->saveConfig(
                 "maho_ai/models_cache/{$provider}",
-                json_encode($models),
+                Mage::helper('core')->jsonEncode($models),
             );
             Mage::app()->getCache()->cleanType('config');
 
-            $this->getResponse()->setBody(json_encode(['models' => $models]));
+            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['models' => $models]));
         } catch (Exception $e) {
-            $this->getResponse()->setBody(json_encode(['error' => $e->getMessage()]));
+            $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(['error' => $e->getMessage()]));
         }
     }
 
@@ -225,7 +225,7 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
     {
         $conn      = Mage::getSingleton('core/resource')->getConnection('core_write');
         $taskTable = Mage::getSingleton('core/resource')->getTableName('ai/task');
-        $now       = date('Y-m-d H:i:s');
+        $now       = Mage::app()->getLocale()->formatDateForDb('now');
         $batch     = [];
         $count     = 0;
 
@@ -268,8 +268,8 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
                     }
                     $batch[] = $baseRow + [
                         'consumer' => 'catalog_product',
-                        'messages' => json_encode([['role' => 'user', 'content' => $text]]),
-                        'context'  => json_encode(['entity_type' => 'product', 'entity_id' => (int) $product->getId()]),
+                        'messages' => Mage::helper('core')->jsonEncode([['role' => 'user', 'content' => $text]]),
+                        'context'  => Mage::helper('core')->jsonEncode(['entity_type' => 'product', 'entity_id' => (int) $product->getId()]),
                     ];
                     if (count($batch) >= 500) {
                         $flush();
@@ -297,8 +297,8 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
                     }
                     $batch[] = $baseRow + [
                         'consumer' => 'catalog_category',
-                        'messages' => json_encode([['role' => 'user', 'content' => $text]]),
-                        'context'  => json_encode(['entity_type' => 'category', 'entity_id' => (int) $category->getId()]),
+                        'messages' => Mage::helper('core')->jsonEncode([['role' => 'user', 'content' => $text]]),
+                        'context'  => Mage::helper('core')->jsonEncode(['entity_type' => 'category', 'entity_id' => (int) $category->getId()]),
                     ];
                     if (count($batch) >= 500) {
                         $flush();

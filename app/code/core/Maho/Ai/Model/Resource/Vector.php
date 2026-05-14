@@ -35,7 +35,7 @@ class Maho_Ai_Model_Resource_Vector extends Mage_Core_Model_Resource_Db_Abstract
     ): void {
         $connection = $this->_getWriteAdapter();
         $table      = $this->getMainTable();
-        $now        = date('Y-m-d H:i:s');
+        $now        = Mage::app()->getLocale()->formatDateForDb('now');
 
         $connection->insertOnDuplicate(
             $table,
@@ -46,7 +46,7 @@ class Maho_Ai_Model_Resource_Vector extends Mage_Core_Model_Resource_Db_Abstract
                 'platform'    => $platform,
                 'model'       => $model,
                 'dimensions'  => $dimensions,
-                'vector'      => json_encode($vector),
+                'vector'      => Mage::helper('core')->jsonEncode($vector),
                 'created_at'  => $now,
                 'updated_at'  => $now,
             ],
@@ -75,7 +75,7 @@ class Maho_Ai_Model_Resource_Vector extends Mage_Core_Model_Resource_Db_Abstract
         }
 
         return [
-            'vector'     => json_decode($row['vector'], true) ?? [],
+            'vector'     => Mage::helper('core')->jsonDecode($row['vector']) ?? [],
             'model'      => $row['model'],
             'platform'   => $row['platform'],
             'dimensions' => (int) $row['dimensions'],

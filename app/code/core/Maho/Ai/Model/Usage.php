@@ -36,7 +36,7 @@ class Maho_Ai_Model_Usage extends Mage_Core_Model_Abstract
         int $inputTokens,
         int $outputTokens,
     ): void {
-        $today = date('Y-m-d');
+        $today = Mage::app()->getLocale()->formatDateForDb('now', withTime: false);
 
         $existing = $this->loadAggregateRow($consumer, $platform, $model, $storeId, $today);
         if ($existing !== null) {
