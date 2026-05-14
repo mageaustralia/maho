@@ -56,10 +56,10 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
      * left-hand admin nav. Defaults to the parent "maho_ai" node.
      */
     private const ACTION_MENUS = [
-        'tasks'      => 'system/maho_ai/tasks',
-        'view'       => 'system/maho_ai/tasks',
-        'usage'      => 'system/maho_ai/usage',
-        'reindex'    => 'system/maho_ai/reindex',
+        'tasks'   => 'system/maho_ai/tasks',
+        'view'    => 'system/maho_ai/tasks',
+        'usage'   => 'system/maho_ai/usage',
+        'reindex' => 'system/maho_ai/reindex',
     ];
 
     protected function _initAction(): static
@@ -70,17 +70,11 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         $this->loadLayout()
             ->_setActiveMenu($menu)
             ->_addBreadcrumb(
-                Mage::helper('ai')->__('Maho AI'),
-                Mage::helper('ai')->__('Maho AI'),
+                Mage::helper('ai')->__('AI'),
+                Mage::helper('ai')->__('AI'),
             );
 
         return $this;
-    }
-
-    #[Maho\Config\Route('/admin/ai/dashboard')]
-    public function dashboardAction(): void
-    {
-        $this->_redirect('*/system_config/edit', ['section' => 'maho_ai']);
     }
 
     #[Maho\Config\Route('/admin/ai/tasks')]
