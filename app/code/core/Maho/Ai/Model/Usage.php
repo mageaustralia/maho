@@ -35,13 +35,12 @@ class Maho_Ai_Model_Usage extends Mage_Core_Model_Abstract
         int $storeId,
         int $inputTokens,
         int $outputTokens,
-        float $estimatedCost,
     ): void {
         $today = date('Y-m-d');
 
         $existing = $this->loadAggregateRow($consumer, $platform, $model, $storeId, $today);
         if ($existing !== null) {
-            $this->incrementCounters($existing, $inputTokens, $outputTokens, $estimatedCost);
+            $this->incrementCounters($existing, $inputTokens, $outputTokens);
             return;
         }
 
@@ -55,7 +54,6 @@ class Maho_Ai_Model_Usage extends Mage_Core_Model_Abstract
             'request_count'  => 1,
             'input_tokens'   => $inputTokens,
             'output_tokens'  => $outputTokens,
-            'estimated_cost' => $estimatedCost,
         ]);
 
         try {
@@ -66,7 +64,7 @@ class Maho_Ai_Model_Usage extends Mage_Core_Model_Abstract
             // still misses (counter loss is preferable to fataling the AI call).
             $existing = $this->loadAggregateRow($consumer, $platform, $model, $storeId, $today);
             if ($existing !== null) {
-                $this->incrementCounters($existing, $inputTokens, $outputTokens, $estimatedCost);
+                $this->incrementCounters($existing, $inputTokens, $outputTokens);
                 return;
             }
             Mage::logException($e);
@@ -98,12 +96,10 @@ class Maho_Ai_Model_Usage extends Mage_Core_Model_Abstract
         self $row,
         int $inputTokens,
         int $outputTokens,
-        float $estimatedCost,
     ): void {
         $row->setRequestCount((int) $row->getRequestCount() + 1);
         $row->setInputTokens((int) $row->getInputTokens() + $inputTokens);
         $row->setOutputTokens((int) $row->getOutputTokens() + $outputTokens);
-        $row->setEstimatedCost((float) $row->getEstimatedCost() + $estimatedCost);
         $row->save();
     }
 }

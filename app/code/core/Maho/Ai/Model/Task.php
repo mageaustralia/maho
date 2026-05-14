@@ -79,7 +79,6 @@ class Maho_Ai_Model_Task extends Mage_Core_Model_Abstract
         $this->setData('output_tokens', $outputTokens);
         $this->setData('platform', $platform);
         $this->setData('model', $model);
-        $this->setData('estimated_cost', Maho_Ai_Model_Platform::estimateCost($platform, $model, $inputTokens, $outputTokens));
         $this->setData('completed_at', date('Y-m-d H:i:s'));
         return $this;
     }

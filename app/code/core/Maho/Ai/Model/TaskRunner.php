@@ -61,7 +61,7 @@ class Maho_Ai_Model_TaskRunner
 
         $connection->query("
             INSERT INTO {$usageTable}
-                (consumer, platform, model, store_id, period_date, request_count, input_tokens, output_tokens, estimated_cost)
+                (consumer, platform, model, store_id, period_date, request_count, input_tokens, output_tokens)
             SELECT
                 consumer,
                 platform,
@@ -70,8 +70,7 @@ class Maho_Ai_Model_TaskRunner
                 DATE(completed_at) as period_date,
                 COUNT(*) as request_count,
                 SUM(input_tokens) as input_tokens,
-                SUM(output_tokens) as output_tokens,
-                SUM(estimated_cost) as estimated_cost
+                SUM(output_tokens) as output_tokens
             FROM {$taskTable}
             WHERE status = 'complete'
                 AND DATE(completed_at) = '{$yesterday}'
@@ -80,8 +79,7 @@ class Maho_Ai_Model_TaskRunner
             ON DUPLICATE KEY UPDATE
                 request_count  = request_count + VALUES(request_count),
                 input_tokens   = input_tokens + VALUES(input_tokens),
-                output_tokens  = output_tokens + VALUES(output_tokens),
-                estimated_cost = estimated_cost + VALUES(estimated_cost)
+                output_tokens  = output_tokens + VALUES(output_tokens)
         ");
     }
 

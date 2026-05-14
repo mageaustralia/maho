@@ -77,10 +77,6 @@ $table = $connection->newTable($this->getTable('ai/task'))
         'nullable' => false,
         'default'  => 0,
     ], 'Output tokens used')
-    ->addColumn('estimated_cost', Maho\Db\Ddl\Table::TYPE_DECIMAL, [10, 6], [
-        'nullable' => false,
-        'default'  => '0.000000',
-    ], 'Estimated cost in USD')
     ->addColumn('error_message', Maho\Db\Ddl\Table::TYPE_TEXT, null, [
         'nullable' => true,
     ], 'Error message if failed')
@@ -175,10 +171,6 @@ $table = $connection->newTable($this->getTable('ai/usage'))
         'nullable' => false,
         'default'  => 0,
     ], 'Total output tokens')
-    ->addColumn('estimated_cost', Maho\Db\Ddl\Table::TYPE_DECIMAL, [10, 6], [
-        'nullable' => false,
-        'default'  => '0.000000',
-    ], 'Estimated cost in USD')
     ->addIndex(
         $this->getIdxName('ai/usage', ['consumer', 'platform', 'model', 'store_id', 'period_date'], \Maho\Db\Adapter\AdapterInterface::INDEX_TYPE_UNIQUE),
         ['consumer', 'platform', 'model', 'store_id', 'period_date'],

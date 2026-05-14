@@ -53,16 +53,14 @@ $status = (string) $task->getData('status');
             <td class="value"><?php echo (int) $task->getData('output_tokens') ?></td>
         </tr>
         <tr>
-            <td class="label"><?php echo $helper->__('Estimated Cost') ?></td>
-            <td class="value">$<?php echo number_format((float) $task->getData('estimated_cost'), 6) ?></td>
             <td class="label"><?php echo $helper->__('Retries') ?></td>
             <td class="value"><?php echo (int) $task->getData('retries') ?> / <?php echo (int) $task->getData('max_retries') ?></td>
-        </tr>
-        <tr>
             <td class="label"><?php echo $helper->__('Queued') ?></td>
             <td class="value"><?php echo $this->escapeHtml($task->getData('created_at')) ?></td>
+        </tr>
+        <tr>
             <td class="label"><?php echo $helper->__('Completed') ?></td>
-            <td class="value"><?php echo $this->escapeHtml($task->getData('completed_at') ?: '—') ?></td>
+            <td class="value" colspan="3"><?php echo $this->escapeHtml($task->getData('completed_at') ?: '—') ?></td>
         </tr>
         <?php if ($task->getData('store_id')): ?>
         <tr>

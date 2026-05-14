@@ -28,7 +28,7 @@ title: Maho AI User Guide
 - **Sync or async** - call inline for interactive flows, queue for batch / long-running work
 - **Async task queue** - cron sweep processes pending tasks with retry, timeout recovery, and callback dispatch
 - **Safety guardrails** - prompt-injection patterns, configurable regex blocklist, output sanitisation, PII detection
-- **Token + cost telemetry** - per-task usage, aggregated daily, with a configurable monthly cost cap
+- **Token telemetry** - per-task usage, aggregated daily
 - **Vector storage** - `maho_ai_vector` table for embedding-backed lookup / RAG
 - **Admin UI** - Tasks grid, Usage grid, Reindex page, System Configuration with model-fetch button
 - **Extensible** - community providers (e.g. NanoGPT) plug in via the config XML registry without touching core
@@ -44,7 +44,7 @@ Navigate to **System > Configuration > Maho AI** to configure the module. You'll
 
 | Section | Purpose |
 |---|---|
-| **General** | Master enable, default platform / model, request logging, cost cap |
+| **General** | Master enable, default platform / model, request logging |
 | **Image** | Default platform / model for image generation |
 | **Embed** | Default platform / model for embeddings |
 | **Video** | Default platform / model for video generation (via community providers) |
@@ -176,7 +176,7 @@ $taskId = Mage::helper('ai')->submitTask([
 | `processing` | Cron has picked it up and is calling the provider |
 | `complete` | Provider returned successfully; callback fired |
 | `failed` | Provider returned an error after `max_retries` attempts; callback fires with error context |
-| `cancelled` | Cancelled by admin or by exceeding the monthly cost cap |
+| `cancelled` | Cancelled by admin |
 
 ### Cron Behaviour
 
@@ -279,33 +279,21 @@ Returns a data URI by default (works for every provider regardless of upload beh
 
 ---
 
-## 8. Usage Telemetry + Cost Cap
+## 8. Usage Telemetry
 
 ### Per-Call Tracking
 
-Every `invoke()` / `embed()` / `generateImage()` call records token usage to `maho_ai_usage_event`:
+Every `invoke()` / `embed()` / `generateImage()` call records token usage to `maho_ai_usage`:
 
 | Field | Description |
 |---|---|
 | `platform` | Provider code (openai, anthropic, ...) |
 | `model` | Resolved model string |
-| `capability` | chat / embed / image |
 | `input_tokens` / `output_tokens` | Reported by the provider |
-| `estimated_cost_usd` | Computed from per-model rates in `maho_ai/general/cost_table` |
 | `consumer` | Module name passed in `submitTask` (or `'sync'` for inline calls) |
-| `created_at` | Timestamp |
+| `period_date` | Aggregation date |
 
-A nightly cron aggregates these into `maho_ai_usage` (daily granularity, per provider/model/capability) - keeps the per-event table compact.
-
-### Monthly Cost Cap
-
-Set `maho_ai/general/monthly_cost_cap_usd` to enforce a soft budget. Once exceeded:
-
-- `invoke()` / `embed()` / `generateImage()` throw `Mage_Core_Exception` with the configured cap-exceeded message
-- New `submitTask()` calls accept the row but immediately mark it `cancelled`
-- Admin sees a flash message + email notification (configurable in `maho_ai/notifications`)
-
-Reset on the 1st of each month.
+A nightly cron aggregates `complete` tasks into `maho_ai_usage` (daily granularity, per consumer/platform/model/store) - keeps the per-task table compact.
 
 ---
 
@@ -315,11 +303,11 @@ Four admin pages under **System > Maho AI**:
 
 ### Tasks
 
-Full async queue grid - filter by status / consumer / platform / model, sort by creation time / cost / tokens. Click any row to view full prompt, response, and stack trace (for failures).
+Full async queue grid - filter by status / consumer / platform / model, sort by creation time / tokens. Click any row to view full prompt, response, and stack trace (for failures).
 
 ### Usage
 
-Daily aggregated grid - token + cost totals per platform / model / capability. Filter by date range, consumer, or platform to attribute cost.
+Daily aggregated grid - token totals per consumer / platform / model. Filter by date range to see usage patterns.
 
 ### Reindex
 
@@ -327,11 +315,11 @@ Tools for vector store maintenance:
 
 - **Rebuild embeddings** - queue an embedding task for every entity in a chosen entity type
 - **Clear vectors** - drop all `maho_ai_vector` rows (with confirm)
-- **Recompute usage aggregates** - re-run the daily aggregation if you've edited cost rates
+- **Recompute usage aggregates** - re-run the daily aggregation
 
 ### System Configuration > Maho AI
 
-Per-provider API keys (encrypted), default models, rate limits, safety toggles, cost cap, queue settings. Each provider's model dropdown has a **Update Models** button that queries the provider's `/models` endpoint live (so dropdowns stay current as providers ship new models).
+Per-provider API keys (encrypted), default models, safety toggles, queue settings. Each provider's model dropdown has a **Update Models** button that queries the provider's `/models` endpoint live (so dropdowns stay current as providers ship new models).
 
 ---
 
@@ -503,10 +491,6 @@ The InputValidator matched a known injection pattern or admin-configured blockli
 ### Tasks stuck in `processing`
 
 The stuck-task recovery cron resets anything older than `maho_ai/queue/task_timeout_seconds` (default 120). To force-recover immediately: `./maho ai:queue:recover`.
-
-### "Monthly cost cap exceeded"
-
-Check **System > Maho AI > Usage** to see what consumed the budget. Either raise the cap (`maho_ai/general/monthly_cost_cap_usd`) or wait for the 1st of next month to reset. Per-consumer attribution is recorded so you can find the heavy spender.
 
 ### Model dropdown is empty / outdated
 

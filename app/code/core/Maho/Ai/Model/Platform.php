@@ -22,9 +22,6 @@ class Maho_Ai_Model_Platform
     public const GENERIC    = 'generic';
 
     /**
-     * Per-token pricing in USD (input, output) — approximate, updated periodically
-     */
-    /**
      * Map of provider code to the Composer package that ships its Symfony AI
      * bridge. Built-in providers only — community providers handle their own
      * dependencies. Mirrors SCHEME_TO_PACKAGE_MAP in
@@ -39,36 +36,6 @@ class Maho_Ai_Model_Platform
         self::OLLAMA     => 'symfony/ai-ollama-platform',
         self::GENERIC    => 'symfony/ai-generic-platform',
     ];
-
-    public const PRICING = [
-        self::OPENAI => [
-            'gpt-4o'              => [0.0000025, 0.000010],
-            'gpt-4o-mini'         => [0.00000015, 0.0000006],
-            'gpt-4-turbo'         => [0.000010, 0.000030],
-            'gpt-3.5-turbo'       => [0.0000005, 0.0000015],
-        ],
-        self::ANTHROPIC => [
-            'claude-opus-4-20250514'   => [0.000015, 0.000075],
-            'claude-sonnet-4-20250514' => [0.000003, 0.000015],
-            'claude-haiku-4-5-20251001' => [0.00000025, 0.00000125],
-        ],
-        self::GOOGLE => [
-            'gemini-2.0-flash'         => [0.00000010, 0.00000040],
-            'gemini-1.5-pro'           => [0.0000035, 0.0000105],
-        ],
-    ];
-
-    /**
-     * Estimate cost for a given platform/model/tokens
-     */
-    public static function estimateCost(string $platform, string $model, int $inputTokens, int $outputTokens): float
-    {
-        $pricing = self::PRICING[$platform][$model] ?? null;
-        if (!$pricing) {
-            return 0.0;
-        }
-        return ($inputTokens * $pricing[0]) + ($outputTokens * $pricing[1]);
-    }
 
     /**
      * Get all registered providers as code => label, sorted by sort_order.

@@ -269,54 +269,6 @@
                     </fields>
                 </queue>
 
-                <limits translate="label">
-                    <label>Rate Limits &amp; Budget</label>
-                    <sort_order>30</sort_order>
-                    <show_in_default>1</show_in_default>
-                    <show_in_website>0</show_in_website>
-                    <show_in_store>0</show_in_store>
-                    <fields>
-                        <daily_token_limit translate="label comment">
-                            <label>Daily Token Limit</label>
-                            <comment>0 = unlimited. Counts input + output tokens across all providers.</comment>
-                            <frontend_type>text</frontend_type>
-                            <validate>validate-number</validate>
-                            <sort_order>10</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </daily_token_limit>
-                        <monthly_cost_cap translate="label comment">
-                            <label>Monthly Cost Cap (USD)</label>
-                            <comment>0 = unlimited. Estimated cost based on known pricing.</comment>
-                            <frontend_type>text</frontend_type>
-                            <validate>validate-number</validate>
-                            <sort_order>20</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </monthly_cost_cap>
-                        <max_tokens_per_request translate="label">
-                            <label>Max Tokens Per Request</label>
-                            <frontend_type>text</frontend_type>
-                            <validate>validate-number validate-greater-than-zero</validate>
-                            <sort_order>30</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </max_tokens_per_request>
-                        <rate_limit_per_minute translate="label">
-                            <label>Rate Limit (requests/minute)</label>
-                            <frontend_type>text</frontend_type>
-                            <validate>validate-number validate-greater-than-zero</validate>
-                            <sort_order>40</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </rate_limit_per_minute>
-                    </fields>
-                </limits>
-
                 <safety translate="label">
                     <label>Safety &amp; Guardrails</label>
                     <sort_order>40</sort_order>

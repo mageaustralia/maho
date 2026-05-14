@@ -108,14 +108,6 @@ class Maho_Ai_Block_Adminhtml_Task_Grid extends Mage_Adminhtml_Block_Widget_Grid
             'type'   => 'number',
         ]);
 
-        $this->addColumn('estimated_cost', [
-            'header'        => $helper->__('Cost (USD)'),
-            'index'         => 'estimated_cost',
-            'width'         => '80px',
-            'type'          => 'currency',
-            'currency_code' => 'USD',
-        ]);
-
         $this->addColumn('created_at', [
             'header' => $helper->__('Queued'),
             'index'  => 'created_at',

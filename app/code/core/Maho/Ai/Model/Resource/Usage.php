@@ -28,7 +28,6 @@ class Maho_Ai_Model_Resource_Usage extends Mage_Core_Model_Resource_Db_Abstract
         int $storeId,
         int $inputTokens,
         int $outputTokens,
-        float $estimatedCost,
     ): void {
         $connection = $this->_getWriteAdapter();
         $table = $this->getMainTable();
@@ -45,9 +44,8 @@ class Maho_Ai_Model_Resource_Usage extends Mage_Core_Model_Resource_Db_Abstract
                 'request_count'  => 1,
                 'input_tokens'   => $inputTokens,
                 'output_tokens'  => $outputTokens,
-                'estimated_cost' => $estimatedCost,
             ],
-            ['request_count', 'input_tokens', 'output_tokens', 'estimated_cost'],
+            ['request_count', 'input_tokens', 'output_tokens'],
         );
     }
 
@@ -64,20 +62,5 @@ class Maho_Ai_Model_Resource_Usage extends Mage_Core_Model_Resource_Db_Abstract
             ->where('period_date = ?', date('Y-m-d'));
 
         return (int) $connection->fetchOne($select);
-    }
-
-    /**
-     * Get this month's total estimated cost in USD
-     */
-    public function getMonthTotalCost(): float
-    {
-        $connection = $this->_getReadAdapter();
-        $select = $connection->select()
-            ->from($this->getMainTable(), [
-                'total' => new Maho\Db\Expr('SUM(estimated_cost)'),
-            ])
-            ->where('period_date >= ?', date('Y-m-01'));
-
-        return (float) $connection->fetchOne($select);
     }
 }

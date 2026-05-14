@@ -84,14 +84,6 @@ class Maho_Ai_Block_Adminhtml_Usage_Grid extends Mage_Adminhtml_Block_Widget_Gri
             'type'   => 'number',
         ]);
 
-        $this->addColumn('estimated_cost', [
-            'header'        => $helper->__('Cost (USD)'),
-            'index'         => 'estimated_cost',
-            'width'         => '100px',
-            'type'          => 'currency',
-            'currency_code' => 'USD',
-        ]);
-
         return parent::_prepareColumns();
     }
 

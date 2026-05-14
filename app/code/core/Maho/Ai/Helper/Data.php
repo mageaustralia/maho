@@ -443,17 +443,14 @@ class Maho_Ai_Helper_Data extends Mage_Core_Helper_Abstract
             return;
         }
 
-        $cost = Maho_Ai_Model_Platform::estimateCost($platform, $model, $tokenUsage['input'], $tokenUsage['output']);
-
         Mage::log(
             sprintf(
-                'consumer=%s platform=%s model=%s in=%d out=%d cost=$%.6f',
+                'consumer=%s platform=%s model=%s in=%d out=%d',
                 $consumer,
                 $platform,
                 $model,
                 $tokenUsage['input'],
                 $tokenUsage['output'],
-                $cost,
             ),
             Mage::LOG_INFO,
             'maho_ai.log',
@@ -471,7 +468,6 @@ class Maho_Ai_Helper_Data extends Mage_Core_Helper_Abstract
                 storeId: $storeId,
                 inputTokens: (int) ($tokenUsage['input'] ?? 0),
                 outputTokens: (int) ($tokenUsage['output'] ?? 0),
-                estimatedCost: $cost,
             );
         } catch (\Throwable $e) {
             Mage::logException($e);
