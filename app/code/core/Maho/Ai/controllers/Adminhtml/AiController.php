@@ -51,10 +51,24 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         return Mage::getSingleton('admin/session')->isAllowed($resource);
     }
 
+    /**
+     * Per-action active menu paths. Drives the highlighted item in the
+     * left-hand admin nav. Defaults to the parent "maho_ai" node.
+     */
+    private const ACTION_MENUS = [
+        'tasks'      => 'system/maho_ai/tasks',
+        'view'       => 'system/maho_ai/tasks',
+        'usage'      => 'system/maho_ai/usage',
+        'reindex'    => 'system/maho_ai/reindex',
+    ];
+
     protected function _initAction(): static
     {
+        $action = strtolower((string) $this->getRequest()->getActionName());
+        $menu   = self::ACTION_MENUS[$action] ?? 'system/maho_ai';
+
         $this->loadLayout()
-            ->_setActiveMenu('system/maho_ai/dashboard')
+            ->_setActiveMenu($menu)
             ->_addBreadcrumb(
                 Mage::helper('ai')->__('Maho AI'),
                 Mage::helper('ai')->__('Maho AI'),
