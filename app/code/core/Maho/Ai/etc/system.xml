@@ -54,16 +54,6 @@
                             <show_in_store>0</show_in_store>
                             <depends><default_platform>openai</default_platform></depends>
                         </openai_api_key>
-                        <openai_organization_id translate="label comment">
-                            <label>Organization ID</label>
-                            <comment>Optional. Found in your OpenAI account settings.</comment>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>110</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><default_platform>openai</default_platform></depends>
-                        </openai_organization_id>
                         <openai_model translate="label">
                             <label>Model</label>
                             <frontend_type>select</frontend_type>
@@ -419,26 +409,6 @@
                         </ollama_model>
 
                         <!-- Generic embed -->
-                        <generic_base_url translate="label comment">
-                            <label>Base URL</label>
-                            <comment>OpenAI-compatible embeddings endpoint, e.g. https://api.example.com/v1</comment>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>500</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><default_platform>generic</default_platform></depends>
-                        </generic_base_url>
-                        <generic_api_key translate="label">
-                            <label>API Key</label>
-                            <frontend_type>obscure</frontend_type>
-                            <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
-                            <sort_order>510</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><default_platform>generic</default_platform></depends>
-                        </generic_api_key>
                         <generic_model translate="label">
                             <label>Model</label>
                             <frontend_type>text</frontend_type>
@@ -528,38 +498,7 @@
                             <depends><default_platform>openai</default_platform></depends>
                         </openai_model>
 
-                        <!-- Google image — uses API key from General settings -->
-                        <google_model translate="label">
-                            <label>Google Image Model</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>210</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><default_platform>google</default_platform></depends>
-                        </google_model>
-
                         <!-- Generic image -->
-                        <generic_base_url translate="label comment">
-                            <label>Base URL</label>
-                            <comment>OpenAI-compatible image generation endpoint, e.g. https://api.example.com/v1</comment>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>300</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><default_platform>generic</default_platform></depends>
-                        </generic_base_url>
-                        <generic_api_key translate="label">
-                            <label>API Key</label>
-                            <frontend_type>obscure</frontend_type>
-                            <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
-                            <sort_order>310</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><default_platform>generic</default_platform></depends>
-                        </generic_api_key>
                         <generic_model translate="label">
                             <label>Model</label>
                             <frontend_type>text</frontend_type>
