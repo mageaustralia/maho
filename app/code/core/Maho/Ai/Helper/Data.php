@@ -374,7 +374,12 @@ class Maho_Ai_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function isEnabled(?int $storeId = null): bool
     {
-        return Mage::getStoreConfigFlag('maho_ai/general/enabled', $storeId);
+        if (!Mage::getStoreConfigFlag('maho_ai/general/enabled', $storeId)) {
+            return false;
+        }
+        // symfony/ai-platform is the load-bearing base package - without it
+        // the helpers can't function regardless of the admin toggle.
+        return \Composer\InstalledVersions::isInstalled('symfony/ai-platform');
     }
 
     private function getFactory(): Maho_Ai_Model_Platform_Factory

@@ -129,7 +129,7 @@
     <default>
         <maho_ai>
             <general>
-                <enabled>1</enabled>
+                <enabled>0</enabled>
                 <default_platform>openai</default_platform>
                 <log_requests>0</log_requests>
                 <log_level>minimal</log_level>
