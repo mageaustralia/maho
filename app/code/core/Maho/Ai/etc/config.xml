@@ -132,7 +132,6 @@
                 <enabled>0</enabled>
                 <default_platform>openai</default_platform>
                 <log_requests>0</log_requests>
-                <log_level>minimal</log_level>
                 <openai_model>gpt-4o</openai_model>
                 <anthropic_model>claude-sonnet-4-6</anthropic_model>
                 <google_model>gemini-2.0-flash</google_model>

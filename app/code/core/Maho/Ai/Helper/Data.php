@@ -443,21 +443,21 @@ class Maho_Ai_Helper_Data extends Mage_Core_Helper_Abstract
             return;
         }
 
-        $logLevel = Mage::getStoreConfig('maho_ai/general/log_level');
-        $cost     = Maho_Ai_Model_Platform::estimateCost($platform, $model, $tokenUsage['input'], $tokenUsage['output']);
+        $cost = Maho_Ai_Model_Platform::estimateCost($platform, $model, $tokenUsage['input'], $tokenUsage['output']);
 
-        $message = sprintf(
-            '[%s] consumer=%s platform=%s model=%s in=%d out=%d cost=$%.6f',
-            date('Y-m-d H:i:s'),
-            $consumer,
-            $platform,
-            $model,
-            $tokenUsage['input'],
-            $tokenUsage['output'],
-            $cost,
+        Mage::log(
+            sprintf(
+                'consumer=%s platform=%s model=%s in=%d out=%d cost=$%.6f',
+                $consumer,
+                $platform,
+                $model,
+                $tokenUsage['input'],
+                $tokenUsage['output'],
+                $cost,
+            ),
+            Mage::LOG_INFO,
+            'maho_ai.log',
         );
-
-        Mage::log($message, Mage::LOG_INFO, 'maho_ai.log');
 
         // Persist a per-day aggregated row so the admin Usage grid surfaces
         // synchronous calls (image gen, completions). Wrapped in try/catch:
