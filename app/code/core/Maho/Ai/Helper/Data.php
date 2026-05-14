@@ -22,7 +22,13 @@ class Maho_Ai_Helper_Data extends Mage_Core_Helper_Abstract
      *   );
      *
      * @param string|array<array{role: string, content: string}> $userMessage
-     *   Either a plain string (treated as single user message) or a full messages array.
+     *   Either a plain string (treated as single user message) or a full
+     *   messages array. **The string form is for untrusted input — only
+     *   user-supplied text — and runs through the injection validator.** The
+     *   array form is intended for trusted callers passing curated
+     *   conversation history: only entries with `role === 'user'` are
+     *   validated; system/assistant entries are forwarded as-is. Do not
+     *   build the array form straight from end-user input.
      * @param array<string, mixed> $options
      *   Supports: temperature, max_tokens, model, is_html (bool — enables HTML sanitization).
      *

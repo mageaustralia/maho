@@ -54,8 +54,6 @@ class Maho_Ai_Model_Platform_Symfony implements
         protected readonly string $defaultImageModel = '',
     ) {}
 
-    // ─── ProviderInterface (chat) ───────────────────────────────────────────
-
     #[\Override]
     public function complete(array $messages, array $options = []): string
     {
@@ -87,8 +85,6 @@ class Maho_Ai_Model_Platform_Symfony implements
     {
         return $this->lastModel;
     }
-
-    // ─── EmbedProviderInterface ─────────────────────────────────────────────
 
     #[\Override]
     public function embed(string|array $input, array $options = []): array
@@ -139,8 +135,6 @@ class Maho_Ai_Model_Platform_Symfony implements
         return $this->lastEmbedModel;
     }
 
-    // ─── ImageProviderInterface ─────────────────────────────────────────────
-
     #[\Override]
     public function generateImage(string $prompt, array $options = []): string
     {
@@ -167,8 +161,6 @@ class Maho_Ai_Model_Platform_Symfony implements
         return $this->lastImageModel;
     }
 
-    // ─── Static constructors per platform ───────────────────────────────────
-
     public static function createForOpenAi(?int $storeId): self
     {
         $apiKey = (string) Mage::helper('core')->decrypt(
@@ -184,7 +176,12 @@ class Maho_Ai_Model_Platform_Symfony implements
 
         // Symfony's ModelCatalog is a fixed list of known names. Register our
         // configured models on top so admin-set custom IDs (e.g. dated GPT
-        // variants like "gpt-5.4-mini-2026-03-17") still resolve.
+        // variants like "gpt-5.4-mini-2026-03-17") still resolve. Capabilities
+        // mirror the bridge family — registering under Gpt::class already
+        // asserts "this is a GPT-family chat model", and every modern GPT
+        // supports these. Downstream consumers gating features on catalog
+        // capability checks (tool calling, vision) shouldn't be misled into
+        // thinking a dated variant is less capable than its base model.
         $additional = [];
         if ($chatModel !== '') {
             $additional[$chatModel] = [
@@ -232,6 +229,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         }
         $chatModel = (string) Mage::getStoreConfig('maho_ai/general/anthropic_model', $storeId);
 
+        // Capabilities mirror the Claude bridge family — see note in createForOpenAi().
         $additional = [];
         if ($chatModel !== '') {
             $additional[$chatModel] = [
@@ -265,6 +263,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $chatModel  = (string) Mage::getStoreConfig('maho_ai/general/google_model', $storeId);
         $embedModel = (string) Mage::getStoreConfig('maho_ai/embed/google_model', $storeId);
 
+        // Capabilities mirror the Gemini bridge family — see note in createForOpenAi().
         $additional = [];
         if ($chatModel !== '') {
             $additional[$chatModel] = [
@@ -306,6 +305,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $embedModel = (string) Mage::getStoreConfig('maho_ai/embed/mistral_model', $storeId)
             ?: 'mistral-embed';
 
+        // Capabilities mirror the Mistral bridge family — see note in createForOpenAi().
         $additional = [];
         if ($chatModel !== '') {
             $additional[$chatModel] = [
@@ -386,8 +386,6 @@ class Maho_Ai_Model_Platform_Symfony implements
             defaultImageModel: $imageModel,
         );
     }
-
-    // ─── Helpers ────────────────────────────────────────────────────────────
 
     /** @param array<array{role: string, content: string}> $messages */
     protected function buildMessageBag(array $messages): MessageBag

@@ -54,11 +54,16 @@ class Maho_Ai_Model_Safety_InputValidator
             }
         }
 
-        // Check base64 encoded content that might hide instructions
-        if (preg_match('/[A-Za-z0-9+\/]{50,}={0,2}/', $input)) {
-            $decoded = base64_decode(preg_replace('/[^A-Za-z0-9+\/=]/', '', $input), true);
-            if ($decoded !== false && strlen($decoded) > 20) {
-                // Check decoded content for injection patterns too
+        // Check base64 encoded content that might hide instructions.
+        // Decode only the matched substring(s), not the whole input — prose
+        // with a single URL or hash shouldn't have unrelated characters
+        // stripped and force-decoded as one giant base64 blob.
+        if (preg_match_all('/[A-Za-z0-9+\/]{50,}={0,2}/', $input, $matches)) {
+            foreach ($matches[0] as $candidate) {
+                $decoded = base64_decode($candidate, true);
+                if ($decoded === false || strlen($decoded) <= 20) {
+                    continue;
+                }
                 foreach (self::INJECTION_PATTERNS as $pattern) {
                     if (preg_match($pattern, $decoded)) {
                         return [

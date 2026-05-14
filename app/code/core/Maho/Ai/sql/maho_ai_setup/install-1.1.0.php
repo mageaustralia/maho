@@ -15,9 +15,7 @@ $this->startSetup();
 
 $connection = $this->getConnection();
 
-// ============================================================================
 // maho_ai_task — async task queue
-// ============================================================================
 $table = $connection->newTable($this->getTable('ai/task'))
     ->addColumn('task_id', Maho\Db\Ddl\Table::TYPE_INTEGER, null, [
         'identity' => true,
@@ -129,9 +127,7 @@ $table = $connection->newTable($this->getTable('ai/task'))
 
 $connection->createTable($table);
 
-// ============================================================================
 // maho_ai_usage — daily usage aggregation
-// ============================================================================
 $table = $connection->newTable($this->getTable('ai/usage'))
     ->addColumn('usage_id', Maho\Db\Ddl\Table::TYPE_INTEGER, null, [
         'identity' => true,
@@ -180,9 +176,7 @@ $table = $connection->newTable($this->getTable('ai/usage'))
 
 $connection->createTable($table);
 
-// ============================================================================
 // maho_ai_vector — entity embedding vectors
-// ============================================================================
 $table = $connection->newTable($this->getTable('ai/vector'))
     ->addColumn('vector_id', Maho\Db\Ddl\Table::TYPE_INTEGER, null, [
         'identity' => true,

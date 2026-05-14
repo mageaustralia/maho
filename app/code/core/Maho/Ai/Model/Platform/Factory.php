@@ -127,10 +127,6 @@ class Maho_Ai_Model_Platform_Factory
         return $provider;
     }
 
-    // -------------------------------------------------------------------------
-    // Symfony AI Platform shim - the unified path for built-in providers
-    // -------------------------------------------------------------------------
-
     private function isBuiltIn(string $platformCode): bool
     {
         return in_array($platformCode, [
@@ -170,11 +166,10 @@ class Maho_Ai_Model_Platform_Factory
         };
     }
 
-    // -------------------------------------------------------------------------
-    // Registry path - community providers register via global/ai/providers/{code}
-    // -------------------------------------------------------------------------
-
     /**
+     * Community providers register via global/ai/providers/{code} and supply
+     * their own factory_class implementing ProviderFactoryInterface.
+     *
      * @throws Mage_Core_Exception
      */
     private function createFromRegistry(

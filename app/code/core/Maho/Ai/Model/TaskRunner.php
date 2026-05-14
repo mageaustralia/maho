@@ -47,44 +47,67 @@ class Maho_Ai_Model_TaskRunner
     }
 
     /**
-     * Aggregate completed task usage into the daily usage table
+     * Aggregate completed task usage into the daily usage table.
+     *
+     * Rolls up yesterday's completed task rows into one (consumer, platform,
+     * model, store_id, period_date) row per group. Counts are *added* to any
+     * existing row — synchronous calls during the day write their own rows
+     * via Maho_Ai_Model_Usage::recordCall(), and async aggregation has to
+     * preserve those counts, not overwrite them.
+     *
+     * Cross-DB safe: a SELECT-then-UPDATE-or-INSERT loop avoids the MySQL-only
+     * `ON DUPLICATE KEY UPDATE … field + VALUES(field)` form.
      */
     #[Maho\Config\CronJob('maho_ai_aggregate_usage', schedule: '5 0 * * *')]
     public function aggregateUsage(): void
     {
         $connection = Mage::getSingleton('core/resource')->getConnection('core_write');
         $taskTable  = Mage::getSingleton('core/resource')->getTableName('ai/task');
-        $usageTable = Mage::getSingleton('core/resource')->getTableName('ai/usage');
 
-        // Aggregate yesterday's completed tasks into usage
-        $yesterday = Mage::app()->getLocale()->formatDateForDb('-1 day', withTime: false);
+        $yesterday      = Mage::app()->getLocale()->formatDateForDb('-1 day', withTime: false);
+        $yesterdayStart = $yesterday . ' 00:00:00';
+        $yesterdayEnd   = $yesterday . ' 23:59:59';
 
-        $connection->query("
-            INSERT INTO {$usageTable}
-                (consumer, platform, model, store_id, period_date, request_count, input_tokens, output_tokens)
-            SELECT
-                consumer,
-                platform,
-                model,
-                store_id,
-                DATE(completed_at) as period_date,
-                COUNT(*) as request_count,
-                SUM(input_tokens) as input_tokens,
-                SUM(output_tokens) as output_tokens
-            FROM {$taskTable}
-            WHERE status = 'complete'
-                AND DATE(completed_at) = '{$yesterday}'
-                AND platform IS NOT NULL
-            GROUP BY consumer, platform, model, store_id, DATE(completed_at)
-            ON DUPLICATE KEY UPDATE
-                request_count  = request_count + VALUES(request_count),
-                input_tokens   = input_tokens + VALUES(input_tokens),
-                output_tokens  = output_tokens + VALUES(output_tokens)
-        ");
+        // Range scan against indexed completed_at rather than DATE(completed_at)
+        // so the query stays sargable across engines.
+        $select = $connection->select()
+            ->from($taskTable, [
+                'consumer',
+                'platform',
+                'model',
+                'store_id',
+                'request_count' => new \Maho\Db\Expr('COUNT(*)'),
+                'input_tokens'  => new \Maho\Db\Expr('SUM(input_tokens)'),
+                'output_tokens' => new \Maho\Db\Expr('SUM(output_tokens)'),
+            ])
+            ->where('status = ?', Maho_Ai_Model_Task::STATUS_COMPLETE)
+            ->where('platform IS NOT NULL')
+            ->where('completed_at BETWEEN ? AND ?', [$yesterdayStart, $yesterdayEnd])
+            ->group(['consumer', 'platform', 'model', 'store_id']);
+
+        foreach ($connection->fetchAll($select) as $row) {
+            Mage::getModel('ai/usage')->addAggregate(
+                consumer: (string) $row['consumer'],
+                platform: (string) $row['platform'],
+                model: (string) $row['model'],
+                storeId: (int) $row['store_id'],
+                periodDate: $yesterday,
+                requestCount: (int) $row['request_count'],
+                inputTokens: (int) $row['input_tokens'],
+                outputTokens: (int) $row['output_tokens'],
+            );
+        }
     }
 
     /**
-     * Clean up old completed/failed tasks (keeps last 90 days)
+     * Clean up old tasks (keeps last 90 days).
+     *
+     * Two cohorts:
+     *  - Terminal tasks (complete / failed / cancelled): bound by completed_at.
+     *  - Pending tasks stuck for >90 days: bound by created_at. Without this
+     *    arm, a site that disabled the queue would accumulate pending rows
+     *    forever (their completed_at is NULL and the terminal-arm predicate
+     *    never matches NULL).
      */
     #[Maho\Config\CronJob('maho_ai_cleanup_old_tasks', schedule: '0 3 * * 0')]
     public function cleanupOldTasks(): void
@@ -96,6 +119,11 @@ class Maho_Ai_Model_TaskRunner
         $connection->delete($taskTable, [
             'status IN (?)' => [Maho_Ai_Model_Task::STATUS_COMPLETE, Maho_Ai_Model_Task::STATUS_FAILED, Maho_Ai_Model_Task::STATUS_CANCELLED],
             'completed_at < ?' => $cutoff,
+        ]);
+
+        $connection->delete($taskTable, [
+            'status = ?'     => Maho_Ai_Model_Task::STATUS_PENDING,
+            'created_at < ?' => $cutoff,
         ]);
     }
 

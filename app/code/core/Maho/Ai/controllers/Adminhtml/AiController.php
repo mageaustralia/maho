@@ -14,6 +14,22 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
 {
     public const ADMIN_RESOURCE = 'system/config';
 
+    /**
+     * Per-action ACL resources. Mass-queue + destructive actions require
+     * granular Maho AI permissions (declared in etc/adminhtml.xml under
+     * system/maho_ai/*) rather than the base system/config grant — a user
+     * with general config access shouldn't be able to one-click-queue
+     * thousands of paid embedding tasks.
+     */
+    private const ACTION_RESOURCES = [
+        'tasks'       => 'system/maho_ai/tasks',
+        'view'        => 'system/maho_ai/tasks',
+        'taskstatus'  => 'system/maho_ai/tasks',
+        'usage'       => 'system/maho_ai/usage',
+        'reindex'     => 'system/maho_ai/reindex',
+        'reindexpost' => 'system/maho_ai/reindex',
+    ];
+
     /** Read-only JSON poll — skip URL secret key, session cookie + ACL is sufficient. */
     protected $_publicActions = ['taskStatus'];
 
@@ -25,6 +41,14 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         // and must require a form key.
         $this->_setForcedFormKeyActions(['reindexPost', 'fetchModels']);
         return parent::preDispatch();
+    }
+
+    #[\Override]
+    protected function _isAllowed(): bool
+    {
+        $action = strtolower((string) $this->getRequest()->getActionName());
+        $resource = self::ACTION_RESOURCES[$action] ?? static::ADMIN_RESOURCE;
+        return Mage::getSingleton('admin/session')->isAllowed($resource);
     }
 
     protected function _initAction(): static
@@ -158,10 +182,10 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
         $storeId = 0;
         $queued  = 0;
 
-        if (in_array('products', $types)) {
+        if (in_array('products', $types, true)) {
             $queued += $this->_queueEntityType('product', $storeId);
         }
-        if (in_array('categories', $types)) {
+        if (in_array('categories', $types, true)) {
             $queued += $this->_queueEntityType('category', $storeId);
         }
 
@@ -208,8 +232,18 @@ class Maho_Ai_Adminhtml_AiController extends Mage_Adminhtml_Controller_Action
             Mage::app()->getCache()->cleanType('config');
 
             $this->getResponse()->setBodyJson(['models' => $models]);
-        } catch (Exception $e) {
+        } catch (Mage_Core_Exception $e) {
+            // User-facing Maho exceptions are written by us and safe to surface
+            // (e.g. "OpenAI API key is not configured.").
             $this->getResponse()->setBodyJson(['error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            // Upstream HttpClient exceptions can echo request URLs back — and
+            // the Google fetch URL includes ?key=<APIKEY>. Log the detail, give
+            // the admin a generic prompt to check logs.
+            Mage::logException($e);
+            $this->getResponse()->setBodyJson([
+                'error' => Mage::helper('ai')->__('Failed to fetch models. See exception.log for details.'),
+            ]);
         }
     }
 

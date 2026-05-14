@@ -102,4 +102,60 @@ class Maho_Ai_Model_Usage extends Mage_Core_Model_Abstract
         $row->setOutputTokens((int) $row->getOutputTokens() + $outputTokens);
         $row->save();
     }
+
+    /**
+     * Add a batch of counts to a (consumer, platform, model, store, day) row.
+     * Used by the nightly aggregator to roll up completed async tasks on top
+     * of any synchronous counts already recorded for the same day.
+     *
+     * Cross-DB safe — uses SELECT-then-UPDATE-or-INSERT rather than a
+     * MySQL-only "ON DUPLICATE KEY UPDATE … + VALUES(...)" expression.
+     */
+    public function addAggregate(
+        string $consumer,
+        string $platform,
+        string $model,
+        int $storeId,
+        string $periodDate,
+        int $requestCount,
+        int $inputTokens,
+        int $outputTokens,
+    ): void {
+        $existing = $this->loadAggregateRow($consumer, $platform, $model, $storeId, $periodDate);
+        if ($existing !== null) {
+            $existing->setRequestCount((int) $existing->getRequestCount() + $requestCount);
+            $existing->setInputTokens((int) $existing->getInputTokens() + $inputTokens);
+            $existing->setOutputTokens((int) $existing->getOutputTokens() + $outputTokens);
+            $existing->save();
+            return;
+        }
+
+        $row = Mage::getModel('ai/usage');
+        $row->setData([
+            'consumer'      => $consumer,
+            'platform'      => $platform,
+            'model'         => $model,
+            'store_id'      => $storeId,
+            'period_date'   => $periodDate,
+            'request_count' => $requestCount,
+            'input_tokens'  => $inputTokens,
+            'output_tokens' => $outputTokens,
+        ]);
+
+        try {
+            $row->save();
+        } catch (\Throwable $e) {
+            // Race with a concurrent sync recordCall() between our SELECT and
+            // INSERT — fall back to the increment path.
+            $existing = $this->loadAggregateRow($consumer, $platform, $model, $storeId, $periodDate);
+            if ($existing !== null) {
+                $existing->setRequestCount((int) $existing->getRequestCount() + $requestCount);
+                $existing->setInputTokens((int) $existing->getInputTokens() + $inputTokens);
+                $existing->setOutputTokens((int) $existing->getOutputTokens() + $outputTokens);
+                $existing->save();
+                return;
+            }
+            Mage::logException($e);
+        }
+    }
 }
