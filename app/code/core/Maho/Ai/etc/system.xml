@@ -1,15 +1,9 @@
 <?xml version="1.0"?>
 <config>
-    <tabs>
-        <maho translate="label">
-            <label>Maho</label>
-            <sort_order>200</sort_order>
-        </maho>
-    </tabs>
     <sections>
         <maho_ai translate="label" module="ai">
-            <label>Maho AI</label>
-            <tab>maho</tab>
+            <label>AI</label>
+            <tab>service</tab>
             <sort_order>100</sort_order>
             <show_in_default>1</show_in_default>
             <show_in_website>0</show_in_website>
