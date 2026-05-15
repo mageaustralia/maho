@@ -21489,43 +21489,43 @@ parameters:
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php
 
 		-
-			rawMessage: 'Call to static method create() on an unknown class Symfony\AI\Platform\Bridge\Anthropic\PlatformFactory.'
+			rawMessage: 'Call to static method createPlatform() on an unknown class Symfony\AI\Platform\Bridge\Anthropic\Factory.'
 			identifier: class.notFound
 			count: 1
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php
 
 		-
-			rawMessage: 'Call to static method create() on an unknown class Symfony\AI\Platform\Bridge\Gemini\PlatformFactory.'
+			rawMessage: 'Call to static method createPlatform() on an unknown class Symfony\AI\Platform\Bridge\Gemini\Factory.'
 			identifier: class.notFound
 			count: 1
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php
 
 		-
-			rawMessage: 'Call to static method create() on an unknown class Symfony\AI\Platform\Bridge\Generic\PlatformFactory.'
+			rawMessage: 'Call to static method createPlatform() on an unknown class Symfony\AI\Platform\Bridge\Generic\Factory.'
 			identifier: class.notFound
 			count: 1
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php
 
 		-
-			rawMessage: 'Call to static method create() on an unknown class Symfony\AI\Platform\Bridge\Mistral\PlatformFactory.'
+			rawMessage: 'Call to static method createPlatform() on an unknown class Symfony\AI\Platform\Bridge\Mistral\Factory.'
 			identifier: class.notFound
 			count: 1
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php
 
 		-
-			rawMessage: 'Call to static method create() on an unknown class Symfony\AI\Platform\Bridge\Ollama\PlatformFactory.'
+			rawMessage: 'Call to static method createPlatform() on an unknown class Symfony\AI\Platform\Bridge\Ollama\Factory.'
 			identifier: class.notFound
 			count: 1
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php
 
 		-
-			rawMessage: 'Call to static method create() on an unknown class Symfony\AI\Platform\Bridge\OpenAi\PlatformFactory.'
+			rawMessage: 'Call to static method createPlatform() on an unknown class Symfony\AI\Platform\Bridge\OpenAi\Factory.'
 			identifier: class.notFound
 			count: 1
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php
 
 		-
-			rawMessage: 'Call to static method create() on an unknown class Symfony\AI\Platform\Bridge\OpenRouter\PlatformFactory.'
+			rawMessage: 'Call to static method createPlatform() on an unknown class Symfony\AI\Platform\Bridge\OpenRouter\Factory.'
 			identifier: class.notFound
 			count: 1
 			path: app/code/core/Maho/Ai/Model/Platform/Symfony.php

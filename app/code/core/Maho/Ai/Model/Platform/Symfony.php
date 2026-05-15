@@ -211,7 +211,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $catalog = new \Symfony\AI\Platform\Bridge\OpenAi\ModelCatalog($additional);
 
         return new self(
-            platform: \Symfony\AI\Platform\Bridge\OpenAi\PlatformFactory::create($apiKey, modelCatalog: $catalog),
+            platform: \Symfony\AI\Platform\Bridge\OpenAi\Factory::createPlatform($apiKey, modelCatalog: $catalog),
             platformCode: Maho_Ai_Model_Platform::OPENAI,
             defaultChatModel: $chatModel,
             defaultEmbedModel: $embedModel,
@@ -246,7 +246,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $catalog = new \Symfony\AI\Platform\Bridge\Anthropic\ModelCatalog($additional);
 
         return new self(
-            platform: \Symfony\AI\Platform\Bridge\Anthropic\PlatformFactory::create($apiKey, modelCatalog: $catalog),
+            platform: \Symfony\AI\Platform\Bridge\Anthropic\Factory::createPlatform($apiKey, modelCatalog: $catalog),
             platformCode: Maho_Ai_Model_Platform::ANTHROPIC,
             defaultChatModel: $chatModel,
         );
@@ -286,7 +286,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $catalog = new \Symfony\AI\Platform\Bridge\Gemini\ModelCatalog($additional);
 
         return new self(
-            platform: \Symfony\AI\Platform\Bridge\Gemini\PlatformFactory::create($apiKey, modelCatalog: $catalog),
+            platform: \Symfony\AI\Platform\Bridge\Gemini\Factory::createPlatform($apiKey, modelCatalog: $catalog),
             platformCode: Maho_Ai_Model_Platform::GOOGLE,
             defaultChatModel: $chatModel,
             defaultEmbedModel: $embedModel,
@@ -325,7 +325,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $catalog = new \Symfony\AI\Platform\Bridge\Mistral\ModelCatalog($additional);
 
         return new self(
-            platform: \Symfony\AI\Platform\Bridge\Mistral\PlatformFactory::create($apiKey, modelCatalog: $catalog),
+            platform: \Symfony\AI\Platform\Bridge\Mistral\Factory::createPlatform($apiKey, modelCatalog: $catalog),
             platformCode: Maho_Ai_Model_Platform::MISTRAL,
             defaultChatModel: $chatModel,
             defaultEmbedModel: $embedModel,
@@ -341,7 +341,7 @@ class Maho_Ai_Model_Platform_Symfony implements
             ?: 'nomic-embed-text';
 
         return new self(
-            platform: \Symfony\AI\Platform\Bridge\Ollama\PlatformFactory::create($endpoint),
+            platform: \Symfony\AI\Platform\Bridge\Ollama\Factory::createPlatform($endpoint),
             platformCode: Maho_Ai_Model_Platform::OLLAMA,
             defaultChatModel: $chatModel,
             defaultEmbedModel: $embedModel,
@@ -359,7 +359,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $chatModel = (string) Mage::getStoreConfig('maho_ai/general/openrouter_model', $storeId);
 
         return new self(
-            platform: \Symfony\AI\Platform\Bridge\OpenRouter\PlatformFactory::create($apiKey),
+            platform: \Symfony\AI\Platform\Bridge\OpenRouter\Factory::createPlatform($apiKey),
             platformCode: Maho_Ai_Model_Platform::OPENROUTER,
             defaultChatModel: $chatModel,
         );
@@ -379,7 +379,7 @@ class Maho_Ai_Model_Platform_Symfony implements
         $imageModel = (string) Mage::getStoreConfig('maho_ai/image/generic_model', $storeId);
 
         return new self(
-            platform: \Symfony\AI\Platform\Bridge\Generic\PlatformFactory::create($baseUrl, $apiKey ?: null),
+            platform: \Symfony\AI\Platform\Bridge\Generic\Factory::createPlatform($baseUrl, $apiKey ?: null),
             platformCode: Maho_Ai_Model_Platform::GENERIC,
             defaultChatModel: $chatModel,
             defaultEmbedModel: $embedModel,
