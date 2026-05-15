@@ -117,7 +117,7 @@ $estMinutes    = $this->estimateMinutes($totalCount);
         </table>
         <div class="ai-reindex-actions">
             <button type="submit" class="scalable save" id="reindex-submit"
-                data-maho-confirm="<?php echo $this->escapeHtml($helper->__('This will queue all selected items for embedding. Continue?')) ?>">
+                onclick="return confirm('<?php echo $this->jsQuoteEscape($helper->__('This will queue all selected items for embedding. Continue?')) ?>')">
                 <span><?php echo $helper->__('Queue for Embedding') ?></span>
             </button>
         </div>

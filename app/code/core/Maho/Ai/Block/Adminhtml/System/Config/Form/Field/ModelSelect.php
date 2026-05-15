@@ -36,18 +36,78 @@ class Maho_Ai_Block_Adminhtml_System_Config_Form_Field_ModelSelect extends Mage_
             return $html;
         }
 
-        // Behaviour for the button lives in skin/adminhtml/.../js/maho/ai.js
-        // and listens for [data-maho-ai-fetch-models] - keeps this PHP class
-        // free of inline JS. Layout file adds ai.js + ai.css to the system
-        // configuration page so they're present here.
+        $url      = $this->getUrl('*/ai/fetchModels', ['provider' => $provider, 'capability' => $capability]);
+        $label    = Mage::helper('ai')->__('Update Models');
+        $fetching = Mage::helper('ai')->__('Fetching...');
+        $errorPfx = Mage::helper('ai')->__('Error: ');
+        $btnId    = 'maho-ai-fetch-' . $elementId;
+
         $btn = sprintf(
-            '<button type="button" class="scalable" data-maho-ai-fetch-models'
-            . ' data-url="%s" data-target="%s"><span>%s</span></button>',
-            $this->escapeHtml($this->getUrl('*/ai/fetchModels', ['provider' => $provider, 'capability' => $capability])),
-            $this->escapeHtml($elementId),
-            $this->escapeHtml(Mage::helper('ai')->__('Update Models')),
+            '<button type="button" id="%s"><span>%s</span></button>',
+            $this->escapeHtml($btnId),
+            $this->escapeHtml($label),
         );
 
-        return '<div class="ai-model-select-row">' . $html . $btn . '</div>';
+        $btnIdJs    = json_encode($btnId);
+        $urlJs      = json_encode($url);
+        $targetJs   = json_encode($elementId);
+        $fetchingJs = json_encode($fetching);
+        $errorPfxJs = json_encode($errorPfx);
+
+        $script = <<<HTML
+<script>
+mahoOnReady(function () {
+    const btn = document.getElementById({$btnIdJs});
+    if (!btn) return;
+
+    btn.addEventListener('click', async function () {
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = {$fetchingJs};
+
+        try {
+            const data = await mahoFetch({$urlJs}, { method: 'POST', loaderArea: false });
+            if (data.error) {
+                alert({$errorPfxJs} + data.error);
+                return;
+            }
+
+            let el = document.getElementById({$targetJs});
+            if (!el) return;
+            const current = el.value;
+
+            if (el.tagName === 'INPUT') {
+                const sel = document.createElement('select');
+                sel.id = el.id;
+                sel.name = el.name;
+                sel.className = el.className;
+                sel.style.cssText = el.style.cssText;
+                el.parentNode.replaceChild(sel, el);
+                el = sel;
+            }
+
+            el.innerHTML = '';
+            (data.models || []).forEach(function (m) {
+                const opt = document.createElement('option');
+                opt.value = m.value;
+                opt.text = m.label;
+                if (m.value === current) opt.selected = true;
+                el.appendChild(opt);
+            });
+            if (current && !el.querySelector('option[selected]')) {
+                el.value = current;
+            }
+        } catch (err) {
+            alert({$errorPfxJs} + (err && err.message ? err.message : err));
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = orig;
+        }
+    });
+});
+</script>
+HTML;
+
+        return '<div class="ai-model-select-row">' . $html . $btn . $script . '</div>';
     }
 }
