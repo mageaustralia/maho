@@ -40,6 +40,7 @@
 "Estimated completion: ~%d hours %d minutes.","Estimated completion: ~%d hours %d minutes."
 "Estimated completion: ~%d minutes.","Estimated completion: ~%d minutes."
 "Failed","Failed"
+"Failed to fetch models. See exception.log for details.","Failed to fetch models. See exception.log for details."
 "Flag responses containing email addresses, phone numbers, or SSNs.","Flag responses containing email addresses, phone numbers, or SSNs."
 "Google Embed Model","Google Embed Model"
 "ID","ID"
