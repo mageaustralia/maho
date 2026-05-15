@@ -73,7 +73,8 @@
                 </anthropic>
                 <google>
                     <label>Google (Gemini)</label>
-                    <capabilities>chat,embed,image</capabilities>
+                    <!-- Imagen not yet wired in createForGoogle(); add 'image' here once it is. -->
+                    <capabilities>chat,embed</capabilities>
                     <sort_order>30</sort_order>
                 </google>
                 <mistral>

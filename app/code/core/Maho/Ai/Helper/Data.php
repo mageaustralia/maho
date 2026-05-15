@@ -128,6 +128,18 @@ class Maho_Ai_Helper_Data extends Mage_Core_Helper_Abstract
             throw new Mage_Core_Exception('Maho AI is disabled.');
         }
 
+        // Validate user-role messages for injection — mirrors the array-form
+        // path in invoke(). Without this the async queue would be a bypass
+        // around the same guard that protects synchronous calls.
+        foreach ($data['messages'] ?? [] as $msg) {
+            if (($msg['role'] ?? null) === 'user') {
+                $validation = $this->getInputValidator()->validate((string) ($msg['content'] ?? ''));
+                if (!$validation['safe']) {
+                    throw new Mage_Core_Exception('AI request rejected: ' . $validation['reason']);
+                }
+            }
+        }
+
         $task = Mage::getModel('ai/task');
         $task->setData([
             'consumer'        => $data['consumer'],
@@ -337,6 +349,12 @@ class Maho_Ai_Helper_Data extends Mage_Core_Helper_Abstract
     {
         if (!$this->isEnabled($data['store_id'] ?? null)) {
             throw new Mage_Core_Exception('Maho AI is disabled.');
+        }
+
+        // Mirror sync generateImage(): respect the admin blocked_patterns list.
+        $validation = $this->getInputValidator()->validate((string) ($data['prompt'] ?? ''));
+        if (!$validation['safe']) {
+            throw new Mage_Core_Exception('AI request rejected: ' . $validation['reason']);
         }
 
         $task = Mage::getModel('ai/task');

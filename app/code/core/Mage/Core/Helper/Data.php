@@ -1175,7 +1175,10 @@ XML;
         if (\Composer\InstalledVersions::isInstalled($package)) {
             return '';
         }
-        return $separator . "⚠️ Install $package";
+        // Result lands in raw admin <option> labels and config UI strings;
+        // escape so a community provider supplying an arbitrary package
+        // name can't inject HTML.
+        return $separator . '⚠️ Install ' . htmlspecialchars($package, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 
     /**

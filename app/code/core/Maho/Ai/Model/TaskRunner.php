@@ -311,6 +311,15 @@ class Maho_Ai_Model_TaskRunner
             return;
         }
 
+        if (!is_subclass_of($callbackClass, Maho_Ai_Model_TaskCallbackInterface::class)) {
+            Mage::log(
+                "Maho AI: callback class {$callbackClass} does not implement Maho_Ai_Model_TaskCallbackInterface — refusing to instantiate",
+                Mage::LOG_WARNING,
+                'maho_ai.log',
+            );
+            return;
+        }
+
         $instance = new $callbackClass();
         if (!method_exists($instance, $callbackMethod)) {
             Mage::log("Maho AI: callback method {$callbackClass}::{$callbackMethod} not found", Mage::LOG_WARNING, 'maho_ai.log');
@@ -326,16 +335,37 @@ class Maho_Ai_Model_TaskRunner
         $taskTable  = Mage::getSingleton('core/resource')->getTableName('ai/task');
         $cutoff     = Mage::app()->getLocale()->formatDateForDb('-' . $timeoutSeconds . ' seconds');
 
-        // Re-queue timed-out tasks (they'll be retried up to max_retries)
-        $connection->query("
-            UPDATE {$taskTable}
-            SET
-                status = CASE WHEN retries >= max_retries THEN 'failed' ELSE 'pending' END,
-                retries = retries + 1,
-                error_message = 'Task timed out',
-                completed_at = CASE WHEN retries >= max_retries THEN NOW() ELSE NULL END
-            WHERE status = 'processing'
-                AND started_at < '{$cutoff}'
-        ");
+        // Exhausted-retries cohort first, so the re-queue update below won't
+        // also touch these rows (its status='processing' filter excludes them
+        // once they've been moved to 'failed').
+        $connection->update(
+            $taskTable,
+            [
+                'status'        => Maho_Ai_Model_Task::STATUS_FAILED,
+                'retries'       => new \Maho\Db\Expr('retries + 1'),
+                'error_message' => 'Task timed out',
+                'completed_at'  => Mage::app()->getLocale()->formatDateForDb('now'),
+            ],
+            [
+                'status = ?'           => Maho_Ai_Model_Task::STATUS_PROCESSING,
+                'started_at < ?'       => $cutoff,
+                'retries >= max_retries',
+            ],
+        );
+
+        // Remaining timed-out rows still have retries < max_retries: re-queue.
+        $connection->update(
+            $taskTable,
+            [
+                'status'        => Maho_Ai_Model_Task::STATUS_PENDING,
+                'retries'       => new \Maho\Db\Expr('retries + 1'),
+                'error_message' => 'Task timed out',
+                'completed_at'  => null,
+            ],
+            [
+                'status = ?'     => Maho_Ai_Model_Task::STATUS_PROCESSING,
+                'started_at < ?' => $cutoff,
+            ],
+        );
     }
 }
