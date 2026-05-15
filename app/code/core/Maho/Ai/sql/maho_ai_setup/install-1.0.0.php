@@ -50,15 +50,18 @@ $table = $connection->newTable($this->getTable('ai/task'))
     ->addColumn('system_prompt', Maho\Db\Ddl\Table::TYPE_TEXT, null, [
         'nullable' => true,
     ], 'System instructions')
-    ->addColumn('messages', Maho\Db\Ddl\Table::TYPE_TEXT, null, [
+    // messages / context / response use MEDIUMTEXT (16M) because image
+    // tasks stash base64 source images in `context` (~70-200KB each) and
+    // long-form completions blow past MySQL's 64KB TEXT cap.
+    ->addColumn('messages', Maho\Db\Ddl\Table::TYPE_TEXT, '16M', [
         'nullable' => true,
-    ], 'JSON: conversation history [{role, content}]')
-    ->addColumn('context', Maho\Db\Ddl\Table::TYPE_TEXT, null, [
+    ], 'JSON-encoded chat-style messages array')
+    ->addColumn('context', Maho\Db\Ddl\Table::TYPE_TEXT, '16M', [
         'nullable' => true,
-    ], 'JSON: consumer-specific context (page_id, product_id, etc.)')
-    ->addColumn('response', Maho\Db\Ddl\Table::TYPE_TEXT, null, [
+    ], 'JSON-encoded task context (options, callback hints, source images, ...)')
+    ->addColumn('response', Maho\Db\Ddl\Table::TYPE_TEXT, '16M', [
         'nullable' => true,
-    ], 'LLM response text')
+    ], 'Model output: completion text, image URL/data, or embedding JSON')
     ->addColumn('callback_class', Maho\Db\Ddl\Table::TYPE_VARCHAR, 255, [
         'nullable' => true,
     ], 'PHP class for callback')
@@ -215,10 +218,8 @@ $table = $connection->newTable($this->getTable('ai/vector'))
     ], 'Created At')
     ->addColumn('updated_at', Maho\Db\Ddl\Table::TYPE_TIMESTAMP, null, [
         'nullable' => false,
-        // Model has a _beforeSave() that sets updated_at on every save -
-        // the on-update auto-bump is cross-engine unsafe (PgSQL/SQLite
-        // downgrade silently). TIMESTAMP_INIT seeds the column at create
-        // time; _beforeSave() keeps it current on update.
+        // Model _beforeSave() keeps updated_at current; the on-update
+        // auto-bump is cross-engine unsafe (PgSQL/SQLite downgrade silently).
         'default'  => Maho\Db\Ddl\Table::TIMESTAMP_INIT,
     ], 'Updated At')
     ->addIndex(
