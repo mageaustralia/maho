@@ -13,18 +13,18 @@ declare(strict_types=1);
 class Maho_Ai_Model_Safety_OutputSanitizer
 {
     /**
-     * Tags that are never allowed in AI output
-     */
-    private const FORBIDDEN_TAGS = ['script', 'iframe', 'object', 'embed', 'form', 'base', 'link', 'meta', 'style'];
-
-    /**
-     * PII patterns — detects but doesn't block
+     * PII patterns — detects but doesn't block.
+     *
+     * Phone is the trickiest: a permissive `[\d\s\-\(\)]{10,}` matches order
+     * IDs, invoice numbers and SKUs and floods the log. The patterns below
+     * require recognisable phone shapes (E.164, or grouped digits with at
+     * least one delimiter) so prose with stray long digit strings doesn't trip.
      */
     private const PII_PATTERNS = [
-        'email'   => '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/',
-        'phone'   => '/\+?[\d\s\-\(\)]{10,}/',
-        'ssn'     => '/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/',
-        'cc'      => '/\b(?:\d{4}[-\s]?){3}\d{4}\b/',
+        'email' => '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/',
+        'phone' => '/(?:\+\d{1,3}[\s\-]?)?\(?\d{2,4}\)?[\s\-]\d{2,4}[\s\-]\d{2,4}(?:[\s\-]\d{2,4})?/',
+        'ssn'   => '/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/',
+        'cc'    => '/\b(?:\d{4}[-\s]?){3}\d{4}\b/',
     ];
 
     /**
@@ -33,7 +33,7 @@ class Maho_Ai_Model_Safety_OutputSanitizer
     public function sanitize(string $output, bool $isHtml = false, array &$metadata = []): string
     {
         if ($isHtml && Mage::getStoreConfigFlag('maho_ai/safety/output_sanitize_html')) {
-            $output = $this->sanitizeHtml($output);
+            $output = (string) Mage::helper('core/purifier')->purify($output);
         }
 
         if (Mage::getStoreConfigFlag('maho_ai/safety/pii_detection')) {
@@ -41,31 +41,6 @@ class Maho_Ai_Model_Safety_OutputSanitizer
         }
 
         return $output;
-    }
-
-    private function sanitizeHtml(string $html): string
-    {
-        // Strip forbidden tags entirely (including content for script)
-        $html = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html);
-        $html = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
-
-        foreach (self::FORBIDDEN_TAGS as $tag) {
-            $html = preg_replace("/<{$tag}(\s[^>]*)?\/?>/i", '', $html);
-            $html = preg_replace("/<\/{$tag}>/i", '', $html);
-        }
-
-        // Remove on* event handlers (onclick, onerror, onload, etc.)
-        $html = preg_replace('/\s+on[a-z]+\s*=\s*["\'][^"\']*["\']/i', '', $html);
-        $html = preg_replace('/\s+on[a-z]+\s*=\s*[^\s>]+/i', '', $html);
-
-        // Remove javascript: URLs
-        $html = preg_replace('/href\s*=\s*["\']?\s*javascript:/i', 'href="javascript:void(0)"', $html);
-        $html = preg_replace('/src\s*=\s*["\']?\s*javascript:/i', 'src=""', $html);
-
-        // Remove data: URLs in src attributes (potential XSS vector)
-        $html = preg_replace('/src\s*=\s*["\']?\s*data:/i', 'src=""', $html);
-
-        return $html;
     }
 
     private function detectPii(string $text, array &$metadata): void
