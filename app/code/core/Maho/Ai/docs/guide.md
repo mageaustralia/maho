@@ -51,7 +51,7 @@ Navigate to **System > Configuration > Maho AI** to configure the module. You'll
 | **Safety** | Input validator + output sanitiser toggles, blocked-pattern regex list |
 | **Queue** | Cron frequency, batch size, retry limits, cleanup retention |
 
-Each platform has its own sub-section under General / Image / Embed for the API key (encrypted via `adminhtml/system_config_backend_encrypted`) and per-platform default model. Click **Update Models** next to any model dropdown to fetch the provider's live model list.
+Each platform has its own sub-section under General / Image / Embed for the API key (encrypted via `ai/system_config_backend_apiKey`) and per-platform default model. The API key backend auto-fetches the provider's `/models` endpoint when the key is saved, so the model dropdown self-populates on the next render — no manual refresh button.
 
 ### Picking a Default Platform
 
@@ -60,8 +60,8 @@ The simplest setup: pick one platform, paste an API key, and set a default model
 1. **System > Configuration > Maho AI > General**
 2. Set **Default Platform** (e.g. `OpenAI`)
 3. In the **OpenAI** sub-section, paste your API key into **API Key**
-4. Set the **Default Model** (e.g. `gpt-4o-mini` for chat, or click **Update Models** to refresh the list)
-5. Save
+4. Save — the backend fetches OpenAI's model list in the same request, so the **Default Model** dropdown is populated on reload
+5. Pick the **Default Model** (e.g. `gpt-4o-mini` for chat) and Save again
 
 Test it from any controller or CLI:
 
@@ -319,7 +319,7 @@ Tools for vector store maintenance:
 
 ### System Configuration > Maho AI
 
-Per-provider API keys (encrypted), default models, safety toggles, queue settings. Each provider's model dropdown has a **Update Models** button that queries the provider's `/models` endpoint live (so dropdowns stay current as providers ship new models).
+Per-provider API keys (encrypted), default models, safety toggles, queue settings. Saving an API key (or the Ollama base URL) auto-fetches the provider's `/models` endpoint and caches the result under `maho_ai/models_cache/{provider}`, so dropdowns stay current as providers ship new models. Re-save the key to force a refresh.
 
 ---
 
@@ -494,7 +494,7 @@ The stuck-task recovery cron resets anything older than `maho_ai/queue/task_time
 
 ### Model dropdown is empty / outdated
 
-Click **Update Models** next to the dropdown. Each provider has a `model_fetcher_method` (or `model_fetcher_class` for community providers) registered in config XML that queries the provider's `/models` endpoint. If the button is missing, the provider hasn't declared a fetcher - the field falls back to a free-text input.
+Re-save the provider's API key in **System > Configuration > Maho AI > General** — the `ai/system_config_backend_apiKey` backend re-fetches the provider's `/models` endpoint on every save where the value actually changed. For community providers, register a `<model_fetcher_class>` in your config XML implementing `Maho_Ai_Model_Platform_ModelFetcherInterface`; otherwise the field falls back to a free-text input.
 
 ### "Provider 'X' does not support {capability}"
 

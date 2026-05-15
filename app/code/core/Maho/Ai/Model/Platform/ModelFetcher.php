@@ -34,6 +34,43 @@ class Maho_Ai_Model_Platform_ModelFetcher
         };
     }
 
+    /**
+     * Fetch the model list for the given provider and persist it to
+     * core_config_data under maho_ai/models_cache/{provider}. Called from
+     * the API-key backend models on save so the dropdown auto-populates
+     * without a manual refresh button.
+     *
+     * Surfaces success/failure to the admin session. Never throws —
+     * a transient provider error shouldn't fail the config save.
+     */
+    public function refreshCache(string $provider): void
+    {
+        // The Generic OpenAI-compatible provider doesn't have a known
+        // /models endpoint shape; skip silently.
+        if ($provider === 'generic') {
+            return;
+        }
+
+        try {
+            $models = $this->fetchForProvider($provider);
+
+            Mage::getModel('core/config')->saveConfig(
+                "maho_ai/models_cache/{$provider}",
+                Mage::helper('core')->jsonEncode($models),
+            );
+            Mage::app()->getCache()->cleanType('config');
+
+            Mage::getSingleton('adminhtml/session')->addSuccess(
+                Mage::helper('ai')->__('AI: refreshed %d models for %s.', count($models), $provider),
+            );
+        } catch (\Throwable $e) {
+            Mage::logException($e);
+            Mage::getSingleton('adminhtml/session')->addWarning(
+                Mage::helper('ai')->__('AI: could not refresh models for %s. See exception.log.', $provider),
+            );
+        }
+    }
+
     private function getConfig(string $path): string
     {
         return (string) Mage::getStoreConfig($path);

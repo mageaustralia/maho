@@ -21,10 +21,13 @@ class Maho_Ai_Model_Source_Models
     }
 
     /**
-     * Return the cached model list for the provider, or a placeholder option
-     * if the admin hasn't clicked "Update Models" yet. Any currently-saved
-     * config value is preserved as an option so saving the form doesn't blank
-     * it out when the cache is empty.
+     * Return the cached model list for the provider. The cache is populated
+     * automatically by Maho_Ai_Model_System_Config_Backend_ApiKey /
+     * FetchTrigger whenever the admin saves a new API key or base URL,
+     * so the dropdown self-populates on the next render. The currently-
+     * saved value is always preserved as an option so saving the form
+     * doesn't blank it out when the cache hasn't been populated yet (e.g.
+     * first install, or a fetch failure).
      */
     protected function getForProvider(string $provider): array
     {
@@ -51,7 +54,7 @@ class Maho_Ai_Model_Source_Models
         }
         $options[] = [
             'value' => '',
-            'label' => Mage::helper('ai')->__('— click "Update Models" to load available models —'),
+            'label' => Mage::helper('ai')->__('— save the API key to load available models —'),
         ];
         return $options;
     }
